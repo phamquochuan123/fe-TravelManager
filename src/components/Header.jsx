@@ -1,6 +1,9 @@
+import { useContext } from "react";
 import { assets } from "../assets/assets";
+import { AppContext } from "../context/AppContext";
 
 const Header = () => {
+    const { userData } = useContext(AppContext);
     return (
         <div
             className="d-flex align-items-center justify-content-center text-center"
@@ -20,7 +23,7 @@ const Header = () => {
             <div className="container text-white px-3">
 
                 <h6 className="text-uppercase fw-semibold mb-3 opacity-75">
-                    Hey bro 😘
+                    Hey {userData ? userData.name : 'Developer'} 😘
                 </h6>
 
                 <h1 className="fw-bold display-3 mb-3">

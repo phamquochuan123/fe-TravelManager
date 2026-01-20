@@ -14,7 +14,7 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [passWord, setpassWord] = useState("");
     const [loading, setLoading] = useState(false);
-    const { backend_Url } = useContext(AppContext);
+    const { backend_Url, setIsLoggedIn, getUserData } = useContext(AppContext);
     const navigate = useNavigate();
 
     const onSubmitHandler = async (e) => {
@@ -33,6 +33,14 @@ const Login = () => {
                 }
             } else {
                 //login api
+                const response = await axios.post(`${backend_Url}/login`, { email, passWord });
+                if (response.status === 200) {
+                    setIsLoggedIn(true);
+                    getUserData();
+                    navigate("/");
+                } else {
+                    toast.error("Email/PassWord is incorrect.");
+                }
             }
         } catch (error) {
             toast.error(error.response.data.message);
@@ -89,11 +97,11 @@ const Login = () => {
                         />
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="passWord" className="form-label">passWord</label>
+                        <label htmlFor="passWord" className="form-label">PassWord</label>
                         <input type="passWord"
                             id="passWord"
                             className="form-control"
-                            placeholder="Enter passWord"
+                            placeholder="Enter PassWord"
                             required
                             onChange={(e) => setpassWord(e.target.value)}
                             value={passWord}
@@ -101,7 +109,7 @@ const Login = () => {
                     </div>
                     <div className="d-flex justify-content-between mb-3">
                         <Link to="/reset-passWord" className="text-decoration-none">
-                            Forgot passWord?
+                            Forgot PassWord?
                         </Link>
                     </div>
                     <button type="submit" className="btn btn-primary w-100" disabled={loading} >
