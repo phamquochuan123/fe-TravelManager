@@ -1,19 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { AppContext } from "../context/AppContext";
-import { useContext } from "react";
-
 
 const Login = () => {
-
     const [isCreateAccount, setIsCreateAccount] = useState(false);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [passWord, setpassWord] = useState("");
     const [loading, setLoading] = useState(false);
+
     const { backend_Url, setIsLoggedIn, getUserData } = useContext(AppContext);
     const navigate = useNavigate();
 
@@ -23,123 +21,137 @@ const Login = () => {
         setLoading(true);
         try {
             if (isCreateAccount) {
-                //register api
                 const response = await axios.post(`${backend_Url}/register`, { name, email, passWord });
                 if (response.status === 201) {
                     navigate("/");
                     toast.success("Account created successfully.");
-                } else {
-                    toast.error("Email already exists.");
                 }
             } else {
-                //login api
                 const response = await axios.post(`${backend_Url}/login`, { email, passWord });
                 if (response.status === 200) {
                     setIsLoggedIn(true);
                     getUserData();
                     navigate("/");
-                } else {
-                    toast.error("Email/PassWord is incorrect.");
                 }
             }
         } catch (error) {
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Something went wrong");
         } finally {
             setLoading(false);
         }
     }
 
     return (
-        <div className="position-relative min-vh-100 d-flex justify-content-center align-items-center"
-            style={{ background: "linear-gradient(90deg,#6a5af9,#8268f9)", border: "none" }}>
-            <div style={{ position: "absolute", top: "20px", left: "30px", display: "flex", alignItems: "center" }}>
-                <Link to="/" style={{
-                    display: "flex",
-                    gap: 5,
-                    alignItems: "center",
-                    fontWeight: "bold",
-                    fontSize: "24px",
-                    textDecoration: "none"
-                }}>
-                    <img src={assets.logo} alt="Logo" style={{ width: "40px", height: "40px" }} />
-                    <span className="fw-bold fs-4 text-light">Travel Manager</span>
-                </Link>
-            </div>
-            <div className="card p-4" style={{ maxWidth: "400px", width: "100%" }}>
-                <h2 className="text-center mb-4">
-                    {isCreateAccount ? "Create Account" : "Login to Your Account"}
-                </h2>
-                <form onSubmit={onSubmitHandler}>
-                    {
-                        isCreateAccount && (
-                            <div className="mb-3">
-                                <label htmlFor="fullName" className="form-label">Full Name</label>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 font-['Outfit'] px-4 py-12">
+
+            {/* Logo ở góc trên - Style đồng nhất */}
+            <Link to="/" className="absolute top-8 left-8 flex items-center gap-3 no-underline group">
+                <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl group-hover:rotate-12 transition-transform shadow-lg">
+                    <img src={assets.logo_home} alt="Logo" className="w-8 h-8 invert" />
+                </div>
+                <span className="text-2xl font-black text-white tracking-tighter hidden md:block">Travel Manager</span>
+            </Link>
+
+            {/* Login Card */}
+            <div className="bg-white/95 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.3)] w-full max-w-md border border-white/20 animate-in fade-in zoom-in duration-500">
+
+                <div className="text-center mb-10">
+                    <h2 className="text-4xl font-black text-gray-900 mb-3 tracking-tight">
+                        {isCreateAccount ? "Join Us!" : "Welcome Back"}
+                    </h2>
+                    <p className="text-gray-500 font-medium">
+                        {isCreateAccount ? "Create an account to start your journey" : "Please enter your details to login"}
+                    </p>
+                </div>
+
+                <form onSubmit={onSubmitHandler} className="space-y-5">
+                    {isCreateAccount && (
+                        <div className="space-y-1">
+                            <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-600 transition-colors">
+                                    <i className="bi bi-person text-lg"></i>
+                                </div>
                                 <input type="text"
-                                    id="fullName"
-                                    className="form-control"
-                                    placeholder="Enter full name"
+                                    className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                                    placeholder="Enter your name"
                                     required
                                     onChange={(e) => setName(e.target.value)}
                                     value={name}
                                 />
                             </div>
-                        )
-                    }
-                    <div className="mb-3">
-                        <label htmlFor="email" className="form-label">Email Id</label>
-                        <input type="text"
-                            id="email"
-                            className="form-control"
-                            placeholder="Enter email"
-                            required
-                            onChange={(e) => setEmail(e.target.value)}
-                            value={email}
-                        />
+                        </div>
+                    )}
+
+                    <div className="space-y-1">
+                        <label className="text-sm font-bold text-gray-700 ml-1">Email Address</label>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-600 transition-colors">
+                                <i className="bi bi-envelope text-lg"></i>
+                            </div>
+                            <input type="email"
+                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                                placeholder="name@example.com"
+                                required
+                                onChange={(e) => setEmail(e.target.value)}
+                                value={email}
+                            />
+                        </div>
                     </div>
-                    <div className="mb-3">
-                        <label htmlFor="passWord" className="form-label">PassWord</label>
-                        <input type="passWord"
-                            id="passWord"
-                            className="form-control"
-                            placeholder="Enter PassWord"
-                            required
-                            onChange={(e) => setpassWord(e.target.value)}
-                            value={passWord}
-                        />
+
+                    <div className="space-y-1">
+                        <label className="text-sm font-bold text-gray-700 ml-1">Password</label>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-600 transition-colors">
+                                <i className="bi bi-lock text-lg"></i>
+                            </div>
+                            <input type="password"
+                                className="block w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                                placeholder="••••••••"
+                                required
+                                onChange={(e) => setpassWord(e.target.value)}
+                                value={passWord}
+                            />
+                        </div>
                     </div>
-                    <div className="d-flex justify-content-between mb-3">
-                        <Link to="/reset-passWord" className="text-decoration-none">
-                            Forgot PassWord?
-                        </Link>
-                    </div>
-                    <button type="submit" className="btn btn-primary w-100" disabled={loading} >
-                        {loading ? "Please wait..." : isCreateAccount ? "Sign up" : "Login"}
+
+                    {!isCreateAccount && (
+                        <div className="flex justify-end">
+                            <Link to="/reset-passWord"
+                                className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors no-underline">
+                                Forgot Password?
+                            </Link>
+                        </div>
+                    )}
+
+                    <button type="submit"
+                        disabled={loading}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-xl shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2 group">
+                        {loading ? (
+                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        ) : (
+                            <>
+                                {isCreateAccount ? "Create Account" : "Sign In"}
+                                <i className="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                            </>
+                        )}
                     </button>
                 </form>
-                <div className="text-center mt-3">
-                    <p className="mb-0">
-                        {isCreateAccount ?
-                            (<>
-                                Already have an account?{""}
-                                <span
-                                    onClick={() => setIsCreateAccount(false)}
-                                    className="text-decoration-underline" style={{ cursor: "pointer" }}>
-                                    Login
-                                </span>
-                            </>
-                            ) : (<>
-                                Don't have an account?{" "}
-                                <span
-                                    onClick={() => setIsCreateAccount(true)}
-                                    className="text-decoration-underline" style={{ cursor: "pointer" }}>
-                                    Sign Up
-                                </span>
-                            </>)
-                        }
+
+                <div className="mt-10 text-center">
+                    <p className="text-gray-500 font-medium">
+                        {isCreateAccount ? "Already have an account?" : "Don't have an account?"}
+                        <button
+                            onClick={() => setIsCreateAccount(!isCreateAccount)}
+                            className="ml-2 text-indigo-600 font-black hover:underline focus:outline-none"
+                        >
+                            {isCreateAccount ? "Login" : "Sign Up"}
+                        </button>
                     </p>
                 </div>
             </div>
         </div>
-    )
+    );
 }
+
 export default Login;
