@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/springjava/travel/travel/src/main/resources/**)",
+      "Read(//d/springjava/travel/travel/**)"
+    ],
+    "additionalDirectories": [
+      "d:\\springjava\\travel\\travel"
+    ]
+  }
+}

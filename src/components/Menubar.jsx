@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
-import { useContext, useRef, useState, useEffect } from "react"; // Đổi useInsertionEffect thành useEffect cho chuẩn React 18+ nếu cần
+import { useContext, useRef, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -25,7 +25,6 @@ const MenuBar = () => {
     // Giữ nguyên logic logout
     const handleLogout = async () => {
         try {
-            axios.defaults.withCredentials = true;
             const response = await axios.post(backend_Url + "/logout");
             if (response.status === 200) {
                 setIsLoggedIn(false);
@@ -40,7 +39,6 @@ const MenuBar = () => {
     // Giữ nguyên logic gửi OTP
     const sendVerificationOTP = async () => {
         try {
-            axios.defaults.withCredentials = true;
             const response = await axios.post(backend_Url + "/send-otp");
             if (response.status === 200) {
                 navigate("/verify-email");
@@ -68,33 +66,72 @@ const MenuBar = () => {
 
             {/* User Section - GIỮ NGUYÊN LOGIC userData ? ... : ... */}
             {userData ? (
-                <div className="relative" ref={dropDownRef}>
-                    <div
-                        className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex justify-center items-center font-bold text-lg shadow-md hover:shadow-indigo-300 transition-all cursor-pointer ring-2 ring-white"
-                        onClick={() => setDropdownOpen((prev) => !prev)}
-                    >
-                        {userData?.name?.charAt(0).toUpperCase()}
-                    </div>
-
-                    {dropdownOpen && (
-                        <div className="absolute top-full right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                            <div className="px-4 py-3 bg-gray-50/50 border-b border-gray-100">
-                                <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">Signed in as</p>
-                                <p className="text-sm font-semibold text-gray-900 truncate">{userData.name}</p>
-                            </div>
-
-                            <div className="p-2">
-                                {!userData.isAccountVerified && (
-                                    <button onClick={sendVerificationOTP} className="w-full text-left px-3 py-2.5 text-sm font-medium text-amber-600 hover:bg-amber-50 rounded-lg transition-colors flex items-center gap-2">
-                                        <i className="bi bi-patch-check"></i> Verify Email
-                                    </button>
-                                )}
-                                <button onClick={handleLogout} className="w-full text-left px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2">
-                                    <i className="bi bi-box-arrow-right"></i> Logout
-                                </button>
-                            </div>
-                        </div>
+                <div className="flex items-center gap-3">
+                    {/* Role-based nav links */}
+                    {(userData.roleName === "ADMIN" || userData.roleName === "STAFF") && (
+                        <button
+                            onClick={() => navigate("/staff")}
+                            className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-indigo-600 transition-colors px-3 py-2 rounded-xl hover:bg-indigo-50"
+                        >
+                            <i className="bi bi-person-badge"></i> Staff
+                        </button>
                     )}
+                    {userData.roleName === "ADMIN" && (
+                        <button
+                            onClick={() => navigate("/admin")}
+                            className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-red-600 transition-colors px-3 py-2 rounded-xl hover:bg-red-50"
+                        >
+                            <i className="bi bi-shield-check"></i> Admin
+                        </button>
+                    )}
+
+                    <div className="relative" ref={dropDownRef}>
+                        <div
+                            className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex justify-center items-center font-bold text-lg shadow-md hover:shadow-indigo-300 transition-all cursor-pointer ring-2 ring-white"
+                            onClick={() => setDropdownOpen((prev) => !prev)}
+                        >
+                            {userData?.name?.charAt(0).toUpperCase()}
+                        </div>
+
+                        {dropdownOpen && (
+                            <div className="absolute top-full right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                <div className="px-4 py-3 bg-gray-50/50 border-b border-gray-100">
+                                    <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">Signed in as</p>
+                                    <p className="text-sm font-semibold text-gray-900 truncate">{userData.name}</p>
+                                    {userData.roleName && (
+                                        <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-bold rounded-full ${
+                                            userData.roleName === "ADMIN" ? "bg-red-100 text-red-600" :
+                                            userData.roleName === "STAFF" ? "bg-blue-100 text-blue-600" :
+                                            "bg-green-100 text-green-600"
+                                        }`}>
+                                            {userData.roleName}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="p-2">
+                                    {(userData.roleName === "ADMIN" || userData.roleName === "STAFF") && (
+                                        <button onClick={() => { navigate("/staff"); setDropdownOpen(false); }} className="w-full text-left px-3 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2 md:hidden">
+                                            <i className="bi bi-person-badge"></i> Staff Dashboard
+                                        </button>
+                                    )}
+                                    {userData.roleName === "ADMIN" && (
+                                        <button onClick={() => { navigate("/admin"); setDropdownOpen(false); }} className="w-full text-left px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 md:hidden">
+                                            <i className="bi bi-shield-check"></i> Admin Dashboard
+                                        </button>
+                                    )}
+                                    {!userData.isAccountVerified && (
+                                        <button onClick={sendVerificationOTP} className="w-full text-left px-3 py-2.5 text-sm font-medium text-amber-600 hover:bg-amber-50 rounded-lg transition-colors flex items-center gap-2">
+                                            <i className="bi bi-patch-check"></i> Verify Email
+                                        </button>
+                                    )}
+                                    <button onClick={handleLogout} className="w-full text-left px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2">
+                                        <i className="bi bi-box-arrow-right"></i> Logout
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             ) : (
                 <button className="flex items-center gap-2 bg-gray-900 hover:bg-indigo-600 text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-gray-200" onClick={() => navigate("/login")}>

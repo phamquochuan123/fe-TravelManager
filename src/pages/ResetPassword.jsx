@@ -14,7 +14,6 @@ const ResetpassWord = () => {
     const [isEmailSent, setIsEmailSent] = useState(false);
     const [otp, setOtp] = useState("");
     const [isOtpSubmitted, setIsOtpSubmiited] = useState(false);
-    axios.defaults.withCredentials = true;
 
     const { backend_Url } = useContext(AppContext) || { backend_Url: "" };
 

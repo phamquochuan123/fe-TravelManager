@@ -17,7 +17,6 @@ const Login = () => {
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
-        axios.defaults.withCredentials = true;
         setLoading(true);
         try {
             if (isCreateAccount) {
@@ -30,7 +29,7 @@ const Login = () => {
                 const response = await axios.post(`${backend_Url}/login`, { email, passWord });
                 if (response.status === 200) {
                     setIsLoggedIn(true);
-                    getUserData();
+                    await getUserData();
                     navigate("/");
                 }
             }
