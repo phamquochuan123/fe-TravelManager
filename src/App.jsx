@@ -20,6 +20,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/reset-passWord" element={<ResetpassWord />} />
         <Route path="/verify-email" element={<EmailVerify />} />
+
         <Route path="/admin" element={
           <ProtectedRoute allowedRoles={["ADMIN"]}>
             <AdminDashboard />
@@ -31,6 +32,8 @@ const App = () => {
           </ProtectedRoute>
         } />
       </Routes>
+
+
     </div>
   )
 }

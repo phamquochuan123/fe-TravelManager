@@ -1,5 +1,6 @@
-import React, { use } from 'react'
-import { addRoom } from '../../util/ApiFuntions'
+import { useState } from 'react'
+import { CreateRoom } from '../../util/ApiFuntions'
+import RoomTypeSelector from '../common/RoomTypeSelector'
 
 const AddRoom = () => {
     const [newRoom, setNewRoom] = useState({
@@ -10,6 +11,7 @@ const AddRoom = () => {
     const [imagePreview, setImagePreview] = useState("")
     const [successMessage, setSuccessMessage] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
+    const [loading, setLoading] = useState(false)
 
     const handleRoomInputChange = (e) => {
         const name = e.target.name
@@ -32,83 +34,97 @@ const AddRoom = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        setLoading(true)
         try {
-            const success = await addRoom(newRoom.photo, newRoom.roomType, newRoom.roomPrice)
+            const success = await CreateRoom(newRoom.photo, newRoom.roomType, newRoom.roomPrice)
             if (success !== undefined) {
-                setSuccessMessage("A new room was added to the database")
-                setNewRoom({ photo: null, rooomType: "", roomPrice: "" })
+                setSuccessMessage("Thêm phòng mới thành công")
+                setNewRoom({ photo: null, roomType: "", roomPrice: "" })
                 setImagePreview("")
                 setErrorMessage("")
             } else {
-                setErrorMessage("Error adding room")
+                setErrorMessage("Lỗi khi thêm phòng")
             }
         } catch (error) {
             setErrorMessage(error.message)
+        } finally {
+            setLoading(false)
         }
     }
+
     return (
-        <>
-            <section className="container, mt-5 mb-5">
-                <div className="row justify-content-center">
-                    <div className="col-md-8 col-lg-6">
-                        <h2 className="mt-5 mb-2">Add a new room</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 max-w-xl">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">
+                <i className="bi bi-plus-circle mr-2 text-indigo-600"></i>Thêm phòng mới
+            </h2>
 
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-3">
-                                <label htmlFor="roomType" className="form-label">
-                                    Room Type
-                                </label>
-                                <div></div>
-                            </div>
-
-                            <div className="mb-3">
-                                <label htmlFor="roomPrice" className="form-label">
-                                    Room Price
-                                </label>
-                                <input
-                                    className="form-control"
-                                    required
-                                    id="roomPrice"
-                                    type="number"
-                                    name="roomPrice"
-                                    placeholder="Enter room price"
-                                    value={newRoom.roomPrice}
-                                    onChange={handleRoomInputChange}
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label htmlFor="roomPhoto" className="form-label">
-                                    Room Photo
-                                </label>
-                                <input
-                                    className="form-control"
-                                    required
-                                    id="photo"
-                                    name="photo"
-                                    type="file"
-                                    onChange={handleImageChange}
-                                />
-                                {imagePreview && (
-                                    <img src={imagePreview}
-                                        alt="Preview Room Photo"
-                                        style={{ maxWidth: "400px", maxHeight: "400px" }}
-                                        className="mb-3" />
-                                )}
-                            </div>
-
-                            <div ClassName="d-grid md-flex mt-2">
-                                <button className="btn btn-outline-primary ml-5 ">
-                                    Save Room
-                                </button>
-
-                            </div>
-
-                        </form>
-                    </div>
+            {successMessage && (
+                <div className="mb-4 px-4 py-3 rounded-xl bg-green-50 text-green-700 text-sm font-medium flex items-center gap-2">
+                    <i className="bi bi-check-circle"></i>{successMessage}
                 </div>
-            </section>
-        </>
+            )}
+            {errorMessage && (
+                <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm font-medium flex items-center gap-2">
+                    <i className="bi bi-exclamation-circle"></i>{errorMessage}
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Loại phòng</label>
+                    <RoomTypeSelector
+                        handleNewRoomInputChange={handleRoomInputChange}
+                        newRoom={newRoom}
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Giá phòng</label>
+                    <input
+                        required
+                        type="number"
+                        name="roomPrice"
+                        placeholder="Nhập giá phòng"
+                        value={newRoom.roomPrice}
+                        onChange={handleRoomInputChange}
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ảnh phòng</label>
+                    <input
+                        required
+                        type="file"
+                        name="photo"
+                        onChange={handleImageChange}
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
+                    />
+                    {imagePreview && (
+                        <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="mt-3 rounded-xl object-cover w-full max-h-52"
+                        />
+                    )}
+                </div>
+
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                            Đang lưu...
+                        </span>
+                    ) : (
+                        <><i className="bi bi-floppy mr-2"></i>Lưu phòng</>
+                    )}
+                </button>
+            </form>
+        </div>
     )
 }
 
