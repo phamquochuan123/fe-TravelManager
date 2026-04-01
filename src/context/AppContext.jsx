@@ -10,7 +10,7 @@ export const AppContextProvider = (props) => {
 
     const backend_Url = AppConstants.BACKEND_URL;
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userData, setUserData] = useState(false);
+    const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const getUserData = async () => {

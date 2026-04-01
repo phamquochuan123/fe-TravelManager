@@ -2,8 +2,9 @@ import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { AppContext } from "../../context/AppContext";
-import MenuBar from "../../components/Menubar";
 import AddRoom from "../../components/room/AddRoom";
+import ExistingRoom from "../../components/room/ExistingRoom";
+import MenuBar from "../../components/Menubar";
 
 const AdminDashboard = () => {
     const { backend_Url, userData } = useContext(AppContext);
@@ -11,6 +12,7 @@ const AdminDashboard = () => {
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("users");
+    const [roomSubTab, setRoomSubTab] = useState("list");
 
     useEffect(() => {
         fetchUsers();
@@ -84,7 +86,25 @@ const AdminDashboard = () => {
                     </button>
                 </div>
 
-                {activeTab === "rooms" && <AddRoom />}
+                {activeTab === "rooms" && (
+                    <div>
+                        <div className="flex gap-2 mb-6 border-b border-gray-200">
+                            <button
+                                onClick={() => setRoomSubTab("list")}
+                                className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${roomSubTab === "list" ? "bg-white border border-b-white border-gray-200 text-indigo-600 -mb-px" : "text-gray-500 hover:text-gray-700"}`}
+                            >
+                                <i className="bi bi-list-ul mr-2"></i>Danh sách phòng
+                            </button>
+                            <button
+                                onClick={() => setRoomSubTab("add")}
+                                className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${roomSubTab === "add" ? "bg-white border border-b-white border-gray-200 text-indigo-600 -mb-px" : "text-gray-500 hover:text-gray-700"}`}
+                            >
+                                <i className="bi bi-plus-circle mr-2"></i>Thêm phòng
+                            </button>
+                        </div>
+                        {roomSubTab === "list" ? <ExistingRoom /> : <AddRoom />}
+                    </div>
+                )}
 
                 {activeTab === "users" && <>
                     {/* Stats */}

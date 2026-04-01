@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { AppContext } from "../../context/AppContext";
+import MenuBar from "../../components/Menubar";
 
 const StaffDashboard = () => {
     const { userData } = useContext(AppContext);

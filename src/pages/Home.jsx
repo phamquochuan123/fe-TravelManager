@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import { AppContext } from "../context/AppContext";
-import MenuBar from "../components/MenuBar";
+import MenuBar from "../components/Menubar";
 
 const features = [
     {

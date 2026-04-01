@@ -15,7 +15,6 @@ const Header = () => {
                 backgroundRepeat: 'no-repeat'
             }}>
 
-            {/* Giữ nguyên logic hiệu ứng animate của mày */}
             <div className="relative z-10 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
 
                 {/* Badge chào mừng */}
