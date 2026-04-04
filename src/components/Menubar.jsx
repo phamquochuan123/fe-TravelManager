@@ -2,12 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
 import { useContext, useRef, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
-import axios from "axios";
+import api from "../api/axiosInstance";
 import { toast } from "react-toastify";
 
 const MenuBar = () => {
     const navigate = useNavigate();
-    const { userData, backend_Url, setIsLoggedIn, setUserData } = useContext(AppContext);
+    const { userData, setIsLoggedIn, setUserData } = useContext(AppContext);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropDownRef = useRef(null);
 
@@ -25,7 +25,7 @@ const MenuBar = () => {
     // Giữ nguyên logic logout
     const handleLogout = async () => {
         try {
-            const response = await axios.post(backend_Url + "/logout");
+            const response = await api.post("/logout");
             if (response.status === 200) {
                 setIsLoggedIn(false);
                 setUserData(null);
@@ -39,7 +39,7 @@ const MenuBar = () => {
     // Giữ nguyên logic gửi OTP
     const sendVerificationOTP = async () => {
         try {
-            const response = await axios.post(backend_Url + "/send-otp");
+            const response = await api.post("/send-otp");
             if (response.status === 200) {
                 navigate("/verify-email");
                 toast.success("OTP has been sent successfully to your email.");
@@ -76,6 +76,18 @@ const MenuBar = () => {
                             <i className="bi bi-person-badge"></i> Staff
                         </button>
                     )}
+                    <button
+                        onClick={() => navigate("/hotels")}
+                        className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-indigo-600 transition-colors px-3 py-2 rounded-xl hover:bg-indigo-50"
+                    >
+                        <i className="bi bi-building"></i> Khách sạn
+                    </button>
+                    <button
+                        onClick={() => navigate("/my-bookings")}
+                        className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-indigo-600 transition-colors px-3 py-2 rounded-xl hover:bg-indigo-50"
+                    >
+                        <i className="bi bi-calendar-check"></i> Đặt phòng
+                    </button>
                     {userData.roleName === "ADMIN" && (
                         <button
                             onClick={() => navigate("/admin")}
@@ -110,6 +122,12 @@ const MenuBar = () => {
                                 </div>
 
                                 <div className="p-2">
+                                    <button onClick={() => { navigate("/hotels"); setDropdownOpen(false); }} className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-2">
+                                        <i className="bi bi-building"></i> Khách sạn
+                                    </button>
+                                    <button onClick={() => { navigate("/my-bookings"); setDropdownOpen(false); }} className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-2">
+                                        <i className="bi bi-calendar-check"></i> Lịch sử đặt phòng
+                                    </button>
                                     {(userData.roleName === "ADMIN" || userData.roleName === "STAFF") && (
                                         <button onClick={() => { navigate("/staff"); setDropdownOpen(false); }} className="w-full text-left px-3 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2 md:hidden">
                                             <i className="bi bi-person-badge"></i> Staff Dashboard

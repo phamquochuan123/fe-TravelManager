@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getAllRooms } from '../../util/ApiFuntions'
+import { getAllRooms } from '../../api/roomApi'
 import RoomCard from './RoomCard'
 import RoomFilter from '../common/RoomFilter'
 import RoomPaginator from '../common/RoomPaginator'

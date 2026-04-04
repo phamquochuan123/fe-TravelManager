@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getAllRooms } from '../../util/ApiFuntions'
+import { getAllRooms } from '../../api/roomApi'
 
 const RoomList = () => {
     const [rooms, setRooms] = useState([])

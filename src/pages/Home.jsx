@@ -1,111 +1,119 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import { AppContext } from "../context/AppContext";
 import MenuBar from "../components/Menubar";
+import { getAllHotels } from "../api/hotelApi";
+import HotelCard from "../components/hotel/HotelCard";
 
-const features = [
-    {
-        icon: "bi-map-fill",
-        title: "Tour Management",
-        desc: "Manage and organize travel tours with ease. Create, update and track all your travel packages.",
-        color: "from-indigo-500 to-purple-500"
-    },
-    {
-        icon: "bi-calendar-check-fill",
-        title: "Booking System",
-        desc: "Handle customer bookings efficiently. Track reservations and manage availability in real-time.",
-        color: "from-blue-500 to-cyan-500"
-    },
-    {
-        icon: "bi-people-fill",
-        title: "User Management",
-        desc: "Manage customers and staff with role-based access. Assign permissions and track activity.",
-        color: "from-green-500 to-teal-500"
-    },
-    {
-        icon: "bi-graph-up-arrow",
-        title: "Analytics",
-        desc: "Get insights into your business performance with detailed reports and statistics.",
-        color: "from-orange-500 to-red-500"
-    },
-    {
-        icon: "bi-shield-check-fill",
-        title: "Secure & Reliable",
-        desc: "JWT-based authentication with role-based access control keeps your data safe.",
-        color: "from-purple-500 to-pink-500"
-    },
-    {
-        icon: "bi-envelope-check-fill",
-        title: "Email Notifications",
-        desc: "Automated email confirmations, OTP verification and password reset functionality.",
-        color: "from-yellow-500 to-orange-500"
-    }
+const WHY_US = [
+    { icon: "bi-shield-check-fill", title: "An toàn & Bảo mật", desc: "Thông tin cá nhân và thanh toán được bảo vệ tuyệt đối.", color: "from-indigo-500 to-purple-500" },
+    { icon: "bi-clock-fill", title: "Đặt phòng nhanh chóng", desc: "Chỉ vài bước đơn giản để có ngay phòng khách sạn ưng ý.", color: "from-blue-500 to-cyan-500" },
+    { icon: "bi-building-fill", title: "Đa dạng lựa chọn", desc: "Khách sạn, resort, homestay trên khắp Việt Nam.", color: "from-emerald-500 to-teal-500" },
+    { icon: "bi-headset", title: "Hỗ trợ 24/7", desc: "Đội ngũ hỗ trợ luôn sẵn sàng giải đáp mọi thắc mắc.", color: "from-orange-500 to-red-500" },
 ];
 
-const roles = [
-    {
-        role: "Admin",
-        icon: "bi-shield-check",
-        cardClass: "bg-red-50 border-red-200",
-        textClass: "text-red-600",
-        badgeClass: "bg-red-600",
-        perms: ["Full system access", "Manage all users & roles", "View all reports", "System configuration"]
-    },
-    {
-        role: "Staff",
-        icon: "bi-person-badge",
-        cardClass: "bg-blue-50 border-blue-200",
-        textClass: "text-blue-600",
-        badgeClass: "bg-blue-600",
-        perms: ["Manage tours & bookings", "Customer support", "View staff dashboard", "Process reservations"]
-    },
-    {
-        role: "User",
-        icon: "bi-person-circle",
-        cardClass: "bg-green-50 border-green-200",
-        textClass: "text-green-600",
-        badgeClass: "bg-green-600",
-        perms: ["Browse all tours", "Make bookings", "Manage profile", "Email verification"]
-    }
-];
-
-const steps = [
-    { step: "01", title: "Create Account", desc: "Sign up in seconds and verify your email to get started.", icon: "bi-person-plus-fill" },
-    { step: "02", title: "Explore Tours", desc: "Browse through hundreds of curated travel packages.", icon: "bi-compass-fill" },
-    { step: "03", title: "Book & Travel", desc: "Book your trip instantly and enjoy a seamless experience.", icon: "bi-airplane-fill" },
+const STEPS = [
+    { step: "01", icon: "bi-search", title: "Tìm kiếm", desc: "Nhập điểm đến, chọn ngày và số lượng khách." },
+    { step: "02", icon: "bi-door-open-fill", title: "Chọn phòng", desc: "So sánh giá cả, tiện ích và chọn phòng phù hợp." },
+    { step: "03", icon: "bi-calendar-check-fill", title: "Đặt & Tận hưởng", desc: "Xác nhận đặt phòng và tận hưởng kỳ nghỉ tuyệt vời." },
 ];
 
 const Home = () => {
     const navigate = useNavigate();
     const { isLoggedIn } = useContext(AppContext);
+    const [featuredHotels, setFeaturedHotels] = useState([]);
+    const [searchCity, setSearchCity] = useState("");
+
+    useEffect(() => {
+        getAllHotels().then(data => setFeaturedHotels(data.slice(0, 6))).catch(() => {});
+    }, []);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        const params = searchCity.trim() ? `?city=${encodeURIComponent(searchCity.trim())}` : "";
+        navigate(`/hotels${params}`);
+    };
 
     return (
         <div className="font-['Outfit']">
             <MenuBar />
+
+            {/* Hero — full screen with background image */}
             <Header />
 
-            {/* Features Section */}
-            <section className="py-24 px-6 md:px-12 bg-gray-50">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <span className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-600 text-sm font-bold rounded-full mb-4 tracking-wider uppercase">Features</span>
-                        <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">
-                            Everything you need to<br />
-                            <span className="text-indigo-600">manage travel</span>
-                        </h2>
-                        <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-                            A complete platform for managing tours, bookings and customer relationships.
-                        </p>
-                    </div>
+            {/* Quick search bar */}
+            <section className="bg-white py-10 px-6 shadow-sm">
+                <div className="max-w-3xl mx-auto">
+                    <form onSubmit={handleSearch} className="flex gap-3 flex-col sm:flex-row">
+                        <div className="relative flex-1">
+                            <i className="bi bi-geo-alt absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400 text-lg" />
+                            <input
+                                type="text"
+                                placeholder="Bạn muốn đến đâu? (Hà Nội, Đà Nẵng, Hội An...)"
+                                value={searchCity}
+                                onChange={e => setSearchCity(e.target.value)}
+                                className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-indigo-400 font-medium text-gray-700 placeholder-gray-400"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3.5 rounded-2xl transition-colors flex items-center gap-2 shrink-0"
+                        >
+                            <i className="bi bi-search" /> Tìm kiếm
+                        </button>
+                    </form>
+                </div>
+            </section>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {features.map((f) => (
-                            <div key={f.title} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group cursor-default">
-                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-tr ${f.color} text-white flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform`}>
-                                    <i className={`bi ${f.icon} text-xl`}></i>
+            {/* Featured hotels */}
+            {featuredHotels.length > 0 && (
+                <section className="py-16 px-6 bg-gray-50">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex items-end justify-between mb-10">
+                            <div>
+                                <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-600 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">Nổi bật</span>
+                                <h2 className="text-3xl font-black text-gray-900">Khách sạn được yêu thích</h2>
+                                <p className="text-gray-500 mt-1">Những lựa chọn hàng đầu được khách hàng đánh giá cao</p>
+                            </div>
+                            <button
+                                onClick={() => navigate("/hotels")}
+                                className="hidden sm:flex items-center gap-2 text-indigo-600 font-semibold text-sm hover:underline"
+                            >
+                                Xem tất cả <i className="bi bi-arrow-right" />
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {featuredHotels.map(hotel => (
+                                <HotelCard key={hotel.id} hotel={hotel} />
+                            ))}
+                        </div>
+                        <div className="text-center mt-8 sm:hidden">
+                            <button
+                                onClick={() => navigate("/hotels")}
+                                className="text-indigo-600 font-semibold text-sm hover:underline"
+                            >
+                                Xem tất cả khách sạn <i className="bi bi-arrow-right" />
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Why choose us */}
+            <section className="py-16 px-6 bg-white">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-12">
+                        <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-600 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">Lợi ích</span>
+                        <h2 className="text-3xl font-black text-gray-900">Vì sao chọn chúng tôi?</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        {WHY_US.map(f => (
+                            <div key={f.title} className="bg-gray-50 rounded-2xl p-6 border border-gray-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                                <div className={`w-11 h-11 rounded-xl bg-gradient-to-tr ${f.color} text-white flex items-center justify-center mb-4 shadow`}>
+                                    <i className={`bi ${f.icon} text-lg`} />
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">{f.title}</h3>
+                                <h3 className="font-bold text-gray-900 mb-1.5">{f.title}</h3>
                                 <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
                             </div>
                         ))}
@@ -114,26 +122,23 @@ const Home = () => {
             </section>
 
             {/* How it works */}
-            <section className="py-24 px-6 md:px-12 bg-white">
-                <div className="max-w-5xl mx-auto">
-                    <div className="text-center mb-16">
-                        <span className="inline-block px-4 py-1.5 bg-yellow-100 text-yellow-700 text-sm font-bold rounded-full mb-4 tracking-wider uppercase">How it works</span>
-                        <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">
-                            Get started in <span className="text-indigo-600">3 easy steps</span>
-                        </h2>
+            <section className="py-16 px-6 bg-gray-50">
+                <div className="max-w-4xl mx-auto">
+                    <div className="text-center mb-12">
+                        <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">Hướng dẫn</span>
+                        <h2 className="text-3xl font-black text-gray-900">Đặt phòng chỉ trong <span className="text-indigo-600">3 bước</span></h2>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {steps.map((s, idx) => (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {STEPS.map((s, idx) => (
                             <div key={s.step} className="relative text-center">
-                                {idx < steps.length - 1 && (
-                                    <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-indigo-200 to-transparent"></div>
+                                {idx < STEPS.length - 1 && (
+                                    <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-indigo-200 to-transparent" />
                                 )}
-                                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 text-white text-2xl mb-5 shadow-lg shadow-indigo-200 relative z-10">
-                                    <i className={`bi ${s.icon}`}></i>
+                                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 text-white text-2xl mb-4 shadow-lg shadow-indigo-200 relative z-10">
+                                    <i className={`bi ${s.icon}`} />
                                 </div>
-                                <div className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-500 text-xs font-black rounded-full mb-3 tracking-widest">{s.step}</div>
-                                <h3 className="text-xl font-black text-gray-900 mb-2">{s.title}</h3>
+                                <div className="inline-block px-2.5 py-0.5 bg-gray-200 text-gray-500 text-xs font-black rounded-full mb-2 tracking-widest">{s.step}</div>
+                                <h3 className="text-lg font-black text-gray-900 mb-1">{s.title}</h3>
                                 <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
                             </div>
                         ))}
@@ -141,64 +146,24 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Roles Section */}
-            <section className="py-24 px-6 md:px-12 bg-gray-50">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <span className="inline-block px-4 py-1.5 bg-purple-100 text-purple-600 text-sm font-bold rounded-full mb-4 tracking-wider uppercase">Access Control</span>
-                        <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">
-                            Role-based <span className="text-indigo-600">permissions</span>
-                        </h2>
-                        <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-                            Different levels of access for Admin, Staff and regular Users.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {roles.map((r) => (
-                            <div key={r.role} className={`rounded-2xl p-6 border-2 ${r.cardClass} hover:shadow-lg transition-all duration-300`}>
-                                <div className="flex items-center gap-3 mb-5">
-                                    <div className={`w-12 h-12 rounded-xl ${r.badgeClass} text-white flex items-center justify-center shadow-lg`}>
-                                        <i className={`bi ${r.icon} text-xl`}></i>
-                                    </div>
-                                    <span className={`font-black text-xl ${r.textClass}`}>{r.role}</span>
-                                </div>
-                                <ul className="space-y-2.5">
-                                    {r.perms.map(p => (
-                                        <li key={p} className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                                            <i className={`bi bi-check-circle-fill text-xs ${r.textClass}`}></i>
-                                            {p}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* CTA Section — chỉ hiện khi chưa login */}
+            {/* CTA */}
             {!isLoggedIn && (
-                <section className="py-24 px-6 md:px-12 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">
-                            Ready to get started?
-                        </h2>
-                        <p className="text-white/75 text-lg mb-10 max-w-2xl mx-auto">
-                            Join TravelManager today and take full control of your travel business.
-                        </p>
+                <section className="py-20 px-6 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600">
+                    <div className="max-w-3xl mx-auto text-center">
+                        <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Sẵn sàng cho chuyến đi tiếp theo?</h2>
+                        <p className="text-white/75 mb-8">Đăng ký miễn phí và khám phá hàng trăm khách sạn trên khắp Việt Nam.</p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <button
                                 onClick={() => navigate("/login")}
-                                className="bg-white text-indigo-600 font-bold px-10 py-4 rounded-full hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95"
+                                className="bg-white text-indigo-600 font-bold px-10 py-4 rounded-full hover:shadow-2xl hover:-translate-y-1 transition-all"
                             >
-                                Get Started Free
+                                Đăng ký miễn phí
                             </button>
                             <button
-                                onClick={() => navigate("/login")}
-                                className="border-2 border-white/40 text-white font-bold px-10 py-4 rounded-full hover:bg-white/10 transition-all active:scale-95"
+                                onClick={() => navigate("/hotels")}
+                                className="border-2 border-white/40 text-white font-bold px-10 py-4 rounded-full hover:bg-white/10 transition-all"
                             >
-                                Login
+                                Xem khách sạn
                             </button>
                         </div>
                     </div>
@@ -206,17 +171,17 @@ const Home = () => {
             )}
 
             {/* Footer */}
-            <footer className="bg-gray-900 text-gray-400 py-12 px-6 md:px-12">
+            <footer className="bg-gray-900 text-gray-400 py-10 px-6">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-3">
                         <div className="bg-indigo-600 p-2 rounded-xl">
-                            <i className="bi bi-globe2 text-white text-lg"></i>
+                            <i className="bi bi-globe2 text-white text-lg" />
                         </div>
                         <span className="font-black text-white text-xl tracking-tighter">
                             Travel<span className="text-indigo-400">Manager</span>
                         </span>
                     </div>
-                    <p className="text-sm">© 2024 TravelManager. All rights reserved.</p>
+                    <p className="text-sm">© 2025 TravelManager. All rights reserved.</p>
                     <div className="flex items-center gap-3">
                         <span className="text-xs bg-gray-800 px-3 py-1.5 rounded-full">Spring Boot</span>
                         <span className="text-xs bg-gray-800 px-3 py-1.5 rounded-full">React + Vite</span>

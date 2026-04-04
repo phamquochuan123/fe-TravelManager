@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getRoomTypes } from '../../util/ApiFuntions'
+import { getRoomTypes } from '../../api/roomApi'
 
 const RoomTypeSelector = ({ handleNewRoomInputChange, newRoom }) => {
     const [roomTypes, setRoomTypes] = useState([])

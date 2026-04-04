@@ -3,12 +3,12 @@ import { assets } from "../assets/assets";
 import { useContext, useEffect, useRef, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
-import axios from "axios";
+import api from "../api/axiosInstance";
 
 const EmailVerify = () => {
     const inputRef = useRef([]);
     const [loading, setloading] = useState(false);
-    const { getUserData, isLoggedIn, userData, backend_Url } = useContext(AppContext);
+    const { getUserData, isLoggedIn, userData } = useContext(AppContext);
     const navigate = useNavigate();
 
 
@@ -42,7 +42,7 @@ const EmailVerify = () => {
         }
         setloading(true);
         try {
-            const response = await axios.post(backend_Url + "/verify-otp", { otp });
+            const response = await api.post("/verify-otp", { otp });
             if (response.status === 200) {
                 toast.success("OTP verified successfully");
                 getUserData();

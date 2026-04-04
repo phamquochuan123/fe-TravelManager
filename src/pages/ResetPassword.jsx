@@ -1,7 +1,6 @@
-import { useContext, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AppContext } from "../context/AppContext";
-import axios from "axios";
+import api from "../api/axiosInstance";
 import { assets } from "../assets/assets";
 import { toast } from "react-toastify";
 
@@ -14,8 +13,6 @@ const ResetpassWord = () => {
     const [isEmailSent, setIsEmailSent] = useState(false);
     const [otp, setOtp] = useState("");
     const [isOtpSubmitted, setIsOtpSubmiited] = useState(false);
-
-    const { backend_Url } = useContext(AppContext) || { backend_Url: "" };
 
     // --- Giữ nguyên Logic điều hướng OTP ---
     const handleChange = (e, index) => {
@@ -45,7 +42,7 @@ const ResetpassWord = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post(backend_Url + "/send-reset-otp?email=" + email);
+            const response = await api.post("/send-reset-otp?email=" + email);
             if (response.status === 200) {
                 toast.success("Password reset OTP sent successfully.");
                 setIsEmailSent(true);
@@ -75,7 +72,7 @@ const ResetpassWord = () => {
         }
         try {
             setLoading(true);
-            const response = await axios.post(backend_Url + "/reset-password", { email, otp, newPassword });
+            const response = await api.post("/reset-password", { email, otp, newPassword });
             if (response.status === 200) {
                 toast.success("Password reset successfully.");
                 navigate("/login");

@@ -1,18 +1,20 @@
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
+import api from "../../api/axiosInstance";
 import { AppContext } from "../../context/AppContext";
 import AddRoom from "../../components/room/AddRoom";
 import ExistingRoom from "../../components/room/ExistingRoom";
+import HotelManagement from "../../components/hotel/HotelManagement";
 import MenuBar from "../../components/Menubar";
 
 const AdminDashboard = () => {
-    const { backend_Url, userData } = useContext(AppContext);
+    const { userData } = useContext(AppContext);
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("users");
     const [roomSubTab, setRoomSubTab] = useState("list");
+
 
     useEffect(() => {
         fetchUsers();
@@ -21,7 +23,7 @@ const AdminDashboard = () => {
 
     const fetchUsers = async () => {
         try {
-            const res = await axios.get(`${backend_Url}/admin/users`);
+            const res = await api.get("/admin/users");
             setUsers(res.data);
         } catch {
             toast.error("Không thể tải danh sách người dùng");
@@ -32,7 +34,7 @@ const AdminDashboard = () => {
 
     const fetchRoles = async () => {
         try {
-            const res = await axios.get(`${backend_Url}/admin/roles`);
+            const res = await api.get("/admin/roles");
             setRoles(res.data);
         } catch {
             toast.error("Không thể tải danh sách vai trò");
@@ -41,7 +43,7 @@ const AdminDashboard = () => {
 
     const handleAssignRole = async (userId, roleId) => {
         try {
-            await axios.put(`${backend_Url}/admin/users/${userId}/role`, { roleId: Number(roleId) });
+            await api.put(`/admin/users/${userId}/role`, { roleId: Number(roleId) });
             toast.success("Cập nhật vai trò thành công");
             fetchUsers();
         } catch {
@@ -52,7 +54,7 @@ const AdminDashboard = () => {
     const handleDeleteUser = async (userId) => {
         if (!window.confirm("Bạn có chắc muốn xoá người dùng này?")) return;
         try {
-            await axios.delete(`${backend_Url}/admin/users/${userId}`);
+            await api.delete(`/admin/users/${userId}`);
             toast.success("Xoá người dùng thành công");
             fetchUsers();
         } catch {
@@ -72,19 +74,24 @@ const AdminDashboard = () => {
 
                 {/* Tabs */}
                 <div className="flex gap-2 mb-8 border-b border-gray-200">
-                    <button
-                        onClick={() => setActiveTab("users")}
-                        className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition-colors ${activeTab === "users" ? "bg-white border border-b-white border-gray-200 text-indigo-600 -mb-px" : "text-gray-500 hover:text-gray-700"}`}
-                    >
-                        <i className="bi bi-people mr-2"></i>Người dùng
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("rooms")}
-                        className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition-colors ${activeTab === "rooms" ? "bg-white border border-b-white border-gray-200 text-indigo-600 -mb-px" : "text-gray-500 hover:text-gray-700"}`}
-                    >
-                        <i className="bi bi-door-open mr-2"></i>Quản lý phòng
-                    </button>
+                    {[
+                        { key: "users", icon: "bi-people", label: "Người dùng" },
+                        { key: "hotels", icon: "bi-building", label: "Khách sạn" },
+                        { key: "rooms", icon: "bi-door-open", label: "Quản lý phòng" },
+                    ].map(tab => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition-colors ${activeTab === tab.key ? "bg-white border border-b-white border-gray-200 text-indigo-600 -mb-px" : "text-gray-500 hover:text-gray-700"}`}
+                        >
+                            <i className={`bi ${tab.icon} mr-2`}></i>{tab.label}
+                        </button>
+                    ))}
                 </div>
+
+                {activeTab === "hotels" && (
+                    <HotelManagement />
+                )}
 
                 {activeTab === "rooms" && (
                     <div>

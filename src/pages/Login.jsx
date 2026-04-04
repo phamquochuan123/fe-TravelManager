@@ -1,9 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
 import { useState, useContext } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { AppContext } from "../context/AppContext";
+import api from "../api/axiosInstance";
 
 const Login = () => {
     const [isCreateAccount, setIsCreateAccount] = useState(false);
@@ -12,7 +12,7 @@ const Login = () => {
     const [passWord, setpassWord] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const { backend_Url, setIsLoggedIn, getUserData } = useContext(AppContext);
+    const { setIsLoggedIn, getUserData } = useContext(AppContext);
     const navigate = useNavigate();
 
     const onSubmitHandler = async (e) => {
@@ -20,13 +20,13 @@ const Login = () => {
         setLoading(true);
         try {
             if (isCreateAccount) {
-                const response = await axios.post(`${backend_Url}/register`, { name, email, passWord });
+                const response = await api.post("/register", { name, email, passWord });
                 if (response.status === 201) {
                     navigate("/");
                     toast.success("Account created successfully.");
                 }
             } else {
-                const response = await axios.post(`${backend_Url}/login`, { email, passWord });
+                const response = await api.post("/login", { email, passWord });
                 if (response.status === 200) {
                     setIsLoggedIn(true);
                     await getUserData();

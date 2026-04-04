@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CreateRoom } from '../../util/ApiFuntions'
+import { createRoom } from '../../api/roomApi'
 import RoomTypeSelector from '../common/RoomTypeSelector'
 
 const AddRoom = () => {
@@ -36,7 +36,7 @@ const AddRoom = () => {
         e.preventDefault()
         setLoading(true)
         try {
-            const success = await CreateRoom(newRoom.photo, newRoom.roomType, newRoom.roomPrice)
+            const success = await createRoom(newRoom.photo, newRoom.roomType, newRoom.roomPrice)
             if (success !== undefined) {
                 setSuccessMessage("Thêm phòng mới thành công")
                 setNewRoom({ photo: null, roomType: "", roomPrice: "" })
