@@ -176,7 +176,7 @@ const HotelManagement = () => {
                     </button>
                     <div>
                         <h2 className="text-xl font-bold text-gray-900">Quản lý phòng</h2>
-                        <p className="text-sm text-indigo-600 font-medium">{managingHotel.name}</p>
+                        <p className="text-sm text-sky-600 font-medium">{managingHotel.name}</p>
                     </div>
                 </div>
 
@@ -191,14 +191,14 @@ const HotelManagement = () => {
                                 </h3>
                                 <button
                                     onClick={() => navigate(`/hotels/${managingHotel.id}`)}
-                                    className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
+                                    className="text-xs text-sky-600 hover:underline flex items-center gap-1"
                                 >
                                     <i className="bi bi-eye" /> Xem trang khách sạn
                                 </button>
                             </div>
                             {roomsLoading ? (
                                 <div className="flex justify-center py-12">
-                                    <span className="w-7 h-7 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
+                                    <span className="w-7 h-7 border-2 border-sky-600/30 border-t-sky-600 rounded-full animate-spin" />
                                 </div>
                             ) : hotelRooms.length === 0 ? (
                                 <div className="text-center py-12 text-gray-400">
@@ -249,7 +249,7 @@ const HotelManagement = () => {
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sticky top-24">
                             <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
-                                <i className="bi bi-plus-circle text-indigo-500" /> Thêm phòng mới
+                                <i className="bi bi-plus-circle text-sky-500" /> Thêm phòng mới
                             </h3>
                             <form onSubmit={handleAddRoom} className="space-y-3.5">
                                 <div>
@@ -259,7 +259,7 @@ const HotelManagement = () => {
                                         value={roomForm.roomType}
                                         onChange={e => setRoomForm(f => ({ ...f, roomType: e.target.value }))}
                                         placeholder="Phòng đôi, Suite..."
-                                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                     />
                                     <datalist id="room-type-list">
                                         {ROOM_TYPES.map(t => <option key={t} value={t} />)}
@@ -272,7 +272,7 @@ const HotelManagement = () => {
                                             value={roomForm.roomNumber}
                                             onChange={e => setRoomForm(f => ({ ...f, roomNumber: e.target.value }))}
                                             placeholder="101, A01..."
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                     <div>
@@ -283,7 +283,7 @@ const HotelManagement = () => {
                                             value={roomForm.roomPrice}
                                             onChange={e => setRoomForm(f => ({ ...f, roomPrice: e.target.value }))}
                                             placeholder="500000"
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                 </div>
@@ -295,7 +295,7 @@ const HotelManagement = () => {
                                             min="1"
                                             value={roomForm.maxGuests}
                                             onChange={e => setRoomForm(f => ({ ...f, maxGuests: e.target.value }))}
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                     <div>
@@ -305,7 +305,7 @@ const HotelManagement = () => {
                                             min="1"
                                             value={roomForm.numBeds}
                                             onChange={e => setRoomForm(f => ({ ...f, numBeds: e.target.value }))}
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                     <div>
@@ -316,7 +316,7 @@ const HotelManagement = () => {
                                             value={roomForm.area}
                                             onChange={e => setRoomForm(f => ({ ...f, area: e.target.value }))}
                                             placeholder="25"
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                 </div>
@@ -327,12 +327,12 @@ const HotelManagement = () => {
                                         onChange={e => setRoomForm(f => ({ ...f, description: e.target.value }))}
                                         rows={2}
                                         placeholder="Phòng view biển, có ban công..."
-                                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 mb-1">Ảnh phòng</label>
-                                    <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 rounded-xl p-3 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/20 transition-all">
+                                    <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 rounded-xl p-3 cursor-pointer hover:border-sky-400 hover:bg-sky-50/20 transition-all">
                                         {roomPhotoPreview ? (
                                             <img src={roomPhotoPreview} alt="" className="w-16 h-12 object-cover rounded-lg shrink-0" />
                                         ) : (
@@ -362,7 +362,7 @@ const HotelManagement = () => {
                                 <button
                                     type="submit"
                                     disabled={addingRoom}
-                                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                                    className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
                                 >
                                     {addingRoom
                                         ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang thêm...</>
@@ -389,12 +389,12 @@ const HotelManagement = () => {
                         placeholder="Tìm khách sạn..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
                 </div>
                 <button
                     onClick={() => setView("add")}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm shrink-0"
+                    className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm shrink-0"
                 >
                     <i className="bi bi-plus-circle" /> Thêm khách sạn
                 </button>
@@ -403,7 +403,7 @@ const HotelManagement = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 mb-6">
                 {[
-                    { label: "Tổng", value: hotels.length, icon: "bi-building", color: "text-indigo-600 bg-indigo-50" },
+                    { label: "Tổng", value: hotels.length, icon: "bi-building", color: "text-sky-600 bg-sky-50" },
                     { label: "Hoạt động", value: hotels.filter(h => h.active !== false).length, icon: "bi-check-circle", color: "text-emerald-600 bg-emerald-50" },
                     { label: "Tạm đóng", value: hotels.filter(h => h.active === false).length, icon: "bi-pause-circle", color: "text-amber-600 bg-amber-50" },
                 ].map(s => (
@@ -422,7 +422,7 @@ const HotelManagement = () => {
             {/* Table */}
             {loading ? (
                 <div className="flex justify-center py-16">
-                    <span className="w-8 h-8 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
+                    <span className="w-8 h-8 border-2 border-sky-600/30 border-t-sky-600 rounded-full animate-spin" />
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
@@ -471,7 +471,7 @@ const HotelManagement = () => {
                                             <div className="flex items-center gap-1">
                                                 <button
                                                     onClick={() => navigate(`/hotels/${hotel.id}`)}
-                                                    className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                    className="p-1.5 text-gray-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
                                                     title="Xem"
                                                 >
                                                     <i className="bi bi-eye" />

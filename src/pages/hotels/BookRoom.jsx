@@ -8,14 +8,10 @@ import { toast } from "react-toastify"
 
 const toDateStr = (d) => d.toISOString().split("T")[0]
 
-// Check-in lúc 14:00 — deadline đặt phòng = 14:00 - 12h = 02:00 cùng ngày.
-// Nếu đã qua 02:00 hôm nay → ngày sớm nhất có thể đặt là ngày mai.
 const getMinCheckInDate = () => {
     const now = new Date()
-    // Deadline của ngày hôm nay là 02:00 sáng hôm nay
     const todayDeadline = new Date()
     todayDeadline.setHours(2, 0, 0, 0)
-    // Nếu đã qua 02:00 → ngày hôm nay không đặt được → min là ngày mai
     if (now >= todayDeadline) {
         const tomorrow = new Date(now)
         tomorrow.setDate(tomorrow.getDate() + 1)
@@ -65,7 +61,6 @@ const BookRoom = () => {
             .finally(() => setLoading(false))
     }, [roomId])
 
-    // Pre-fill user info when userData loads
     useEffect(() => {
         if (userData) {
             setForm(f => ({ ...f, guestFullName: userData.name || f.guestFullName, guestEmail: userData.email || f.guestEmail }))
@@ -83,7 +78,6 @@ const BookRoom = () => {
         if (!form.checkOutDate) e.checkOutDate = "Chọn ngày trả phòng"
         if (nights <= 0) e.checkOutDate = "Ngày trả phòng phải sau ngày nhận phòng"
         if (form.numOfAdults < 1) e.numOfAdults = "Ít nhất 1 người lớn"
-        // Kiểm tra rule 12 tiếng: deadline = 02:00 cùng ngày check-in (= 14:00 - 12h)
         if (form.checkInDate) {
             const deadline = new Date(form.checkInDate)
             deadline.setHours(2, 0, 0, 0)
@@ -97,7 +91,6 @@ const BookRoom = () => {
     const handleChange = e => {
         const { name, value } = e.target
         if (name === "checkInDate") {
-            // Khi đổi ngày check-in, tự cập nhật check-out về ngày kế tiếp
             setForm(f => ({ ...f, checkInDate: value, checkOutDate: getDefaultCheckOut(value) }))
         } else {
             setForm(f => ({ ...f, [name]: name.includes("num") ? Number(value) : value }))
@@ -124,44 +117,39 @@ const BookRoom = () => {
     if (loading) return (
         <div className="min-h-screen bg-gray-50 font-['Outfit'] flex items-center justify-center">
             <MenuBar />
-            <span className="w-10 h-10 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
+            <span className="w-10 h-10 border-2 border-sky-500/30 border-t-sky-500 rounded-full animate-spin" />
         </div>
     )
 
-    // Success screen
     if (confirmCode) return (
         <div className="min-h-screen bg-gray-50 font-['Outfit']">
             <MenuBar />
             <div className="flex items-center justify-center min-h-screen px-6 pt-20">
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 max-w-md w-full text-center">
-                    <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
-                        <i className="bi bi-check-circle-fill text-4xl text-emerald-500" />
+                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 max-w-md w-full text-center animate-in fade-in zoom-in-95 duration-500">
+                    <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-xl shadow-emerald-200">
+                        <i className="bi bi-check-circle-fill text-4xl text-white" />
                     </div>
                     <h2 className="text-2xl font-black text-gray-900 mb-2">Đặt phòng thành công!</h2>
-                    <p className="text-gray-500 mb-6">Mã xác nhận của bạn</p>
-                    <div className="bg-indigo-50 border border-indigo-200 rounded-2xl px-6 py-4 mb-6">
-                        <p className="text-xs text-indigo-500 font-semibold uppercase tracking-wider mb-1">Mã xác nhận</p>
-                        <p className="text-2xl font-black text-indigo-700 tracking-widest">{confirmCode}</p>
+                    <p className="text-gray-500 mb-6">Lưu lại mã xác nhận của bạn</p>
+                    <div className="bg-sky-50 border border-sky-200 rounded-2xl px-6 py-4 mb-6">
+                        <p className="text-xs text-sky-500 font-semibold uppercase tracking-wider mb-1">Mã xác nhận</p>
+                        <p className="text-2xl font-black text-sky-700 tracking-widest">{confirmCode}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-4 text-left text-sm text-gray-600 mb-6 space-y-1">
+                    <div className="bg-gray-50 rounded-xl p-4 text-left text-sm text-gray-600 mb-6 space-y-2">
                         <p><span className="font-semibold">Khách:</span> {form.guestFullName}</p>
                         <p><span className="font-semibold">Email:</span> {form.guestEmail}</p>
-                        <p><span className="font-semibold">Nhận phòng:</span> {form.checkInDate} <span className="text-blue-600 font-medium">từ 14:00</span></p>
+                        <p><span className="font-semibold">Nhận phòng:</span> {form.checkInDate} <span className="text-sky-600 font-medium">từ 14:00</span></p>
                         <p><span className="font-semibold">Trả phòng:</span> {form.checkOutDate} <span className="text-orange-500 font-medium">trước 12:00</span></p>
                         <p><span className="font-semibold">Số đêm:</span> {nights} đêm</p>
-                        <p><span className="font-semibold">Tổng tiền:</span> {total.toLocaleString("vi-VN")} ₫</p>
+                        <p><span className="font-semibold">Tổng tiền:</span> <span className="text-sky-600 font-bold">{total.toLocaleString("vi-VN")} ₫</span></p>
                     </div>
                     <div className="flex gap-3">
-                        <button
-                            onClick={() => navigate("/my-bookings")}
-                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-colors"
-                        >
-                            Xem lịch sử đặt phòng
+                        <button onClick={() => navigate("/my-bookings")}
+                            className="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-sky-200">
+                            Xem lịch sử
                         </button>
-                        <button
-                            onClick={() => navigate("/hotels")}
-                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition-colors"
-                        >
+                        <button onClick={() => navigate("/")}
+                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition-colors">
                             Về trang chủ
                         </button>
                     </div>
@@ -174,49 +162,31 @@ const BookRoom = () => {
         <div className="min-h-screen bg-gray-50 font-['Outfit']">
             <MenuBar />
             <div className="pt-24 pb-12 px-6 max-w-5xl mx-auto">
-                <button
-                    onClick={() => navigate(`/hotels/${hotelId}`)}
-                    className="flex items-center gap-2 text-gray-500 hover:text-indigo-600 text-sm font-medium mb-6 transition-colors"
-                >
-                    <i className="bi bi-arrow-left" /> Quay lại khách sạn
+                <button onClick={() => navigate(`/hotels/${hotelId}`)}
+                    className="flex items-center gap-2 text-gray-500 hover:text-sky-500 text-sm font-medium mb-6 transition-colors group">
+                    <i className="bi bi-arrow-left group-hover:-translate-x-1 transition-transform" /> Quay lại khách sạn
                 </button>
 
                 <h1 className="text-3xl font-black text-gray-900 mb-8">Đặt phòng</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    {/* Form */}
                     <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6">
                         {/* Guest info */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h2 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
-                                <i className="bi bi-person-circle text-indigo-500" /> Thông tin khách
+                                <i className="bi bi-person-circle text-sky-500" /> Thông tin khách
                             </h2>
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        Họ và tên <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        name="guestFullName"
-                                        value={form.guestFullName}
-                                        onChange={handleChange}
-                                        placeholder="Nguyễn Văn A"
-                                        className={`w-full border ${errors.guestFullName ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-                                    />
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Họ và tên <span className="text-red-500">*</span></label>
+                                    <input name="guestFullName" value={form.guestFullName} onChange={handleChange} placeholder="Nguyễn Văn A"
+                                        className={`w-full border ${errors.guestFullName ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent`} />
                                     {errors.guestFullName && <p className="text-red-500 text-xs mt-1">{errors.guestFullName}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        Email <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        name="guestEmail"
-                                        type="email"
-                                        value={form.guestEmail}
-                                        onChange={handleChange}
-                                        placeholder="email@example.com"
-                                        className={`w-full border ${errors.guestEmail ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-                                    />
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email <span className="text-red-500">*</span></label>
+                                    <input name="guestEmail" type="email" value={form.guestEmail} onChange={handleChange} placeholder="email@example.com"
+                                        className={`w-full border ${errors.guestEmail ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent`} />
                                     {errors.guestEmail && <p className="text-red-500 text-xs mt-1">{errors.guestEmail}</p>}
                                 </div>
                             </div>
@@ -225,42 +195,26 @@ const BookRoom = () => {
                         {/* Dates */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h2 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
-                                <i className="bi bi-calendar3 text-indigo-500" /> Ngày lưu trú
+                                <i className="bi bi-calendar3 text-sky-500" /> Ngày lưu trú
                             </h2>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        Nhận phòng <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        name="checkInDate"
-                                        type="date"
-                                        value={form.checkInDate}
-                                        min={minCheckIn}
-                                        onChange={handleChange}
-                                        className={`w-full border ${errors.checkInDate ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-                                    />
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nhận phòng <span className="text-red-500">*</span></label>
+                                    <input name="checkInDate" type="date" value={form.checkInDate} min={minCheckIn} onChange={handleChange}
+                                        className={`w-full border ${errors.checkInDate ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent`} />
                                     {errors.checkInDate && <p className="text-red-500 text-xs mt-1">{errors.checkInDate}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        Trả phòng <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        name="checkOutDate"
-                                        type="date"
-                                        value={form.checkOutDate}
-                                        min={form.checkInDate || today()}
-                                        onChange={handleChange}
-                                        className={`w-full border ${errors.checkOutDate ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-                                    />
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Trả phòng <span className="text-red-500">*</span></label>
+                                    <input name="checkOutDate" type="date" value={form.checkOutDate} min={form.checkInDate || minCheckIn} onChange={handleChange}
+                                        className={`w-full border ${errors.checkOutDate ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent`} />
                                     {errors.checkOutDate && <p className="text-red-500 text-xs mt-1">{errors.checkOutDate}</p>}
                                 </div>
                             </div>
                             {nights > 0 && (
-                                <div className="mt-3 bg-indigo-50 rounded-xl px-4 py-2.5 flex items-center gap-2">
-                                    <i className="bi bi-moon-stars text-indigo-500" />
-                                    <span className="text-sm text-indigo-700 font-semibold">{nights} đêm lưu trú</span>
+                                <div className="mt-3 bg-sky-50 border border-sky-100 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                                    <i className="bi bi-moon-stars text-sky-500" />
+                                    <span className="text-sm text-sky-700 font-semibold">{nights} đêm lưu trú</span>
                                 </div>
                             )}
                         </div>
@@ -268,48 +222,34 @@ const BookRoom = () => {
                         {/* Guests */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h2 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
-                                <i className="bi bi-people text-indigo-500" /> Số lượng khách
+                                <i className="bi bi-people text-sky-500" /> Số lượng khách
                             </h2>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        Người lớn <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        name="numOfAdults"
-                                        value={form.numOfAdults}
-                                        onChange={handleChange}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    >
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Người lớn <span className="text-red-500">*</span></label>
+                                    <select name="numOfAdults" value={form.numOfAdults} onChange={handleChange}
+                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
                                         {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n}</option>)}
                                     </select>
                                     {errors.numOfAdults && <p className="text-red-500 text-xs mt-1">{errors.numOfAdults}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Trẻ em</label>
-                                    <select
-                                        name="numOfChildren"
-                                        value={form.numOfChildren}
-                                        onChange={handleChange}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    >
+                                    <select name="numOfChildren" value={form.numOfChildren} onChange={handleChange}
+                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
                                         {[0, 1, 2, 3, 4].map(n => <option key={n} value={n}>{n}</option>)}
                                     </select>
                                 </div>
                             </div>
                             {room?.maxGuests > 0 && (form.numOfAdults + form.numOfChildren) > room.maxGuests && (
                                 <p className="text-amber-600 text-xs mt-3 flex items-center gap-1">
-                                    <i className="bi bi-exclamation-triangle" />
-                                    Phòng chỉ tối đa {room.maxGuests} khách
+                                    <i className="bi bi-exclamation-triangle" /> Phòng chỉ tối đa {room.maxGuests} khách
                                 </p>
                             )}
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold py-4 rounded-2xl transition-colors flex items-center justify-center gap-2 text-base"
-                        >
+                        <button type="submit" disabled={submitting}
+                            className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 disabled:opacity-60 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 text-base shadow-xl shadow-sky-200">
                             {submitting ? (
                                 <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang xử lý...</>
                             ) : (
@@ -322,33 +262,30 @@ const BookRoom = () => {
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
                             <h2 className="font-bold text-gray-900 mb-5">Tóm tắt đặt phòng</h2>
-
                             {room && (
                                 <>
-                                    {/* Room preview */}
-                                    <div className="bg-indigo-50 rounded-xl p-4 mb-5">
+                                    <div className="bg-sky-50 border border-sky-100 rounded-xl p-4 mb-5">
                                         <div className="flex items-center gap-3 mb-3">
-                                            <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0">
+                                            <div className="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
                                                 {room.photo ? (
                                                     <img src={`data:image/jpeg;base64,${room.photo}`} alt="" className="w-full h-full object-cover rounded-xl" />
                                                 ) : (
-                                                    <i className="bi bi-door-open text-indigo-500 text-lg" />
+                                                    <i className="bi bi-door-open text-sky-500 text-lg" />
                                                 )}
                                             </div>
                                             <div>
                                                 <p className="font-bold text-gray-900">{room.roomType}</p>
                                                 {room.roomNumber && <p className="text-xs text-gray-500">Phòng #{room.roomNumber}</p>}
-                                                {room.hotelName && <p className="text-xs text-indigo-600">{room.hotelName}</p>}
+                                                {room.hotelName && <p className="text-xs text-sky-600 font-medium">{room.hotelName}</p>}
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap gap-2 text-xs text-gray-500">
-                                            {room.numBeds > 0 && <span className="bg-white rounded-lg px-2 py-1"><i className="bi bi-lamp mr-1" />{room.numBeds} giường</span>}
-                                            {room.maxGuests > 0 && <span className="bg-white rounded-lg px-2 py-1"><i className="bi bi-people mr-1" />tối đa {room.maxGuests}</span>}
-                                            {room.area > 0 && <span className="bg-white rounded-lg px-2 py-1"><i className="bi bi-aspect-ratio mr-1" />{room.area} m²</span>}
+                                            {room.numBeds > 0 && <span className="bg-white rounded-lg px-2 py-1 border border-sky-100"><i className="bi bi-lamp mr-1" />{room.numBeds} giường</span>}
+                                            {room.maxGuests > 0 && <span className="bg-white rounded-lg px-2 py-1 border border-sky-100"><i className="bi bi-people mr-1" />tối đa {room.maxGuests}</span>}
+                                            {room.area > 0 && <span className="bg-white rounded-lg px-2 py-1 border border-sky-100"><i className="bi bi-aspect-ratio mr-1" />{room.area} m²</span>}
                                         </div>
                                     </div>
 
-                                    {/* Price breakdown */}
                                     <div className="space-y-3 text-sm">
                                         <div className="flex justify-between text-gray-600">
                                             <span>{Number(room.roomPrice).toLocaleString("vi-VN")} ₫ × {nights} đêm</span>
@@ -356,11 +293,11 @@ const BookRoom = () => {
                                         </div>
                                         <div className="flex justify-between text-gray-600">
                                             <span>Phí dịch vụ</span>
-                                            <span className="text-emerald-600">Miễn phí</span>
+                                            <span className="text-emerald-600 font-medium">Miễn phí</span>
                                         </div>
                                         <div className="border-t border-gray-100 pt-3 flex justify-between font-black text-gray-900 text-base">
                                             <span>Tổng cộng</span>
-                                            <span className="text-indigo-600">{total.toLocaleString("vi-VN")} ₫</span>
+                                            <span className="text-sky-600">{total.toLocaleString("vi-VN")} ₫</span>
                                         </div>
                                     </div>
 

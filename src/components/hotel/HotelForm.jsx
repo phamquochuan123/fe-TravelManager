@@ -14,15 +14,12 @@ const COMMON_AMENITIES = [
 const EMPTY_FORM = {
     name: "", description: "", address: "", city: "",
     starRating: 3, hotelType: "HOTEL", amenities: "", isActive: true,
-    latitude: "", longitude: "",
 }
 
 const HotelForm = ({ hotel, onSuccess, onCancel }) => {
     const [form, setForm] = useState(hotel ? {
         ...hotel,
         isActive: hotel.active !== false,
-        latitude: hotel.latitude ?? "",
-        longitude: hotel.longitude ?? "",
         amenities: hotel.amenities ?? "",
     } : EMPTY_FORM)
     const [errors, setErrors] = useState({})
@@ -77,8 +74,6 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
             const payload = {
                 ...form,
                 starRating: Number(form.starRating),
-                latitude: form.latitude !== "" ? Number(form.latitude) : null,
-                longitude: form.longitude !== "" ? Number(form.longitude) : null,
             }
             let result
             if (hotel?.id) {
@@ -103,7 +98,7 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
             {/* Basic info */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
-                    <i className="bi bi-building text-indigo-500" /> Thông tin cơ bản
+                    <i className="bi bi-building text-sky-500" /> Thông tin cơ bản
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
@@ -115,7 +110,7 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                             value={form.name}
                             onChange={handleChange}
                             placeholder="Nhập tên khách sạn"
-                            className={`w-full border ${errors.name ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                            className={`w-full border ${errors.name ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500`}
                         />
                         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                     </div>
@@ -128,7 +123,7 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                             name="hotelType"
                             value={form.hotelType}
                             onChange={handleChange}
-                            className={`w-full border ${errors.hotelType ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                            className={`w-full border ${errors.hotelType ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500`}
                         >
                             {HOTEL_TYPES.map(t => (
                                 <option key={t} value={t}>{HOTEL_TYPE_LABEL[t]}</option>
@@ -165,7 +160,7 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                             value={form.city}
                             onChange={handleChange}
                             placeholder="Nhập tên thành phố"
-                            className={`w-full border ${errors.city ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                            className={`w-full border ${errors.city ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500`}
                         />
                         {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                     </div>
@@ -177,7 +172,7 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                             value={form.address}
                             onChange={handleChange}
                             placeholder="Địa chỉ cụ thể (không bắt buộc)"
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                         />
                     </div>
 
@@ -189,7 +184,7 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                             onChange={handleChange}
                             rows={3}
                             placeholder="Mô tả ngắn về khách sạn..."
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
                         />
                     </div>
                 </div>
@@ -198,11 +193,11 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
             {/* Photo upload */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i className="bi bi-image text-indigo-500" /> Ảnh đại diện
+                    <i className="bi bi-image text-sky-500" /> Ảnh đại diện
                 </h3>
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 transition-all group relative overflow-hidden"
+                    className="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-sky-400 hover:bg-sky-50/30 transition-all group relative overflow-hidden"
                     style={{ minHeight: 160 }}
                 >
                     {photoPreview ? (
@@ -220,8 +215,8 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                         </>
                     ) : (
                         <>
-                            <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
-                                <i className="bi bi-cloud-upload text-2xl text-indigo-500" />
+                            <div className="w-14 h-14 bg-sky-100 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-sky-200 transition-colors">
+                                <i className="bi bi-cloud-upload text-2xl text-sky-500" />
                             </div>
                             <p className="text-sm font-semibold text-gray-700">Nhấn để tải ảnh lên</p>
                             <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG (tối đa 10MB)</p>
@@ -236,14 +231,14 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                     />
                 </div>
                 {photoFile && (
-                    <div className="flex items-center justify-between mt-2 bg-indigo-50 rounded-xl px-4 py-2">
-                        <span className="text-xs text-indigo-700 font-medium flex items-center gap-2">
+                    <div className="flex items-center justify-between mt-2 bg-sky-50 rounded-xl px-4 py-2">
+                        <span className="text-xs text-sky-700 font-medium flex items-center gap-2">
                             <i className="bi bi-file-image" /> {photoFile.name}
                         </span>
                         <button
                             type="button"
                             onClick={() => { setPhotoFile(null); setPhotoPreview(hotel?.photo ? photoPreview : null) }}
-                            className="text-indigo-400 hover:text-red-500 transition-colors"
+                            className="text-sky-400 hover:text-red-500 transition-colors"
                         >
                             <i className="bi bi-x-lg text-xs" />
                         </button>
@@ -254,7 +249,7 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
             {/* Amenities */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i className="bi bi-stars text-indigo-500" /> Tiện ích
+                    <i className="bi bi-stars text-sky-500" /> Tiện ích
                 </h3>
                 <div className="flex flex-wrap gap-2 mb-3">
                     {COMMON_AMENITIES.map(a => (
@@ -263,8 +258,8 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                             type="button"
                             onClick={() => toggleAmenity(a)}
                             className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${selectedAmenities.includes(a)
-                                ? "bg-indigo-600 text-white border-indigo-600"
-                                : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300"
+                                ? "bg-sky-600 text-white border-sky-600"
+                                : "bg-white text-gray-600 border-gray-200 hover:border-sky-300"
                                 }`}
                         >
                             {selectedAmenities.includes(a) && <i className="bi bi-check mr-1.5" />}
@@ -282,42 +277,16 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                             setSelectedAmenities(e.target.value.split(",").map(a => a.trim()).filter(Boolean))
                         }}
                         placeholder="Wifi miễn phí, Hồ bơi, Gym..."
-                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
                 </div>
             </div>
 
-            {/* Location & Status */}
+            {/* Status */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i className="bi bi-geo-alt text-indigo-500" /> Vị trí & Trạng thái
+                    <i className="bi bi-toggle-on text-sky-500" /> Trạng thái
                 </h3>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Latitude</label>
-                        <input
-                            name="latitude"
-                            type="number"
-                            step="any"
-                            value={form.latitude}
-                            onChange={handleChange}
-                            placeholder="10.7769"
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Longitude</label>
-                        <input
-                            name="longitude"
-                            type="number"
-                            step="any"
-                            value={form.longitude}
-                            onChange={handleChange}
-                            placeholder="106.7009"
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
-                </div>
                 <label className="flex items-center gap-3 cursor-pointer select-none">
                     <div className="relative">
                         <input
@@ -327,7 +296,7 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                             onChange={handleChange}
                             className="sr-only"
                         />
-                        <div className={`w-12 h-6 rounded-full transition-colors ${form.isActive ? "bg-indigo-600" : "bg-gray-300"}`}>
+                        <div className={`w-12 h-6 rounded-full transition-colors ${form.isActive ? "bg-sky-600" : "bg-gray-300"}`}>
                             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isActive ? "translate-x-7" : "translate-x-1"}`} />
                         </div>
                     </div>
@@ -342,7 +311,7 @@ const HotelForm = ({ hotel, onSuccess, onCancel }) => {
                 <button
                     type="submit"
                     disabled={saving}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                     {saving ? (
                         <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang lưu...</>

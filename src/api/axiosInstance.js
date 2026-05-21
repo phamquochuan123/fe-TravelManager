@@ -3,6 +3,7 @@ import axios from "axios"
 const api = axios.create({
     baseURL: "http://localhost:8080/api/v1",
     withCredentials: true,
+    timeout: 30000, // 30s — sau đó báo lỗi thay vì treo mãi
 })
 
 // Trích xuất message lỗi từ response của Spring Boot

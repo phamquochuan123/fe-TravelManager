@@ -33,6 +33,10 @@ export const AppContextProvider = (props) => {
 
     useEffect(() => {
         getAuthState();
+        // Re-fetch khi user quay lại tab — tránh hiển thị dữ liệu cũ
+        const handleFocus = () => { if (document.visibilityState === "visible") getAuthState(); };
+        document.addEventListener("visibilitychange", handleFocus);
+        return () => document.removeEventListener("visibilitychange", handleFocus);
     }, []);
 
 
