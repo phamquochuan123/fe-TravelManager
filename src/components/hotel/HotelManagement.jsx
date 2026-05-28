@@ -4,6 +4,7 @@ import { getRoomsByHotelId, addRoomToHotel, deleteRoomFromHotel } from "../../ap
 import HotelForm from "./HotelForm"
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
+import ConfirmDialog from "../admin/ConfirmDialog"
 
 const HOTEL_TYPE_LABEL = { HOTEL: "Khách sạn", RESORT: "Resort", HOMESTAY: "Homestay" }
 const HOTEL_TYPE_COLOR = {
@@ -32,6 +33,7 @@ const HotelManagement = () => {
     const [roomPhotoPreview, setRoomPhotoPreview] = useState(null)
     const [addingRoom, setAddingRoom] = useState(false)
     const [deletingRoomId, setDeletingRoomId] = useState(null)
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
 
     const fetchHotels = () => {
         setLoading(true)
@@ -51,18 +53,26 @@ const HotelManagement = () => {
 
     useEffect(() => { fetchHotels() }, [])
 
-    const handleDelete = async (hotel) => {
-        if (!window.confirm(`Xoá khách sạn "${hotel.name}"?`)) return
-        setDeletingId(hotel.id)
-        try {
-            await deleteHotel(hotel.id)
-            toast.success("Đã xoá khách sạn")
-            fetchHotels()
-        } catch (e) {
-            toast.error(e.message)
-        } finally {
-            setDeletingId(null)
-        }
+    const handleDelete = (hotel) => {
+        setConfirmDialog({
+            open: true,
+            title: `Xoá khách sạn "${hotel.name}"?`,
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                setDeletingId(hotel.id)
+                try {
+                    await deleteHotel(hotel.id)
+                    toast.success("Đã xoá khách sạn")
+                    fetchHotels()
+                } catch (e) {
+                    toast.error(e.message)
+                } finally {
+                    setDeletingId(null)
+                }
+            }
+        })
     }
 
     const handleManageRooms = (hotel) => {
@@ -118,19 +128,27 @@ const HotelManagement = () => {
         }
     }
 
-    const handleDeleteRoom = async (roomId) => {
-        if (!window.confirm("Xoá phòng này?")) return
-        setDeletingRoomId(roomId)
-        try {
-            await deleteRoomFromHotel(managingHotel.id, roomId)
-            toast.success("Đã xoá phòng")
-            fetchHotelRooms(managingHotel.id)
-            fetchHotels()
-        } catch (e) {
-            toast.error(e.message)
-        } finally {
-            setDeletingRoomId(null)
-        }
+    const handleDeleteRoom = (roomId) => {
+        setConfirmDialog({
+            open: true,
+            title: "Xoá phòng này?",
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                setDeletingRoomId(roomId)
+                try {
+                    await deleteRoomFromHotel(managingHotel.id, roomId)
+                    toast.success("Đã xoá phòng")
+                    fetchHotelRooms(managingHotel.id)
+                    fetchHotels()
+                } catch (e) {
+                    toast.error(e.message)
+                } finally {
+                    setDeletingRoomId(null)
+                }
+            }
+        })
     }
 
     const filtered = hotels.filter(h => {
@@ -373,6 +391,14 @@ const HotelManagement = () => {
                         </div>
                     </div>
                 </div>
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
             </div>
         )
     }
@@ -510,6 +536,14 @@ const HotelManagement = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
         </div>
     )
 }

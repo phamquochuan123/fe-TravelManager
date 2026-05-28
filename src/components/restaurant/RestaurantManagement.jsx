@@ -5,6 +5,7 @@ import {
     getAllRestaurants, createRestaurant, updateRestaurant,
     deleteRestaurant, toggleRestaurantActive, uploadRestaurantPhoto
 } from "../../api/restaurantApi"
+import ConfirmDialog from "../admin/ConfirmDialog"
 
 const CUISINE_LABEL = {
     VIETNAMESE: "Việt Nam", ASIAN: "Châu Á", WESTERN: "Âu Mỹ",
@@ -37,6 +38,7 @@ const RestaurantManagement = () => {
     const [photoFile, setPhotoFile] = useState(null)
     const [photoPreview, setPhotoPreview] = useState(null)
     const [uploadingPhoto, setUploadingPhoto] = useState(false)
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
 
     const fetchRestaurants = () => {
         setLoading(true)
@@ -93,18 +95,26 @@ const RestaurantManagement = () => {
         }
     }
 
-    const handleDelete = async (item) => {
-        if (!window.confirm(`Xoá nhà hàng "${item.name}"?`)) return
-        setDeletingId(item.id)
-        try {
-            await deleteRestaurant(item.id)
-            toast.success("Đã xoá nhà hàng")
-            fetchRestaurants()
-        } catch (e) {
-            toast.error(e.message)
-        } finally {
-            setDeletingId(null)
-        }
+    const handleDelete = (item) => {
+        setConfirmDialog({
+            open: true,
+            title: `Xoá nhà hàng "${item.name}"?`,
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                setDeletingId(item.id)
+                try {
+                    await deleteRestaurant(item.id)
+                    toast.success("Đã xoá nhà hàng")
+                    fetchRestaurants()
+                } catch (e) {
+                    toast.error(e.message)
+                } finally {
+                    setDeletingId(null)
+                }
+            }
+        })
     }
 
     const handleToggleActive = async (item) => {
@@ -364,6 +374,14 @@ const RestaurantManagement = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
         </div>
     )
 }

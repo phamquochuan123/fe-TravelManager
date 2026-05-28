@@ -21,8 +21,11 @@ const HotelCard = ({ hotel }) => {
 
     return (
         <div
+            role="button"
+            tabIndex={0}
             onClick={() => navigate(`/hotels/${hotel.id}`)}
-            className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl hover:shadow-sky-100/40 hover:-translate-y-2 transition-all duration-300 cursor-pointer group overflow-hidden"
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/hotels/${hotel.id}`) } }}
+            className="bg-card rounded-2xl border border-border hover:shadow-xl hover:shadow-sky-100/40 hover:-translate-y-2 transition-all duration-300 cursor-pointer group overflow-hidden"
         >
             {/* Image */}
             <div className="h-52 bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100 relative overflow-hidden flex items-center justify-center">
@@ -30,7 +33,8 @@ const HotelCard = ({ hotel }) => {
                     <img
                         src={`data:image/jpeg;base64,${hotel.photo}`}
                         alt={hotel.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                 ) : (
                     <i className="bi bi-building text-6xl text-sky-200 group-hover:scale-110 transition-transform duration-500" />
@@ -44,7 +48,7 @@ const HotelCard = ({ hotel }) => {
                 {/* Closed overlay */}
                 {hotel.active === false && (
                     <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center">
-                        <span className="bg-white/90 text-gray-700 text-xs font-bold px-3 py-1 rounded-full">Tạm đóng</span>
+                        <span className="bg-card/90 text-gray-700 text-xs font-bold px-3 py-1 rounded-full">Tạm đóng</span>
                     </div>
                 )}
             </div>
@@ -53,20 +57,20 @@ const HotelCard = ({ hotel }) => {
                 {/* Stars */}
                 <div className="flex items-center gap-0.5 mb-2">
                     {renderStars(hotel.starRating)}
-                    <span className="text-xs text-gray-400 ml-1.5">{hotel.starRating} sao</span>
+                    <span className="text-xs text-muted-foreground ml-1.5">{hotel.starRating} sao</span>
                 </div>
 
-                <h3 className="font-bold text-gray-900 text-base leading-tight mb-1 group-hover:text-sky-600 transition-colors line-clamp-1">
+                <h3 className="font-bold text-card-foreground text-base leading-tight mb-1 group-hover:text-sky-600 transition-colors line-clamp-1">
                     {hotel.name}
                 </h3>
 
-                <p className="text-sm text-gray-500 flex items-center gap-1 mb-3">
+                <p className="text-sm text-muted-foreground flex items-center gap-1 mb-3">
                     <i className="bi bi-geo-alt-fill text-sky-400 text-xs" />
                     {hotel.city}{hotel.address ? `, ${hotel.address}` : ""}
                 </p>
 
                 {hotel.description && (
-                    <p className="text-sm text-gray-500 line-clamp-2 mb-3 leading-relaxed">{hotel.description}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{hotel.description}</p>
                 )}
 
                 {amenitiesList.length > 0 && (
@@ -77,16 +81,16 @@ const HotelCard = ({ hotel }) => {
                             </span>
                         ))}
                         {hotel.amenities?.split(",").length > 3 && (
-                            <span className="bg-gray-100 text-gray-400 text-xs px-2 py-0.5 rounded-full">
+                            <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full">
                                 +{hotel.amenities.split(",").length - 3}
                             </span>
                         )}
                     </div>
                 )}
 
-                <div className="pt-3 border-t border-gray-100 space-y-2.5">
+                <div className="pt-3 border-t border-border space-y-2.5">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-500 flex items-center gap-1">
+                        <span className="text-sm text-muted-foreground flex items-center gap-1">
                             <i className="bi bi-door-open text-sky-400" />
                             {hotel.totalRooms} phòng
                         </span>

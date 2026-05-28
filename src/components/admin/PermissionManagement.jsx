@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import api from "../../api/axiosInstance"
 import { toast } from "react-toastify"
+import ConfirmDialog from "./ConfirmDialog"
 
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 const EMPTY_FORM = { name: "", apiPath: "", method: "GET", module: "" }
@@ -13,6 +14,7 @@ const PermissionManagement = () => {
     const [showForm, setShowForm] = useState(false)
     const [saving, setSaving] = useState(false)
     const [search, setSearch] = useState("")
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
 
     const fetchPermissions = async () => {
         try {
@@ -52,13 +54,21 @@ const PermissionManagement = () => {
         finally { setSaving(false) }
     }
 
-    const handleDelete = async (id, name) => {
-        if (!window.confirm(`Xoá quyền "${name}"?`)) return
-        try {
-            await api.delete(`/admin/permissions/${id}`)
-            toast.success("Đã xoá quyền hạn")
-            fetchPermissions()
-        } catch (err) { toast.error(err.message || "Không thể xoá quyền này") }
+    const handleDelete = (id, name) => {
+        setConfirmDialog({
+            open: true,
+            title: `Xoá quyền "${name}"?`,
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                try {
+                    await api.delete(`/admin/permissions/${id}`)
+                    toast.success("Đã xoá quyền hạn")
+                    fetchPermissions()
+                } catch (err) { toast.error(err.message || "Không thể xoá quyền này") }
+            }
+        })
     }
 
     const METHOD_COLOR = {
@@ -197,6 +207,14 @@ const PermissionManagement = () => {
                     </div>
                 )}
             </div>
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
         </div>
     )
 }

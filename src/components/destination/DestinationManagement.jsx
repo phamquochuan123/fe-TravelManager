@@ -5,6 +5,7 @@ import {
     getAllDestinations, createDestination, updateDestination,
     deleteDestination, toggleDestinationActive, uploadDestinationPhoto
 } from "../../api/destinationApi"
+import ConfirmDialog from "../admin/ConfirmDialog"
 
 const TYPE_LABEL = {
     NATURE: "Thiên nhiên", CULTURE: "Văn hóa", FOOD: "Ẩm thực",
@@ -42,6 +43,7 @@ const DestinationManagement = () => {
     const [photoFile, setPhotoFile] = useState(null)
     const [photoPreview, setPhotoPreview] = useState(null)
     const [uploadingPhoto, setUploadingPhoto] = useState(false)
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
 
     const fetchDestinations = () => {
         setLoading(true)
@@ -90,18 +92,26 @@ const DestinationManagement = () => {
         }
     }
 
-    const handleDelete = async (item) => {
-        if (!window.confirm(`Xoá địa điểm "${item.name}"?`)) return
-        setDeletingId(item.id)
-        try {
-            await deleteDestination(item.id)
-            toast.success("Đã xoá địa điểm")
-            fetchDestinations()
-        } catch (e) {
-            toast.error(e.message)
-        } finally {
-            setDeletingId(null)
-        }
+    const handleDelete = (item) => {
+        setConfirmDialog({
+            open: true,
+            title: `Xoá địa điểm "${item.name}"?`,
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                setDeletingId(item.id)
+                try {
+                    await deleteDestination(item.id)
+                    toast.success("Đã xoá địa điểm")
+                    fetchDestinations()
+                } catch (e) {
+                    toast.error(e.message)
+                } finally {
+                    setDeletingId(null)
+                }
+            }
+        })
     }
 
     const handleToggleActive = async (item) => {
@@ -339,6 +349,14 @@ const DestinationManagement = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
         </div>
     )
 }

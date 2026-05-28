@@ -1,119 +1,188 @@
+import { lazy, Suspense } from 'react'
 import './App.css'
 import { ToastContainer } from 'react-toastify'
 import { Route, Routes } from 'react-router-dom'
-import Home from "./pages/Home"
-import Login from "./pages/Login"
-import EmailVerify from "./pages/EmailVerify"
-import ResetpassWord from './pages/ResetPassword'
-import Register from './pages/Register'
-import AdminDashboard from './pages/admin/AdminDashboard'
-import StaffDashboard from './pages/staff/StaffDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
-import EditRoom from './components/room/EditRoom'
-import AddRoom from './components/room/AddRoom'
 
-// Hotel
-import HotelList from './pages/hotels/HotelList'
-import HotelDetail from './pages/hotels/HotelDetail'
-import BookRoom from './pages/hotels/BookRoom'
+// ─── Eager (critical landing page) ───────────────────────────────────────────
+import HomePage from './pages/user/HomePage'
 
-// Tour
-import TourList from './pages/tours/TourList'
-import TourDetail from './pages/tours/TourDetail'
-import BookTour from './pages/tours/BookTour'
+// ─── Lazy-loaded pages ────────────────────────────────────────────────────────
+const LoginPage        = lazy(() => import('./pages/auth/LoginPage'))
+const RegisterPage     = lazy(() => import('./pages/auth/RegisterPage'))
+const ForgotPassword   = lazy(() => import('./pages/auth/ForgotPasswordPage'))
+const ResetPassword    = lazy(() => import('./pages/auth/ResetPassword'))
+const EmailVerify      = lazy(() => import('./pages/auth/EmailVerify'))
 
-// Restaurant
-import RestaurantList from './pages/restaurants/RestaurantList'
-import RestaurantDetail from './pages/restaurants/RestaurantDetail'
-import BookRestaurant from './pages/restaurants/BookRestaurant'
+const HotelList      = lazy(() => import('./pages/hotels/HotelsPage'))
+const HotelDetail    = lazy(() => import('./pages/hotels/HotelDetailPage'))
 
-// Destination
-import DestinationList from './pages/destinations/DestinationList'
-import DestinationDetail from './pages/destinations/DestinationDetail'
+const ToursPage      = lazy(() => import('./pages/tours/ToursPage'))
+const TourDetailPage = lazy(() => import('./pages/tours/TourDetailPage'))
+const BookingPage    = lazy(() => import('./pages/tours/BookingPage'))
+const PaymentSuccessPage = lazy(() => import('./pages/payment/PaymentSuccessPage'))
+const PaymentFailPage    = lazy(() => import('./pages/payment/PaymentFailPage'))
 
-// User
-import MyBookings from './pages/MyBookings'
-import UserProfile from './pages/UserProfile'
+const RestaurantList    = lazy(() => import('./pages/restaurants/RestaurantsPage'))
+const RestaurantDetail  = lazy(() => import('./pages/restaurants/RestaurantDetailPage'))
+const BookRestaurant    = lazy(() => import('./pages/restaurants/BookRestaurant'))
+
+
+const MyOrdersPage         = lazy(() => import('./pages/user/MyOrdersPage'))
+const ProfilePage          = lazy(() => import('./pages/user/ProfilePage'))
+const PaymentResultPage    = lazy(() => import('./pages/payment/PaymentResultPage'))
+const PaymentHistoryPage   = lazy(() => import('./pages/payment/PaymentHistoryPage'))
+
+const AddRoom  = lazy(() => import('./components/room/AddRoom'))
+const EditRoom = lazy(() => import('./components/room/EditRoom'))
+
+// ─── Admin section (nested layout) ───────────────────────────────────────────
+const AdminLayout           = lazy(() => import('./components/layout/AdminLayout'))
+const AdminDashboardPage    = lazy(() => import('./pages/admin/AdminDashboardPage'))
+const AdminToursPage        = lazy(() => import('./pages/admin/AdminToursPage'))
+const AdminSchedulesPage    = lazy(() => import('./pages/admin/AdminSchedulesPage'))
+const AdminOrdersPage       = lazy(() => import('./pages/admin/AdminOrdersPage'))
+const AdminHotelsPage       = lazy(() => import('./pages/admin/AdminHotelsPage'))
+const AdminRestaurantsPage  = lazy(() => import('./pages/admin/AdminRestaurantsPage'))
+const AdminUsersPage        = lazy(() => import('./pages/admin/AdminUsersPage'))
+const AdminStaffPage        = lazy(() => import('./pages/admin/AdminStaffPage'))
+const AdminReviewsPage      = lazy(() => import('./pages/admin/AdminReviewsPage'))
+const AdminReportsPage      = lazy(() => import('./pages/admin/AdminReportsPage'))
+const AdminPermissionsPage  = lazy(() => import('./pages/admin/AdminPermissionsPage'))
+const AdminRolesPage        = lazy(() => import('./pages/admin/AdminRolesPage'))
+const AdminCouponsPage      = lazy(() => import('./pages/admin/AdminCouponsPage'))
+const AdminIncidentsPage    = lazy(() => import('./pages/admin/AdminIncidentsPage'))
+const AdminDestinationsPage = lazy(() => import('./pages/admin/AdminDestinationsPage'))
+const AdminPaymentsPage     = lazy(() => import('./pages/admin/AdminPaymentsPage'))
+
+// ─── Staff section (nested layout) ───────────────────────────────────────────
+const StaffLayout       = lazy(() => import('./components/layout/StaffLayout'))
+const StaffDashboardPage = lazy(() => import('./pages/staff/StaffDashboardPage'))
+const StaffSchedulePage  = lazy(() => import('./pages/staff/StaffSchedulePage'))
+const IncidentReportPage = lazy(() => import('./pages/staff/IncidentReportPage'))
+
+// ─── Full-page loading fallback ───────────────────────────────────────────────
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <span className="w-8 h-8 border-2 rounded-full animate-spin"
+      style={{ borderColor: 'rgba(26,82,118,0.2)', borderTopColor: '#1a5276' }} />
+  </div>
+)
 
 const App = () => {
   return (
     <div>
-      <ToastContainer />
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/reset-passWord" element={<ResetpassWord />} />
-        <Route path="/verify-email" element={<EmailVerify />} />
+      <ToastContainer position="top-right" autoClose={3000} />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Public */}
+          <Route path="/"                element={<HomePage />} />
+          <Route path="/login"           element={<LoginPage />} />
+          <Route path="/register"        element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-passWord"  element={<ResetPassword />} />
+          <Route path="/verify-email"    element={<EmailVerify />} />
 
-        {/* Hotel routes - public */}
-        <Route path="/hotels" element={<HotelList />} />
-        <Route path="/hotels/:hotelId" element={<HotelDetail />} />
-        <Route path="/hotels/:hotelId/book/:roomId" element={
-          <ProtectedRoute allowedRoles={["USER", "STAFF", "ADMIN"]}>
-            <BookRoom />
-          </ProtectedRoute>
-        } />
+          {/* Hotels */}
+          <Route path="/hotels"                        element={<HotelList />} />
+          <Route path="/hotels/:hotelId"               element={<HotelDetail />} />
 
-        {/* Tour routes - public */}
-        <Route path="/tours" element={<TourList />} />
-        <Route path="/tours/:tourId" element={<TourDetail />} />
-        <Route path="/tours/:tourId/book" element={
-          <ProtectedRoute allowedRoles={["USER", "STAFF", "ADMIN"]}>
-            <BookTour />
-          </ProtectedRoute>
-        } />
+          {/* Tours */}
+          <Route path="/tours"              element={<ToursPage />} />
+          <Route path="/tours/:tourId"      element={<TourDetailPage />} />
+          <Route path="/tours/:tourId/book" element={
+            <ProtectedRoute allowedRoles={['USER', 'STAFF', 'ADMIN']}>
+              <BookingPage />
+            </ProtectedRoute>
+          } />
 
-        {/* Restaurant routes - public */}
-        <Route path="/restaurants" element={<RestaurantList />} />
-        <Route path="/restaurants/:restaurantId" element={<RestaurantDetail />} />
-        <Route path="/restaurants/:restaurantId/book" element={
-          <ProtectedRoute allowedRoles={["USER", "STAFF", "ADMIN"]}>
-            <BookRestaurant />
-          </ProtectedRoute>
-        } />
+          {/* Restaurants */}
+          <Route path="/restaurants"                       element={<RestaurantList />} />
+          <Route path="/restaurants/:restaurantId"         element={<RestaurantDetail />} />
+          <Route path="/restaurants/:restaurantId/book"    element={
+            <ProtectedRoute allowedRoles={['USER', 'STAFF', 'ADMIN']}>
+              <BookRestaurant />
+            </ProtectedRoute>
+          } />
 
-        {/* Destination routes - public */}
-        <Route path="/destinations" element={<DestinationList />} />
-        <Route path="/destinations/:destinationId" element={<DestinationDetail />} />
+{/* User */}
+          <Route path="/my-orders" element={
+            <ProtectedRoute allowedRoles={['USER', 'STAFF', 'ADMIN']}>
+              <MyOrdersPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/my-bookings" element={
+            <ProtectedRoute allowedRoles={['USER', 'STAFF', 'ADMIN']}>
+              <MyOrdersPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute allowedRoles={['USER', 'STAFF', 'ADMIN']}>
+              <ProfilePage />
+            </ProtectedRoute>
+          } />
 
-        {/* User protected routes */}
-        <Route path="/my-bookings" element={
-          <ProtectedRoute allowedRoles={["USER", "STAFF", "ADMIN"]}>
-            <MyBookings />
-          </ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute allowedRoles={["USER", "STAFF", "ADMIN"]}>
-            <UserProfile />
-          </ProtectedRoute>
-        } />
+          {/* Rooms */}
+          <Route path="/add-room" element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AddRoom />
+            </ProtectedRoute>
+          } />
+          <Route path="/edit-room/:roomId" element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <EditRoom />
+            </ProtectedRoute>
+          } />
 
-        {/* Room management */}
-        <Route path="/add-room" element={
-          <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <AddRoom />
-          </ProtectedRoute>
-        } />
-        <Route path="/edit-room/:roomId" element={
-          <ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}>
-            <EditRoom />
-          </ProtectedRoute>
-        } />
+          {/* Payment */}
+          <Route path="/payment/result"  element={<PaymentResultPage />} />
+          <Route path="/payment/success" element={<PaymentSuccessPage />} />
+          <Route path="/payment/fail"    element={<PaymentFailPage />} />
+          <Route path="/payment/history" element={
+            <ProtectedRoute allowedRoles={['USER', 'STAFF', 'ADMIN']}>
+              <PaymentHistoryPage />
+            </ProtectedRoute>
+          } />
 
-        {/* Dashboards */}
-        <Route path="/admin" element={
-          <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/staff" element={
-          <ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}>
-            <StaffDashboard />
-          </ProtectedRoute>
-        } />
-      </Routes>
+          {/* Admin (nested layout) */}
+          <Route path="/admin" element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index                      element={<AdminDashboardPage />} />
+            <Route path="tours"               element={<AdminToursPage />} />
+            <Route path="departures"          element={<AdminSchedulesPage />} />
+            <Route path="hotels"              element={<AdminHotelsPage />} />
+            <Route path="restaurants"         element={<AdminRestaurantsPage />} />
+            <Route path="orders">
+              <Route index                    element={<AdminOrdersPage />} />
+              <Route path="tours"             element={<AdminOrdersPage />} />
+              <Route path="rooms"             element={<AdminOrdersPage />} />
+              <Route path="restaurants"       element={<AdminOrdersPage />} />
+            </Route>
+            <Route path="customers"           element={<AdminUsersPage />} />
+            <Route path="staff"               element={<AdminStaffPage />} />
+            <Route path="reviews"             element={<AdminReviewsPage />} />
+            <Route path="analytics"           element={<AdminReportsPage />} />
+            <Route path="permissions"         element={<AdminPermissionsPage />} />
+            <Route path="roles"               element={<AdminRolesPage />} />
+            <Route path="coupons"             element={<AdminCouponsPage />} />
+            <Route path="incidents"           element={<AdminIncidentsPage />} />
+            <Route path="destinations"        element={<AdminDestinationsPage />} />
+            <Route path="payments"            element={<AdminPaymentsPage />} />
+          </Route>
+          <Route path="/staff" element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <StaffLayout />
+            </ProtectedRoute>
+          }>
+            <Route index          element={<StaffDashboardPage />} />
+            <Route path="schedule"  element={<StaffSchedulePage />} />
+            <Route path="incidents" element={<IncidentReportPage />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </div>
   )
 }

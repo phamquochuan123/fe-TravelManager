@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAllRooms, deleteRoom } from '../../api/roomApi'
 import { toast } from 'react-toastify'
+import ConfirmDialog from '../admin/ConfirmDialog'
 
 const ROOMS_PER_PAGE = 8
 
@@ -13,6 +14,7 @@ const ExistingRoom = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [isLoading, setLoading] = useState(false)
     const [deletingId, setDeletingId] = useState(null)
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
 
     useEffect(() => { fetchRooms() }, [])
 
@@ -32,18 +34,26 @@ const ExistingRoom = () => {
         }
     }
 
-    const handleDelete = async (roomId) => {
-        if (!window.confirm(`Xoá phòng #${roomId}?`)) return
-        setDeletingId(roomId)
-        try {
-            await deleteRoom(roomId)
-            toast.success(`Đã xoá phòng #${roomId}`)
-            fetchRooms()
-        } catch (e) {
-            toast.error(e.message)
-        } finally {
-            setDeletingId(null)
-        }
+    const handleDelete = (roomId) => {
+        setConfirmDialog({
+            open: true,
+            title: `Xoá phòng #${roomId}?`,
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                setDeletingId(roomId)
+                try {
+                    await deleteRoom(roomId)
+                    toast.success(`Đã xoá phòng #${roomId}`)
+                    fetchRooms()
+                } catch (e) {
+                    toast.error(e.message)
+                } finally {
+                    setDeletingId(null)
+                }
+            }
+        })
     }
 
     const totalPages = Math.ceil(filtered.length / ROOMS_PER_PAGE)
@@ -182,6 +192,14 @@ const ExistingRoom = () => {
                     )}
                 </>
             )}
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
         </div>
     )
 }

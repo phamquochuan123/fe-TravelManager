@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { getAllCoupons, createCoupon, updateCoupon, deleteCoupon } from "../../api/tourApi"
 import { toast } from "react-toastify"
+import ConfirmDialog from "./ConfirmDialog"
 
 const EMPTY_FORM = {
     code: "", couponType: "PERCENT", discountValue: "",
@@ -15,6 +16,7 @@ const CouponManagement = () => {
     const [editId, setEditId] = useState(null)
     const [showForm, setShowForm] = useState(false)
     const [saving, setSaving] = useState(false)
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
 
     const fetchCoupons = async () => {
         try { setCoupons(await getAllCoupons()) }
@@ -65,17 +67,25 @@ const CouponManagement = () => {
         finally { setSaving(false) }
     }
 
-    const handleDelete = async (id, code) => {
-        if (!window.confirm(`Xoá mã coupon "${code}"?`)) return
-        try {
-            await deleteCoupon(id)
-            toast.success("Đã xoá mã giảm giá")
-            fetchCoupons()
-        } catch (err) { toast.error(err.message || "Không thể xoá coupon này") }
+    const handleDelete = (id, code) => {
+        setConfirmDialog({
+            open: true,
+            title: `Xoá mã coupon "${code}"?`,
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                try {
+                    await deleteCoupon(id)
+                    toast.success("Đã xoá mã giảm giá")
+                    fetchCoupons()
+                } catch (err) { toast.error(err.message || "Không thể xoá coupon này") }
+            }
+        })
     }
 
     const isExpired = (endDate) => new Date(endDate) < new Date()
-    const isActive = (c) => c.active && !isExpired(c.endDate) && c.usedCount < c.usageLimit
+    const isActive = (c) => c.active && !isExpired(c.endDate) && (c.usedCount ?? 0) < (c.usageLimit ?? Infinity)
 
     if (loading) return (
         <div className="flex justify-center py-16">
@@ -204,7 +214,7 @@ const CouponManagement = () => {
                         {/* Progress bar */}
                         <div className="w-full bg-gray-100 rounded-full h-1.5 mb-4">
                             <div className="bg-indigo-500 h-1.5 rounded-full transition-all"
-                                style={{ width: `${Math.min((c.usedCount / c.usageLimit) * 100, 100)}%` }} />
+                                style={{ width: `${c.usageLimit ? Math.min(((c.usedCount ?? 0) / c.usageLimit) * 100, 100) : 0}%` }} />
                         </div>
 
                         <div className="flex gap-2">
@@ -223,6 +233,14 @@ const CouponManagement = () => {
                     <div className="md:col-span-3 text-center py-12 text-gray-400">Chưa có mã giảm giá nào</div>
                 )}
             </div>
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
         </div>
     )
 }

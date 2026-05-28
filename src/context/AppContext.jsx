@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import api from "../api/axiosInstance";
+import { useAuthStore } from "../stores/authStore";
 
 export const AppContext = createContext();
 export const AppContextProvider = (props) => {
@@ -13,38 +13,52 @@ export const AppContextProvider = (props) => {
         try {
             const response = await api.get("/profile");
             setUserData(response.data);
+            useAuthStore.getState().login(response.data);
             return response.data;
-        } catch (error) {
-            toast.error(error.message);
+        } catch {
             return null;
         }
     }
 
     const getAuthState = async () => {
+        const { logout: storeLogout } = useAuthStore.getState();
         try {
             const data = await getUserData();
             setIsLoggedIn(!!data);
+            if (!data) storeLogout();
         } catch {
             setIsLoggedIn(false);
+            storeLogout();
         } finally {
             setIsLoading(false);
         }
     }
 
     useEffect(() => {
-        getAuthState();
-        // Re-fetch khi user quay lại tab — tránh hiển thị dữ liệu cũ
-        const handleFocus = () => { if (document.visibilityState === "visible") getAuthState(); };
+        let inFlight = false;
+        const safeGetAuthState = () => {
+            if (inFlight) return;
+            inFlight = true;
+            getAuthState().finally(() => { inFlight = false; });
+        };
+        safeGetAuthState();
+        const handleFocus = () => { if (document.visibilityState === "visible") safeGetAuthState(); };
         document.addEventListener("visibilitychange", handleFocus);
         return () => document.removeEventListener("visibilitychange", handleFocus);
     }, []);
 
 
+    const setUserDataSynced = (data) => {
+        setUserData(data);
+        const { login, logout: storeLogout } = useAuthStore.getState();
+        if (data) login(data); else storeLogout();
+    };
+
     const contextValue = {
         isLoggedIn,
         setIsLoggedIn,
         userData,
-        setUserData,
+        setUserData: setUserDataSynced,
         getUserData,
         isLoading
     }

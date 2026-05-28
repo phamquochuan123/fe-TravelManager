@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import api from "../../api/axiosInstance"
 import { toast } from "react-toastify"
+import ConfirmDialog from "./ConfirmDialog"
 
 const EMPTY_FORM = { name: "", description: "" }
 
@@ -11,6 +12,7 @@ const RoleManagement = () => {
     const [editId, setEditId] = useState(null)
     const [showForm, setShowForm] = useState(false)
     const [saving, setSaving] = useState(false)
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
 
     const fetchRoles = async () => {
         try {
@@ -44,13 +46,21 @@ const RoleManagement = () => {
         finally { setSaving(false) }
     }
 
-    const handleDelete = async (id, name) => {
-        if (!window.confirm(`Xoá vai trò "${name}"? Hành động không thể hoàn tác.`)) return
-        try {
-            await api.delete(`/admin/roles/${id}`)
-            toast.success("Đã xoá vai trò")
-            fetchRoles()
-        } catch (err) { toast.error(err.message || "Không thể xoá vai trò này") }
+    const handleDelete = (id, name) => {
+        setConfirmDialog({
+            open: true,
+            title: `Xoá vai trò "${name}"?`,
+            description: "Hành động không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                try {
+                    await api.delete(`/admin/roles/${id}`)
+                    toast.success("Đã xoá vai trò")
+                    fetchRoles()
+                } catch (err) { toast.error(err.message || "Không thể xoá vai trò này") }
+            }
+        })
     }
 
     if (loading) return (
@@ -144,6 +154,14 @@ const RoleManagement = () => {
                     <div className="text-center py-12 text-gray-400">Chưa có vai trò nào</div>
                 )}
             </div>
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
         </div>
     )
 }

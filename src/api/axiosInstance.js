@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const api = axios.create({
-    baseURL: "http://localhost:8080/api/v1",
+    baseURL: "http://localhost:8081/api/v1",
     withCredentials: true,
     timeout: 30000, // 30s — sau đó báo lỗi thay vì treo mãi
 })

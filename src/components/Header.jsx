@@ -25,7 +25,7 @@ const Header = () => {
             <div className="relative z-10 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
 
                 {/* Welcome badge */}
-                <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8 shadow-xl">
+                <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/10 border border-white/20 mb-8 shadow-xl">
                     <div className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
                     <span className="text-white/90 text-sm font-medium tracking-wide">
                         Xin chào, {userData ? userData.name : 'Du khách'}!
@@ -36,7 +36,7 @@ const Header = () => {
                 {/* Headline */}
                 <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-white mb-6 leading-[1.05] tracking-tighter">
                     Khám phá thế giới<br />
-                    <span className="bg-gradient-to-r from-sky-300 via-cyan-300 to-blue-200 bg-clip-text text-transparent">
+                    <span className="text-sky-300">
                         cùng chúng tôi
                     </span>
                 </h1>
@@ -64,17 +64,13 @@ const Header = () => {
                     </button>
                 </div>
 
-                {/* Stats row */}
-                <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
-                    {[
-                        { value: "500+", label: "Khách sạn" },
-                        { value: "200+", label: "Tour hấp dẫn" },
-                        { value: "50K+", label: "Khách hài lòng" },
-                    ].map((s) => (
-                        <div key={s.label} className="text-center">
-                            <p className="text-2xl font-black text-white">{s.value}</p>
-                            <p className="text-white/50 text-xs mt-0.5">{s.label}</p>
-                        </div>
+                {/* Product assurances */}
+                <div className="flex flex-wrap items-center justify-center gap-2.5 mt-2">
+                    {["Xác nhận tức thì", "Hủy linh hoạt", "Thanh toán bảo mật"].map(f => (
+                        <span key={f} className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.15] text-white/70 text-xs font-medium tracking-wide">
+                            <i className="bi bi-check2 text-sky-300 text-xs" />
+                            {f}
+                        </span>
                     ))}
                 </div>
             </div>

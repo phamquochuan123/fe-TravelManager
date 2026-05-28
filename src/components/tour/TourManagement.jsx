@@ -6,6 +6,8 @@ import {
     getTourById, addTourImage, deleteTourImage, addTourItinerary, updateTourItinerary,
     deleteTourItinerary, addTourDeparture, deleteTourDeparture
 } from "../../api/tourApi"
+import api from "../../api/axiosInstance"
+import ConfirmDialog from "../admin/ConfirmDialog"
 
 const TOUR_TYPE_LABEL = { DOMESTIC: "Trong nước", INTERNATIONAL: "Quốc tế" }
 const TOUR_TYPE_COLOR = { DOMESTIC: "bg-emerald-100 text-emerald-700", INTERNATIONAL: "bg-blue-100 text-blue-700" }
@@ -45,6 +47,13 @@ const TourManagement = () => {
     const [imageFile, setImageFile] = useState(null)
     const [subSaving, setSubSaving] = useState(false)
     const [deletingSubId, setDeletingSubId] = useState(null)
+    const [staffList, setStaffList] = useState([])
+    const [assigningStaff, setAssigningStaff] = useState(null) // departureId being assigned
+    const [seasonalPrices, setSeasonalPrices] = useState([])
+    const [spForm, setSpForm] = useState({ seasonName: "", startDate: "", endDate: "", priceAdult: "", priceChild: "" })
+    const [spSaving, setSpSaving] = useState(false)
+    const [spDeleting, setSpDeleting] = useState(null)
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
 
     const fetchTours = () => {
         setLoading(true)
@@ -57,6 +66,55 @@ const TourManagement = () => {
     }
 
     useEffect(() => { fetchTours() }, [])
+
+    useEffect(() => {
+        if (detailTab === "departures") fetchStaff()
+        if (detailTab === "seasonal-prices" && detailTour) fetchSeasonalPrices()
+    }, [detailTab])
+
+    const fetchSeasonalPrices = async () => {
+        try {
+            const res = await api.get(`/tours/${detailTour.id}/seasonal-prices`)
+            setSeasonalPrices(res.data || [])
+        } catch { }
+    }
+
+    const handleAddSeasonalPrice = async e => {
+        e.preventDefault()
+        if (!spForm.seasonName || !spForm.startDate || !spForm.endDate || !spForm.priceAdult) {
+            toast.error("Vui lòng điền đầy đủ thông tin bắt buộc"); return
+        }
+        setSpSaving(true)
+        try {
+            await api.post(`/tours/${detailTour.id}/seasonal-prices`, {
+                seasonName: spForm.seasonName,
+                startDate: spForm.startDate,
+                endDate: spForm.endDate,
+                priceAdult: Number(spForm.priceAdult),
+                priceChild: spForm.priceChild ? Number(spForm.priceChild) : null,
+            })
+            toast.success("Thêm giá mùa thành công")
+            setSpForm({ seasonName: "", startDate: "", endDate: "", priceAdult: "", priceChild: "" })
+            fetchSeasonalPrices()
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Không thể thêm giá")
+        } finally {
+            setSpSaving(false)
+        }
+    }
+
+    const handleDeleteSeasonalPrice = async (spId) => {
+        setSpDeleting(spId)
+        try {
+            await api.delete(`/tours/${detailTour.id}/seasonal-prices/${spId}`)
+            toast.success("Đã xoá")
+            fetchSeasonalPrices()
+        } catch {
+            toast.error("Không thể xoá")
+        } finally {
+            setSpDeleting(null)
+        }
+    }
 
     const openAdd = () => { setForm(EMPTY_FORM); setEditingTour(null); setView("add") }
     const openEdit = async (tour) => {
@@ -130,18 +188,26 @@ const TourManagement = () => {
         }
     }
 
-    const handleDelete = async (tour) => {
-        if (!window.confirm(`Xoá tour "${tour.name}"?`)) return
-        setDeletingId(tour.id)
-        try {
-            await deleteTour(tour.id)
-            toast.success("Đã xoá tour")
-            fetchTours()
-        } catch (e) {
-            toast.error(e.message)
-        } finally {
-            setDeletingId(null)
-        }
+    const handleDelete = (tour) => {
+        setConfirmDialog({
+            open: true,
+            title: `Xoá tour "${tour.name}"?`,
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                setDeletingId(tour.id)
+                try {
+                    await deleteTour(tour.id)
+                    toast.success("Đã xoá tour")
+                    fetchTours()
+                } catch (e) {
+                    toast.error(e.message)
+                } finally {
+                    setDeletingId(null)
+                }
+            }
+        })
     }
 
     // ── Itinerary ────────────────────────────────────────────────
@@ -167,18 +233,26 @@ const TourManagement = () => {
         }
     }
 
-    const handleDeleteItinerary = async (id) => {
-        if (!window.confirm("Xoá lịch trình này?")) return
-        setDeletingSubId(id)
-        try {
-            await deleteTourItinerary(detailTour.id, id)
-            toast.success("Đã xoá")
-            fetchDetail(detailTour.id)
-        } catch (e) {
-            toast.error(e.message)
-        } finally {
-            setDeletingSubId(null)
-        }
+    const handleDeleteItinerary = (id) => {
+        setConfirmDialog({
+            open: true,
+            title: "Xoá lịch trình này?",
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                setDeletingSubId(id)
+                try {
+                    await deleteTourItinerary(detailTour.id, id)
+                    toast.success("Đã xoá")
+                    fetchDetail(detailTour.id)
+                } catch (e) {
+                    toast.error(e.message)
+                } finally {
+                    setDeletingSubId(null)
+                }
+            }
+        })
     }
 
     // ── Departure ────────────────────────────────────────────────
@@ -201,17 +275,45 @@ const TourManagement = () => {
         }
     }
 
-    const handleDeleteDeparture = async (id) => {
-        if (!window.confirm("Xoá ngày khởi hành này?")) return
-        setDeletingSubId(id)
+    const handleDeleteDeparture = (id) => {
+        setConfirmDialog({
+            open: true,
+            title: "Xoá ngày khởi hành này?",
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                setDeletingSubId(id)
+                try {
+                    await deleteTourDeparture(detailTour.id, id)
+                    toast.success("Đã xoá")
+                    fetchDetail(detailTour.id)
+                } catch (e) {
+                    toast.error(e.message)
+                } finally {
+                    setDeletingSubId(null)
+                }
+            }
+        })
+    }
+
+    const fetchStaff = async () => {
         try {
-            await deleteTourDeparture(detailTour.id, id)
-            toast.success("Đã xoá")
+            const res = await api.get("/admin/users")
+            setStaffList((res.data || []).filter(u => u.roleName === "STAFF"))
+        } catch { }
+    }
+
+    const handleAssignStaff = async (departureId, staffId) => {
+        setAssigningStaff(departureId)
+        try {
+            await api.patch(`/tours/${detailTour.id}/departures/${departureId}/assign-staff`, { staffId: staffId ? Number(staffId) : null })
+            toast.success("Phân công staff thành công")
             fetchDetail(detailTour.id)
-        } catch (e) {
-            toast.error(e.message)
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Không thể phân công staff")
         } finally {
-            setDeletingSubId(null)
+            setAssigningStaff(null)
         }
     }
 
@@ -232,18 +334,26 @@ const TourManagement = () => {
         }
     }
 
-    const handleDeleteImage = async (imageId) => {
-        if (!window.confirm("Xoá ảnh này?")) return
-        setDeletingSubId(imageId)
-        try {
-            await deleteTourImage(detailTour.id, imageId)
-            toast.success("Đã xoá ảnh")
-            fetchDetail(detailTour.id)
-        } catch (e) {
-            toast.error(e.message)
-        } finally {
-            setDeletingSubId(null)
-        }
+    const handleDeleteImage = (imageId) => {
+        setConfirmDialog({
+            open: true,
+            title: "Xoá ảnh này?",
+            description: "Hành động này không thể hoàn tác.",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmDialog(s => ({ ...s, open: false }))
+                setDeletingSubId(imageId)
+                try {
+                    await deleteTourImage(detailTour.id, imageId)
+                    toast.success("Đã xoá ảnh")
+                    fetchDetail(detailTour.id)
+                } catch (e) {
+                    toast.error(e.message)
+                } finally {
+                    setDeletingSubId(null)
+                }
+            }
+        })
     }
 
     const filtered = tours.filter(t => {
@@ -379,6 +489,7 @@ const TourManagement = () => {
                                 { key: "itineraries", icon: "bi-map", label: "Lịch trình", count: detailTour.itineraries?.length },
                                 { key: "departures", icon: "bi-calendar3", label: "Ngày khởi hành", count: detailTour.departures?.length },
                                 { key: "images", icon: "bi-images", label: "Hình ảnh", count: detailTour.images?.length },
+                                { key: "seasonal-prices", icon: "bi-tags", label: "Giá theo mùa" },
                             ].map(t => (
                                 <button key={t.key} onClick={() => setDetailTab(t.key)}
                                     className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors flex items-center gap-1.5 ${detailTab === t.key ? "bg-white border border-b-white border-gray-200 text-emerald-600 -mb-px" : "text-gray-500 hover:text-gray-700"}`}>
@@ -477,7 +588,24 @@ const TourManagement = () => {
                                                 <p className={`text-xs mt-0.5 ${dep.availableSlots > 0 ? "text-emerald-600" : "text-red-500"}`}>
                                                     {dep.availableSlots > 0 ? `Còn ${dep.availableSlots} slot` : "Hết slot"}
                                                 </p>
+                                                {dep.staffName && (
+                                                    <p className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                                                        <i className="bi bi-person-badge-fill" /> {dep.staffName}
+                                                    </p>
+                                                )}
                                             </div>
+                                            <select
+                                                value={dep.staffId || ""}
+                                                onChange={e => handleAssignStaff(dep.id, e.target.value)}
+                                                disabled={assigningStaff === dep.id}
+                                                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 shrink-0"
+                                                title="Phân công Staff"
+                                            >
+                                                <option value="">-- Chọn Staff --</option>
+                                                {staffList.map(s => (
+                                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                                ))}
+                                            </select>
                                             <button onClick={() => handleDeleteDeparture(dep.id)} disabled={deletingSubId === dep.id}
                                                 className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-40">
                                                 {deletingSubId === dep.id ? <span className="w-3.5 h-3.5 border border-red-400/30 border-t-red-500 rounded-full animate-spin inline-block" /> : <i className="bi bi-trash3" />}
@@ -560,8 +688,74 @@ const TourManagement = () => {
                                 </div>
                             </div>
                         )}
+
+                        {detailTab === "seasonal-prices" && (
+                            <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+                                <div className="lg:col-span-3 space-y-3">
+                                    {seasonalPrices.length === 0 && (
+                                        <div className="text-center py-10 text-gray-400 bg-white rounded-2xl border border-gray-100">
+                                            <i className="bi bi-tags text-3xl block mb-2" />Chưa có giá theo mùa
+                                        </div>
+                                    )}
+                                    {seasonalPrices.map(sp => (
+                                        <div key={sp.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                                                <i className="bi bi-tags" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-semibold text-gray-900 text-sm">{sp.seasonName}</p>
+                                                <p className="text-xs text-gray-400 mt-0.5">
+                                                    {sp.startDate} → {sp.endDate}
+                                                </p>
+                                                <p className="text-xs text-emerald-600 mt-0.5">
+                                                    NL: {Number(sp.priceAdult).toLocaleString("vi-VN")} ₫
+                                                    {sp.priceChild && <> · TE: {Number(sp.priceChild).toLocaleString("vi-VN")} ₫</>}
+                                                </p>
+                                            </div>
+                                            <button onClick={() => handleDeleteSeasonalPrice(sp.id)} disabled={spDeleting === sp.id}
+                                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-40">
+                                                {spDeleting === sp.id ? <span className="w-3.5 h-3.5 border border-red-400/30 border-t-red-500 rounded-full animate-spin inline-block" /> : <i className="bi bi-trash3" />}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="lg:col-span-2">
+                                    <div className="bg-white rounded-2xl border border-gray-100 p-5 sticky top-24">
+                                        <h3 className="font-bold text-gray-900 mb-4 text-sm">Thêm giá theo mùa</h3>
+                                        <form onSubmit={handleAddSeasonalPrice} className="space-y-3">
+                                            {[
+                                                { key: "seasonName", label: "Tên mùa *", type: "text", placeholder: "VD: Hè 2025" },
+                                                { key: "startDate", label: "Từ ngày *", type: "date" },
+                                                { key: "endDate", label: "Đến ngày *", type: "date" },
+                                                { key: "priceAdult", label: "Giá người lớn * (₫)", type: "number", placeholder: "0" },
+                                                { key: "priceChild", label: "Giá trẻ em (₫)", type: "number", placeholder: "0" },
+                                            ].map(f => (
+                                                <div key={f.key}>
+                                                    <label className="block text-xs font-semibold text-gray-700 mb-1">{f.label}</label>
+                                                    <input type={f.type} value={spForm[f.key]} placeholder={f.placeholder}
+                                                        onChange={e => setSpForm(s => ({ ...s, [f.key]: e.target.value }))}
+                                                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                                                </div>
+                                            ))}
+                                            <button type="submit" disabled={spSaving}
+                                                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-60">
+                                                {spSaving ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><i className="bi bi-plus-lg" /> Thêm giá mùa</>}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
             </div>
         )
     }
@@ -661,6 +855,14 @@ const TourManagement = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={v => setConfirmDialog(s => ({ ...s, open: v }))}
+                title={confirmDialog.title}
+                description={confirmDialog.description}
+                variant={confirmDialog.variant}
+                onConfirm={confirmDialog.onConfirm}
+            />
         </div>
     )
 }

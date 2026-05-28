@@ -80,7 +80,7 @@ const MenuBar = () => {
                         <div className="bg-gradient-to-br from-sky-500 to-blue-600 p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-sky-200">
                             <img src={assets.logo_home} alt="logo" className="w-7 h-7 object-contain" />
                         </div>
-                        <span className="font-['Outfit'] font-black text-xl tracking-tighter text-gray-900">
+                        <span className="font-['Be_Vietnam_Pro'] font-black text-xl tracking-tighter text-gray-900">
                             Travel<span className="text-sky-500">Manager</span>
                         </span>
                     </div>

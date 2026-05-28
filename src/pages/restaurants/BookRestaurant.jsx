@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { getRestaurantById, bookRestaurant } from "../../api/restaurantApi"
 import { AppContext } from "../../context/AppContext"
+import axiosInstance from "../../api/axiosInstance"
 import MenuBar from "../../components/Menubar"
 import { toast } from "react-toastify"
 
@@ -31,6 +32,8 @@ const BookRestaurant = () => {
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
     const [booking, setBooking] = useState(null)
+    const [payingVNPay, setPayingVNPay] = useState(false)
+    const DEPOSIT_AMOUNT = 100000 // 100,000 ₫ tiền đặt cọc
 
     const today = toDateStr(new Date())
     const [form, setForm] = useState({
@@ -102,7 +105,7 @@ const BookRestaurant = () => {
     }
 
     if (loading) return (
-        <div className="min-h-screen bg-gray-50 font-['Outfit']">
+        <div className="min-h-screen bg-gray-50 font-['Be_Vietnam_Pro']">
             <MenuBar />
             <div className="flex items-center justify-center min-h-screen">
                 <span className="w-10 h-10 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
@@ -110,39 +113,81 @@ const BookRestaurant = () => {
         </div>
     )
 
+    const handlePayDeposit = async () => {
+        setPayingVNPay(true)
+        try {
+            const res = await axiosInstance.post("/payment/create", {
+                bookingType: "RESTAURANT",
+                bookingId: booking.id,
+                amount: DEPOSIT_AMOUNT,
+                orderInfo: `Dat coc ban ${booking.restaurantName} #${booking.id}`,
+            })
+            window.location.href = res.data.payUrl
+        } catch {
+            toast.error("Không thể khởi tạo thanh toán VNPay")
+            setPayingVNPay(false)
+        }
+    }
+
     if (booking) return (
-        <div className="min-h-screen bg-gray-50 font-['Outfit']">
+        <div className="min-h-screen bg-gray-50 font-['Be_Vietnam_Pro']">
             <MenuBar />
-            <div className="flex items-center justify-center min-h-screen px-6 pt-20">
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 max-w-md w-full text-center">
-                    <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-xl shadow-orange-200">
-                        <i className="bi bi-check-circle-fill text-4xl text-white" />
+            <div className="flex items-center justify-center min-h-screen px-6 pt-20 pb-12">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 max-w-md w-full overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gray-900 px-8 pt-8 pb-6 text-center">
+                        <div className="w-16 h-16 bg-amber-500/20 border-2 border-amber-500/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <i className="bi bi-check-circle-fill text-3xl text-amber-400" />
+                        </div>
+                        <h2 className="text-xl font-black text-white mb-1">Đặt bàn thành công!</h2>
+                        <p className="text-gray-500 text-xs mb-2">Mã xác nhận</p>
+                        <p className="text-xl font-black text-amber-400 tracking-widest font-mono">{booking.confirmationCode}</p>
                     </div>
-                    <h2 className="text-2xl font-black text-gray-900 mb-2">Đặt bàn thành công!</h2>
-                    <div className="bg-orange-50 border border-orange-200 rounded-2xl px-6 py-4 mb-5">
-                        <p className="text-xs text-orange-500 font-semibold uppercase tracking-wider mb-1">Mã xác nhận</p>
-                        <p className="text-2xl font-black text-orange-700 tracking-widest font-mono">{booking.confirmationCode}</p>
+
+                    {/* Details */}
+                    <div className="px-6 py-5 border-b border-gray-100 space-y-2.5 text-sm">
+                        {[
+                            { label: "Nhà hàng", value: booking.restaurantName, bold: true },
+                            { label: "Ngày", value: new Date(booking.bookingDate).toLocaleDateString("vi-VN") },
+                            { label: "Giờ", value: booking.bookingTime },
+                            { label: "Số khách", value: `${booking.guestCount} người` },
+                            { label: "Trạng thái", value: "Chờ xác nhận", amber: true },
+                        ].map(item => (
+                            <div key={item.label} className="flex items-start justify-between gap-3">
+                                <span className="text-gray-400 shrink-0">{item.label}</span>
+                                <span className={`text-right font-semibold ${item.amber ? "text-amber-600" : "text-gray-900"}`}>{item.value}</span>
+                            </div>
+                        ))}
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-4 text-left text-sm text-gray-600 mb-6 space-y-2">
-                        <p><span className="font-semibold">Nhà hàng:</span> {booking.restaurantName}</p>
-                        <p><span className="font-semibold">Ngày:</span> {new Date(booking.bookingDate).toLocaleDateString("vi-VN")}</p>
-                        <p><span className="font-semibold">Giờ:</span> {booking.bookingTime}</p>
-                        <p><span className="font-semibold">Số khách:</span> {booking.guestCount}</p>
-                        <p><span className="font-semibold">Trạng thái:</span> <span className="text-amber-600 font-medium">Chờ xác nhận</span></p>
-                    </div>
-                    <div className="flex gap-3">
+
+                    {/* Payment */}
+                    <div className="px-6 py-5">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Đặt cọc giữ bàn</p>
+                        <p className="text-xs text-gray-400 mb-3">Đặt cọc <span className="font-bold text-amber-600">{DEPOSIT_AMOUNT.toLocaleString("vi-VN")} ₫</span> để xác nhận và giữ bàn trước</p>
                         <button
-                            onClick={() => navigate("/my-bookings")}
-                            className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:shadow-orange-200 hover:shadow-lg text-white font-bold py-3 rounded-xl transition-all"
+                            onClick={handlePayDeposit}
+                            disabled={payingVNPay}
+                            className="w-full flex items-center justify-center gap-3 py-3.5 bg-[#0065AC] hover:bg-[#005494] disabled:opacity-60 text-white font-bold rounded-xl transition-colors mb-3"
                         >
-                            Xem lịch sử
+                            {payingVNPay ? (
+                                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang chuyển hướng...</>
+                            ) : (
+                                <><i className="bi bi-credit-card-2-front-fill text-lg" /> Đặt cọc qua VNPay</>
+                            )}
                         </button>
-                        <button
-                            onClick={() => navigate("/restaurants")}
-                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition-colors"
-                        >
-                            Về danh sách
-                        </button>
+                        <div className="flex gap-3">
+                            <button onClick={() => navigate("/my-bookings")}
+                                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors text-sm">
+                                Bỏ qua
+                            </button>
+                            <button onClick={() => navigate("/restaurants")}
+                                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors text-sm">
+                                Về danh sách
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-400 text-center mt-3 flex items-center justify-center gap-1">
+                            <i className="bi bi-shield-lock-fill text-gray-300" /> Thanh toán bảo mật qua cổng VNPay
+                        </p>
                     </div>
                 </div>
             </div>
@@ -150,7 +195,7 @@ const BookRestaurant = () => {
     )
 
     return (
-        <div className="min-h-screen bg-gray-50 font-['Outfit']">
+        <div className="min-h-screen bg-gray-50 font-['Be_Vietnam_Pro']">
             <MenuBar />
             <div className="pt-24 pb-12 px-6 max-w-5xl mx-auto">
                 <button
