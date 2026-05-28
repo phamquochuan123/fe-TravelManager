@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { MdFlight } from 'react-icons/md';
 import {
   HiOutlineMenuAlt3,
   HiX,
@@ -17,20 +16,20 @@ import api from '../../api/axiosInstance';
 import type { User } from '../../types';
 
 const NAV_LINKS = [
-  { path: '/tours',        label: 'Tour',       icon: 'bi-map' },
-  { path: '/hotels',       label: 'Khách sạn',  icon: 'bi-building' },
-  { path: '/restaurants',  label: 'Nhà hàng',   icon: 'bi-cup-hot' },
+  { path: '/tours', label: 'Tour' },
+  { path: '/hotels', label: 'Khach san' },
+  { path: '/restaurants', label: 'Nha hang' },
 ] as const;
 
 const RoleBadge = ({ role }: { role: User['roleName'] }) => {
   const map: Record<string, string> = {
-    ADMIN: 'bg-red-100 text-red-600',
-    STAFF: 'bg-blue-100 text-blue-600',
-    USER:  'bg-emerald-100 text-emerald-600',
+    ADMIN: 'bg-accent/20 text-accent',
+    STAFF: 'bg-primary/20 text-primary',
+    USER: 'bg-muted text-muted-foreground',
   };
   return (
     <span
-      className={`inline-block px-2 py-0.5 text-xs font-bold rounded-full ${map[role] ?? 'bg-gray-100 text-gray-600'}`}
+      className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full mt-1 ${map[role] ?? 'bg-muted text-muted-foreground'}`}
     >
       {role}
     </span>
@@ -38,18 +37,17 @@ const RoleBadge = ({ role }: { role: User['roleName'] }) => {
 };
 
 const Navbar = () => {
-  const navigate  = useNavigate();
-  const user      = useAuthStore(selectUser);
-  const isAdmin   = useAuthStore(selectIsAdmin);
-  const isStaff   = useAuthStore(selectIsStaff);
+  const navigate = useNavigate();
+  const user = useAuthStore(selectUser);
+  const isAdmin = useAuthStore(selectIsAdmin);
+  const isStaff = useAuthStore(selectIsStaff);
   const { logout } = useAuthStore();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [mobileOpen,   setMobileOpen]   = useState(false);
-  const [scrolled,     setScrolled]     = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -60,14 +58,12 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Scroll shadow
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
     setDropdownOpen(false);
@@ -79,7 +75,7 @@ const Navbar = () => {
       logout();
       navigate('/login');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Đăng xuất thất bại');
+      toast.error(err instanceof Error ? err.message : 'Dang xuat that bai');
     }
   };
 
@@ -87,50 +83,43 @@ const Navbar = () => {
     try {
       await api.post('/send-otp');
       navigate('/verify-email');
-      toast.success('OTP đã được gửi tới email của bạn.');
+      toast.success('OTP da duoc gui toi email cua ban.');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Lỗi khi gửi OTP');
+      toast.error(err instanceof Error ? err.message : 'Loi khi gui OTP');
     }
   };
 
-  const navbarCls = `fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-    scrolled
-      ? 'bg-white/95 backdrop-blur-xl shadow-lg shadow-sky-100/20 border-b border-gray-100'
-      : 'bg-white/80 backdrop-blur-lg border-b border-white/20'
-  }`;
-
   return (
     <>
-      <nav className={navbarCls} style={{ fontFamily: 'Poppins, sans-serif' }}>
-        <div className="flex items-center justify-between px-6 md:px-12 h-16">
-
-          {/* ── Logo ── */}
+      <nav
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+          scrolled
+            ? 'bg-card/95 backdrop-blur-xl shadow-lg shadow-primary/5 border-b border-border'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 lg:px-8 h-20">
+          {/* Logo */}
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2.5 group"
+            className="flex items-center gap-3 group"
           >
-            <div
-              className="p-2 rounded-xl transition-transform duration-300 group-hover:rotate-12 shadow-lg"
-              style={{ background: 'linear-gradient(135deg, #1a5276, #2980b9)', boxShadow: '0 4px 12px rgba(26,82,118,0.3)' }}
-            >
-              <MdFlight className="text-white" size={18} />
-            </div>
-            <span className="font-black text-xl tracking-tight text-gray-900">
-              Travel<span style={{ color: '#1a5276' }}>VN</span>
+            <span className="font-serif text-2xl font-bold tracking-tight text-foreground">
+              Travel<span className="text-primary">VN</span>
             </span>
           </button>
 
-          {/* ── Desktop nav links ── */}
+          {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map(({ path, label }) => (
               <NavLink
                 key={path}
                 to={path}
                 className={({ isActive }) =>
-                  `text-sm font-semibold px-3 py-2 rounded-xl transition-colors ${
+                  `relative text-sm font-medium px-4 py-2 rounded-full transition-all duration-300 ${
                     isActive
-                      ? 'text-[#1a5276] bg-blue-50'
-                      : 'text-gray-600 hover:text-[#1a5276] hover:bg-blue-50'
+                      ? 'text-primary bg-primary/10'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   }`
                 }
               >
@@ -142,19 +131,21 @@ const Navbar = () => {
               <NavLink
                 to="/my-bookings"
                 className={({ isActive }) =>
-                  `text-sm font-semibold px-3 py-2 rounded-xl transition-colors ${
-                    isActive ? 'text-[#1a5276] bg-blue-50' : 'text-gray-600 hover:text-[#1a5276] hover:bg-blue-50'
+                  `relative text-sm font-medium px-4 py-2 rounded-full transition-all duration-300 ${
+                    isActive
+                      ? 'text-primary bg-primary/10'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   }`
                 }
               >
-                Đặt chỗ
+                Dat cho
               </NavLink>
             )}
 
             {isStaff && (
               <button
                 onClick={() => navigate('/staff')}
-                className="text-sm font-semibold text-blue-600 hover:text-blue-700 px-3 py-2 rounded-xl bg-blue-50 transition-colors"
+                className="text-sm font-medium text-primary px-4 py-2 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-300"
               >
                 Staff
               </button>
@@ -162,151 +153,197 @@ const Navbar = () => {
             {isAdmin && (
               <button
                 onClick={() => navigate('/admin')}
-                className="text-sm font-semibold text-red-500 hover:text-red-600 px-3 py-2 rounded-xl bg-red-50 transition-colors"
+                className="text-sm font-medium text-accent px-4 py-2 rounded-full bg-accent/10 hover:bg-accent/20 transition-all duration-300"
               >
                 Admin
               </button>
             )}
           </div>
 
-          {/* ── Right section ── */}
-          <div className="flex items-center gap-3">
-
+          {/* Right section */}
+          <div className="flex items-center gap-4">
             {user ? (
-              /* Avatar dropdown */
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen((p) => !p)}
-                  className="flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-full bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 transition-all"
+                  className="flex items-center gap-3 pl-1 pr-4 py-1 rounded-full bg-secondary hover:bg-secondary/80 border border-border transition-all duration-300"
                 >
-                  <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm text-white shadow"
-                    style={{ background: 'linear-gradient(135deg, #1a5276, #2980b9)' }}
-                  >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm bg-primary text-primary-foreground">
                     {user.name?.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-sm font-semibold text-gray-700 hidden sm:block max-w-[100px] truncate">
+                  <span className="text-sm font-medium text-foreground hidden sm:block max-w-[100px] truncate">
                     {user.name}
                   </span>
                   <HiChevronDown
-                    size={12}
-                    className={`text-gray-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
+                    size={14}
+                    className={`text-muted-foreground transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
-                    {/* User info header */}
-                    <div className="px-4 py-3.5 border-b border-gray-100" style={{ background: 'linear-gradient(to right, #eaf4fb, #d6eaf8)' }}>
-                      <p className="text-xs uppercase font-bold tracking-widest text-gray-400">Đăng nhập với</p>
-                      <p className="text-sm font-bold text-gray-900 truncate mt-0.5">{user.name}</p>
+                  <div className="absolute top-full right-0 mt-3 w-64 bg-card rounded-2xl shadow-2xl shadow-primary/10 border border-border overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-4 border-b border-border bg-secondary/50">
+                      <p className="text-xs uppercase font-semibold tracking-wider text-muted-foreground">
+                        Dang nhap voi
+                      </p>
+                      <p className="text-sm font-semibold text-foreground truncate mt-1">
+                        {user.name}
+                      </p>
                       <RoleBadge role={user.roleName} />
                     </div>
 
                     <div className="p-2">
-                      <DropItem icon={<HiOutlineUser size={15} />} label="Hồ sơ cá nhân"
-                        onClick={() => { navigate('/profile'); setDropdownOpen(false); }} />
-                      <DropItem icon={<HiOutlineCalendar size={15} />} label="Lịch sử đặt chỗ"
-                        onClick={() => { navigate('/my-bookings'); setDropdownOpen(false); }} />
+                      <DropItem
+                        icon={<HiOutlineUser size={16} />}
+                        label="Ho so ca nhan"
+                        onClick={() => {
+                          navigate('/profile');
+                          setDropdownOpen(false);
+                        }}
+                      />
+                      <DropItem
+                        icon={<HiOutlineCalendar size={16} />}
+                        label="Lich su dat cho"
+                        onClick={() => {
+                          navigate('/my-bookings');
+                          setDropdownOpen(false);
+                        }}
+                      />
 
-                      {/* Mobile nav links */}
-                      <div className="lg:hidden border-t border-gray-100 my-1 pt-1">
+                      <div className="lg:hidden border-t border-border my-2 pt-2">
                         {NAV_LINKS.map(({ path, label }) => (
-                          <DropItem key={path} label={label}
-                            onClick={() => { navigate(path); setDropdownOpen(false); }} />
+                          <DropItem
+                            key={path}
+                            label={label}
+                            onClick={() => {
+                              navigate(path);
+                              setDropdownOpen(false);
+                            }}
+                          />
                         ))}
                       </div>
 
                       {isStaff && (
-                        <DropItem icon={<HiOutlineBadgeCheck size={15} className="text-blue-500" />} label="Staff Dashboard"
-                          className="text-blue-600 hover:bg-blue-50"
-                          onClick={() => { navigate('/staff'); setDropdownOpen(false); }} />
+                        <DropItem
+                          icon={<HiOutlineBadgeCheck size={16} className="text-primary" />}
+                          label="Staff Dashboard"
+                          className="text-primary"
+                          onClick={() => {
+                            navigate('/staff');
+                            setDropdownOpen(false);
+                          }}
+                        />
                       )}
                       {isAdmin && (
-                        <DropItem icon={<HiOutlineShieldCheck size={15} className="text-red-400" />} label="Admin Dashboard"
-                          className="text-red-600 hover:bg-red-50"
-                          onClick={() => { navigate('/admin'); setDropdownOpen(false); }} />
+                        <DropItem
+                          icon={<HiOutlineShieldCheck size={16} className="text-accent" />}
+                          label="Admin Dashboard"
+                          className="text-accent"
+                          onClick={() => {
+                            navigate('/admin');
+                            setDropdownOpen(false);
+                          }}
+                        />
                       )}
                       {!user.isAccountVerified && (
-                        <DropItem label="Xác thực Email" className="text-amber-600 hover:bg-amber-50"
-                          onClick={() => { handleSendOTP(); setDropdownOpen(false); }} />
+                        <DropItem
+                          label="Xac thuc Email"
+                          className="text-amber-600"
+                          onClick={() => {
+                            handleSendOTP();
+                            setDropdownOpen(false);
+                          }}
+                        />
                       )}
 
-                      <div className="border-t border-gray-100 mt-1 pt-1">
-                        <DropItem icon={<HiOutlineLogout size={15} />} label="Đăng xuất"
-                          className="text-red-500 hover:bg-red-50"
-                          onClick={handleLogout} />
+                      <div className="border-t border-border mt-2 pt-2">
+                        <DropItem
+                          icon={<HiOutlineLogout size={16} />}
+                          label="Dang xuat"
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={handleLogout}
+                        />
                       </div>
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              /* Auth buttons */
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => navigate('/login')}
-                  className="hidden sm:block text-sm font-semibold text-gray-600 hover:text-[#1a5276] px-4 py-2 rounded-xl transition-colors"
+                  className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-full transition-all duration-300"
                 >
-                  Đăng nhập
+                  Dang nhap
                 </button>
                 <button
                   onClick={() => navigate('/register')}
-                  className="flex items-center gap-1.5 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg"
-                  style={{ background: 'linear-gradient(135deg, #1a5276, #2980b9)', boxShadow: '0 6px 20px rgba(26,82,118,0.35)' }}
+                  className="text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 px-6 py-2.5 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
                 >
-                  Bắt đầu
+                  Bat dau
                 </button>
               </div>
             )}
 
-            {/* Hamburger (mobile) */}
             <button
-              className="lg:hidden p-2 rounded-xl text-gray-600 hover:bg-gray-100 transition-colors"
+              className="lg:hidden p-2.5 rounded-full text-foreground hover:bg-secondary transition-all duration-300"
               onClick={() => setMobileOpen((p) => !p)}
               aria-label="Toggle menu"
             >
-              {mobileOpen ? <HiX size={20} /> : <HiOutlineMenuAlt3 size={20} />}
+              {mobileOpen ? <HiX size={22} /> : <HiOutlineMenuAlt3 size={22} />}
             </button>
           </div>
         </div>
 
-        {/* ── Mobile menu ── */}
-        {mobileOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-1 shadow-lg">
+        {/* Mobile menu */}
+        <div
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${
+            mobileOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="bg-card border-t border-border px-6 py-4 space-y-1">
             {NAV_LINKS.map(({ path, label }) => (
               <button
                 key={path}
-                onClick={() => { navigate(path); setMobileOpen(false); }}
-                className="w-full text-left text-sm font-semibold text-gray-600 hover:text-[#1a5276] hover:bg-blue-50 px-3 py-2.5 rounded-xl transition-colors"
+                onClick={() => {
+                  navigate(path);
+                  setMobileOpen(false);
+                }}
+                className="w-full text-left text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary px-4 py-3 rounded-xl transition-all duration-300"
               >
                 {label}
               </button>
             ))}
             {!user && (
-              <div className="flex gap-2 pt-2 border-t border-gray-100">
-                <button onClick={() => { navigate('/login'); setMobileOpen(false); }}
-                  className="flex-1 text-sm font-semibold text-gray-700 border border-gray-200 py-2 rounded-xl hover:bg-gray-50 transition-colors">
-                  Đăng nhập
+              <div className="flex gap-3 pt-4 border-t border-border mt-4">
+                <button
+                  onClick={() => {
+                    navigate('/login');
+                    setMobileOpen(false);
+                  }}
+                  className="flex-1 text-sm font-medium text-foreground border border-border py-3 rounded-xl hover:bg-secondary transition-all duration-300"
+                >
+                  Dang nhap
                 </button>
-                <button onClick={() => { navigate('/register'); setMobileOpen(false); }}
-                  className="flex-1 text-sm font-semibold text-white py-2 rounded-xl transition-colors"
-                  style={{ backgroundColor: '#1a5276' }}>
-                  Đăng ký
+                <button
+                  onClick={() => {
+                    navigate('/register');
+                    setMobileOpen(false);
+                  }}
+                  className="flex-1 text-sm font-medium text-primary-foreground bg-primary py-3 rounded-xl hover:bg-primary/90 transition-all duration-300"
+                >
+                  Dang ky
                 </button>
               </div>
             )}
           </div>
-        )}
+        </div>
       </nav>
 
-      {/* Spacer so content isn't hidden under the fixed nav */}
-      <div className="h-16" />
+      <div className="h-20" />
     </>
   );
 };
-
-// ── Helper ──────────────────────────────────────────────────────────────────
 
 interface DropItemProps {
   label: string;
@@ -314,12 +351,13 @@ interface DropItemProps {
   onClick: () => void;
   className?: string;
 }
+
 const DropItem = ({ label, icon, onClick, className = '' }: DropItemProps) => (
   <button
     onClick={onClick}
-    className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium rounded-xl transition-colors text-gray-700 hover:bg-gray-50 ${className}`}
+    className={`w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 text-foreground hover:bg-secondary ${className}`}
   >
-    {icon && <span className="text-gray-400">{icon}</span>}
+    {icon && <span className="text-muted-foreground">{icon}</span>}
     {label}
   </button>
 );

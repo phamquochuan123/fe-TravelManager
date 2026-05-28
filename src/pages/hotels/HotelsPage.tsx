@@ -475,28 +475,22 @@ export default function HotelsPage() {
   const goPage = (p: number) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }) }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* ── Hero banner ── */}
-      <section
-        className="relative flex flex-col items-center justify-center h-64 sm:h-80 overflow-hidden"
-        style={{
-          backgroundImage: 'url(https://picsum.photos/seed/hotel-hero/1920/600)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/60 to-black/70" />
-        <div className="relative z-10 text-center text-white px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <nav className="text-sm text-white/60 mb-3 flex items-center justify-center gap-2">
-            <button onClick={() => navigate('/')} className="hover:text-white transition-colors">Trang chủ</button>
+      {/* Hero */}
+      <section className="pt-28 pb-16 px-6 bg-primary">
+        <div className="max-w-7xl mx-auto">
+          <nav className="flex items-center gap-2 text-primary-foreground/60 text-sm mb-4">
+            <button onClick={() => navigate('/')} className="hover:text-primary-foreground transition-colors">Trang chu</button>
             <span>/</span>
-            <span className="text-white font-medium">Khách sạn</span>
+            <span className="text-primary-foreground font-medium">Khach san</span>
           </nav>
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-2">Khách sạn</h1>
-          <p className="text-white/75 text-sm sm:text-base max-w-md mx-auto">
-            Khám phá {hotels.length}+ khách sạn, resort & homestay trên khắp Việt Nam
+          <h1 className="font-serif text-4xl md:text-5xl font-semibold text-primary-foreground mb-3">
+            Khach san
+          </h1>
+          <p className="text-primary-foreground/70 text-lg">
+            Kham pha <span className="text-primary-foreground font-semibold">{hotels.length}+</span> khach san, resort & homestay tren khap Viet Nam
           </p>
         </div>
       </section>
@@ -506,7 +500,7 @@ export default function HotelsPage() {
 
           {/* ── Desktop sidebar ── */}
           <aside className="hidden lg:block w-72 shrink-0">
-            <div className="bg-white rounded-xl shadow-sm border border-border p-5 sticky top-24">
+            <div className="bg-card rounded-xl border border-border p-5 sticky top-24">
               <FilterSidebar
                 draft={draft} setDraft={setDraft}
                 onApply={apply} onReset={reset}
@@ -551,7 +545,7 @@ export default function HotelsPage() {
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {Array.from({ length: 6 }, (_, i) => (
-                  <div key={i} className="rounded-xl overflow-hidden border border-border bg-white">
+                  <div key={i} className="rounded-xl overflow-hidden border border-border bg-card">
                     <Skeleton className="aspect-[4/3] w-full" />
                     <div className="p-4 space-y-2.5">
                       <Skeleton className="h-5 w-3/4" />
@@ -585,7 +579,7 @@ export default function HotelsPage() {
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
-          <div className="absolute left-0 top-0 h-full w-80 max-w-full bg-white shadow-2xl overflow-y-auto p-5 animate-in slide-in-from-left duration-300">
+          <div className="absolute left-0 top-0 h-full w-80 max-w-full bg-card border-r border-border overflow-y-auto p-5 animate-in slide-in-from-left duration-300">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-semibold text-lg">Bộ lọc</h2>
               <button onClick={() => setSidebarOpen(false)}>

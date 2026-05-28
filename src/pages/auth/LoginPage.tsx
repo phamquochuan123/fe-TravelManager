@@ -5,41 +5,32 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import {
-  MdEmail, MdLock, MdVisibility, MdVisibilityOff,
-  MdArrowForward, MdErrorOutline,
-} from 'react-icons/md'
+  HiOutlineMail,
+  HiOutlineLockClosed,
+  HiOutlineEye,
+  HiOutlineEyeOff,
+  HiArrowRight,
+  HiExclamationCircle,
+} from 'react-icons/hi'
 import { AppContext } from '../../context/AppContext'
 import api from '../../api/axiosInstance'
 import AuthLayout from '../../components/layout/AuthLayout'
 import type { User } from '../../types'
 
-// ─── Schema ───────────────────────────────────────────────────────────────────
-
 const schema = z.object({
-  email:      z.string().min(1, 'Email là bắt buộc').email('Email không hợp lệ'),
-  passWord:   z.string().min(8, 'Mật khẩu ít nhất 8 ký tự'),
+  email: z.string().min(1, 'Email la bat buoc').email('Email khong hop le'),
+  passWord: z.string().min(8, 'Mat khau it nhat 8 ky tu'),
   rememberMe: z.boolean().default(false),
 })
+
 type FormData = z.infer<typeof schema>
-
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-
-const inputCls = (hasError?: boolean, extraRight = false) =>
-  `block w-full pl-11 ${extraRight ? 'pr-12' : 'pr-4'} py-3.5 bg-gray-50 border-2 rounded-2xl
-   text-sm font-medium text-gray-700 placeholder-gray-400
-   focus:bg-white focus:outline-none focus:ring-4 transition-all
-   ${hasError
-     ? 'border-red-400 focus:border-red-500 focus:ring-red-50'
-     : 'border-transparent focus:border-[#1a5276] focus:ring-[#1a5276]/10'}`
 
 const FieldError = ({ msg }: { msg?: string }) =>
   msg ? (
-    <p className="flex items-center gap-1 text-xs text-red-500 font-medium mt-1">
-      <MdErrorOutline size={13} /> {msg}
+    <p className="flex items-center gap-1.5 text-xs text-destructive font-medium mt-2">
+      <HiExclamationCircle size={14} /> {msg}
     </p>
   ) : null
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -57,48 +48,48 @@ const LoginPage = () => {
       await api.post('/login', { email: data.email, passWord: data.passWord })
       setIsLoggedIn(true)
       const user: User | null = await getUserData()
-      if (!user) throw new Error('Không lấy được thông tin người dùng')
+      if (!user) throw new Error('Khong lay duoc thong tin nguoi dung')
 
-      toast.success(`Chào mừng trở lại, ${user.name}!`)
+      toast.success(`Chao mung tro lai, ${user.name}!`)
 
-      if      (user.roleName === 'ADMIN') navigate('/admin',  { replace: true })
-      else if (user.roleName === 'STAFF') navigate('/staff',  { replace: true })
-      else                                navigate('/',        { replace: true })
+      if (user.roleName === 'ADMIN') navigate('/admin', { replace: true })
+      else if (user.roleName === 'STAFF') navigate('/staff', { replace: true })
+      else navigate('/', { replace: true })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Đăng nhập thất bại')
+      toast.error(err instanceof Error ? err.message : 'Dang nhap that bai')
     }
   }
 
   return (
     <AuthLayout
       imageSeed="vietnam-mountain-fog"
-      quote="Mỗi chuyến đi là một câu chuyện mới đang chờ được viết."
+      quote="Moi chuyen di la mot cau chuyen moi dang cho duoc viet."
     >
-      <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-10">
-
-        {/* Heading */}
+      <div className="bg-card rounded-2xl border border-border p-8 md:p-10 shadow-xl shadow-primary/5">
         <div className="mb-8">
-          <h2 className="text-3xl font-black text-gray-900 tracking-tight">Chào mừng trở lại</h2>
-          <p className="text-gray-500 mt-1.5 text-sm">Đăng nhập để tiếp tục khám phá</p>
+          <h2 className="font-serif text-3xl font-semibold text-foreground">Chao mung tro lai</h2>
+          <p className="text-muted-foreground mt-2 text-sm">Dang nhap de tiep tuc kham pha</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-
           {/* Email */}
           <div>
-            <label className="text-sm font-bold text-gray-700 block mb-1.5">Email</label>
+            <label className="text-sm font-medium text-foreground block mb-2">Email</label>
             <div className="relative group">
-              <MdEmail
+              <HiOutlineMail
                 size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                           text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors"
               />
               <input
                 type="email"
                 placeholder="name@example.com"
                 autoComplete="email"
                 {...register('email')}
-                className={inputCls(!!errors.email)}
+                className={`w-full pl-11 pr-4 py-3.5 bg-secondary border-2 rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:bg-card focus:outline-none transition-all ${
+                  errors.email
+                    ? 'border-destructive focus:border-destructive'
+                    : 'border-transparent focus:border-primary'
+                }`}
               />
             </div>
             <FieldError msg={errors.email?.message} />
@@ -106,28 +97,30 @@ const LoginPage = () => {
 
           {/* Password */}
           <div>
-            <label className="text-sm font-bold text-gray-700 block mb-1.5">Mật khẩu</label>
+            <label className="text-sm font-medium text-foreground block mb-2">Mat khau</label>
             <div className="relative group">
-              <MdLock
+              <HiOutlineLockClosed
                 size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                           text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors"
               />
               <input
                 type={showPw ? 'text' : 'password'}
                 placeholder="••••••••"
                 autoComplete="current-password"
                 {...register('passWord')}
-                className={inputCls(!!errors.passWord, true)}
+                className={`w-full pl-11 pr-12 py-3.5 bg-secondary border-2 rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:bg-card focus:outline-none transition-all ${
+                  errors.passWord
+                    ? 'border-destructive focus:border-destructive'
+                    : 'border-transparent focus:border-primary'
+                }`}
               />
               <button
                 type="button"
                 tabIndex={-1}
-                onClick={() => setShowPw(p => !p)}
-                className="absolute right-4 top-1/2 -translate-y-1/2
-                           text-gray-400 hover:text-[#1a5276] transition-colors"
+                onClick={() => setShowPw((p) => !p)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                {showPw ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
+                {showPw ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
               </button>
             </div>
             <FieldError msg={errors.passWord?.message} />
@@ -135,21 +128,21 @@ const LoginPage = () => {
 
           {/* Remember + Forgot */}
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 cursor-pointer select-none group">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none group">
               <input
                 type="checkbox"
                 {...register('rememberMe')}
-                className="w-4 h-4 rounded cursor-pointer accent-[#1a5276]"
+                className="w-4 h-4 rounded cursor-pointer accent-primary"
               />
-              <span className="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
-                Ghi nhớ đăng nhập
+              <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                Ghi nho dang nhap
               </span>
             </label>
             <Link
               to="/forgot-password"
-              className="text-sm font-bold text-[#1a5276] hover:text-[#e67e22] transition-colors"
+              className="text-sm font-medium text-primary hover:text-accent transition-colors"
             >
-              Quên mật khẩu?
+              Quen mat khau?
             </Link>
           </div>
 
@@ -157,36 +150,32 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 text-white font-bold
-                       py-3.5 rounded-2xl transition-all active:scale-95 hover:opacity-90
-                       disabled:opacity-60 disabled:cursor-not-allowed group mt-1"
-            style={{
-              background: 'linear-gradient(135deg, #1a5276, #2980b9)',
-              boxShadow: '0 8px 24px rgba(26,82,118,0.30)',
-            }}
+            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 disabled:opacity-60 disabled:cursor-not-allowed group"
           >
             {isSubmitting ? (
-              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
             ) : (
               <>
-                Đăng nhập
-                <MdArrowForward size={18} className="group-hover:translate-x-1 transition-transform" />
+                Dang nhap
+                <HiArrowRight
+                  size={18}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
               </>
             )}
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 h-px bg-gray-100" />
-          <span className="text-xs text-gray-400 font-medium">hoặc</span>
-          <div className="flex-1 h-px bg-gray-100" />
+        <div className="flex items-center gap-4 my-8">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground font-medium">hoac</span>
+          <div className="flex-1 h-px bg-border" />
         </div>
 
-        <p className="text-center text-sm text-gray-500">
-          Chưa có tài khoản?{' '}
-          <Link to="/register" className="font-black text-[#1a5276] hover:underline">
-            Đăng ký ngay
+        <p className="text-center text-sm text-muted-foreground">
+          Chua co tai khoan?{' '}
+          <Link to="/register" className="font-semibold text-primary hover:text-accent transition-colors">
+            Dang ky ngay
           </Link>
         </p>
       </div>
