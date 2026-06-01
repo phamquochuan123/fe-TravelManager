@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+﻿import { useState, useMemo, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import {
@@ -61,8 +61,8 @@ interface Passenger {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; dot: string }> = {
-  UPCOMING:    { label: 'Sắp tới',      bg: '#eaf4fb', color: '#1a5276', dot: '#2980b9' },
-  CONFIRMED:   { label: 'Sắp tới',      bg: '#eaf4fb', color: '#1a5276', dot: '#2980b9' },
+  UPCOMING:    { label: 'Sắp tới',      bg: '#eaf4fb', color: '#0a1628', dot: '#2980b9' },
+  CONFIRMED:   { label: 'Sắp tới',      bg: '#eaf4fb', color: '#0a1628', dot: '#2980b9' },
   IN_PROGRESS: { label: 'Đang diễn ra', bg: '#f3e8ff', color: '#7c3aed', dot: '#7c3aed' },
   COMPLETED:   { label: 'Hoàn thành',   bg: '#dcfce7', color: '#16a34a', dot: '#16a34a' },
   CANCELLED:   { label: 'Đã hủy',       bg: '#fee2e2', color: '#dc2626', dot: '#dc2626' },
@@ -162,8 +162,7 @@ const PassengerModal = ({
           </div>
           <button
             onClick={handleExport}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-all shrink-0"
-            style={{ backgroundColor: '#1a5276' }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded text-sm font-semibold text-white hover:opacity-90 transition-all shrink-0 bg-primary"
           >
             <Download size={14} /> Xuất danh sách
           </button>
@@ -172,8 +171,7 @@ const PassengerModal = ({
         <ScrollArea className="h-72 mt-3">
           {isLoading ? (
             <div className="flex justify-center py-12">
-              <span className="w-7 h-7 border-2 rounded-full animate-spin"
-                style={{ borderColor: 'rgba(26,82,118,0.2)', borderTopColor: '#1a5276' }} />
+              <span className="w-7 h-7 border-2 rounded-full animate-spin border-primary/15 border-t-primary" />
             </div>
           ) : filtered.length === 0 ? (
             <p className="text-center text-gray-400 py-12 text-sm">Không có hành khách</p>
@@ -245,7 +243,7 @@ const StatusUpdatePopover = ({ departure }: { departure: Departure }) => {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
-            className="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex-1 text-center py-2 rounded text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-[#f8f5ee] transition-colors"
           >
             Cập nhật TT
           </button>
@@ -260,7 +258,7 @@ const StatusUpdatePopover = ({ departure }: { departure: Departure }) => {
                 <label
                   key={opt.value}
                   className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-colors ${
-                    selectedStatus === opt.value ? 'bg-gray-100' : 'hover:bg-gray-50'
+                    selectedStatus === opt.value ? 'bg-gray-100' : 'hover:bg-[#f8f5ee]'
                   }`}
                 >
                   <input
@@ -269,7 +267,7 @@ const StatusUpdatePopover = ({ departure }: { departure: Departure }) => {
                     value={opt.value}
                     checked={selectedStatus === opt.value}
                     onChange={() => setSelectedStatus(opt.value)}
-                    className="accent-[#1a5276]"
+                    className="accent-[#0a1628]"
                   />
                   <span className="flex items-center gap-1.5 text-sm">
                     <span
@@ -301,8 +299,7 @@ const StatusUpdatePopover = ({ departure }: { departure: Departure }) => {
           <button
             onClick={handleConfirm}
             disabled={!selectedStatus}
-            className="w-full py-2 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ backgroundColor: '#1a5276' }}
+            className="w-full py-2 rounded text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed bg-primary"
           >
             Xác nhận
           </button>
@@ -323,7 +320,7 @@ const StatusUpdatePopover = ({ departure }: { departure: Departure }) => {
             <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => mutation.mutate()}
-              style={{ backgroundColor: '#1a5276' }}
+              className="bg-primary"
             >
               {mutation.isPending ? 'Đang lưu...' : 'Xác nhận'}
             </AlertDialogAction>
@@ -345,13 +342,13 @@ const TourScheduleCard = ({
   const pct     = total > 0 ? Math.round((filled / total) * 100) : 0
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
       <div className="flex gap-3">
         {/* Thumbnail */}
         <img
           src={`https://picsum.photos/seed/tour-${departure.tourId}/160/160`}
           alt={departure.tourName}
-          className="w-20 h-20 rounded-xl object-cover shrink-0"
+          className="w-20 h-20 rounded object-cover shrink-0"
         />
 
         {/* Info */}
@@ -394,8 +391,7 @@ const TourScheduleCard = ({
       <div className="flex gap-2 mt-3">
         <button
           onClick={() => onViewPassengers(departure)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-white hover:opacity-90 transition-all"
-          style={{ backgroundColor: '#1a5276' }}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded text-xs font-semibold text-white hover:opacity-90 transition-all bg-primary"
         >
           <Users size={12} /> Danh sách HK
         </button>
@@ -462,16 +458,16 @@ const StaffSchedulePage = () => {
   }, [])
 
   return (
-    <div className="p-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="p-6" >
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
 
         {/* ── Calendar ─────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 h-fit">
+        <div className="bg-white rounded border border-gray-100 shadow-sm p-5 h-fit">
           {/* Month nav */}
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => setCurrentMonth(m => m.subtract(1, 'month'))}
-              className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
@@ -480,7 +476,7 @@ const StaffSchedulePage = () => {
             </p>
             <button
               onClick={() => setCurrentMonth(m => m.add(1, 'month'))}
-              className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
             >
               <ChevronRight size={16} />
             </button>
@@ -513,16 +509,16 @@ const StaffSchedulePage = () => {
                   key={key}
                   onClick={() => setSelectedDate(key)}
                   className={`
-                    relative flex flex-col items-center py-1.5 rounded-xl transition-all text-xs font-medium
+                    relative flex flex-col items-center py-1.5 rounded transition-all text-xs font-medium
                     ${!isCurrentMonth ? 'text-gray-300' : ''}
-                    ${isSelected && !isToday ? 'ring-2 ring-[#1a5276]' : ''}
-                    ${!isSelected ? 'hover:bg-gray-50' : ''}
+                    ${isSelected && !isToday ? 'ring-2 ring-[#0a1628]' : ''}
+                    ${!isSelected ? 'hover:bg-[#f8f5ee]' : ''}
                   `}
                   style={
                     isToday
-                      ? { backgroundColor: '#1a5276', color: '#fff' }
+                      ? { backgroundColor: '#0a1628', color: '#fff' }
                       : isSelected
-                      ? { backgroundColor: '#eaf4fb', color: '#1a5276' }
+                      ? { backgroundColor: '#eaf4fb', color: '#0a1628' }
                       : undefined
                   }
                 >
@@ -535,8 +531,7 @@ const StaffSchedulePage = () => {
                   )}
                   {hasTours && isCurrentMonth && tours.length > 1 && (
                     <span
-                      className="absolute -top-1 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center"
-                      style={{ backgroundColor: '#e67e22', color: '#fff' }}
+                      className="absolute -top-1 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center bg-accent text-white"
                     >
                       {tours.length}
                     </span>
@@ -554,7 +549,7 @@ const StaffSchedulePage = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-900">
               Tour ngày{' '}
-              <span style={{ color: '#1a5276' }}>
+              <span className="text-primary">
                 {dayjs(selectedDate).format('DD/MM/YYYY')}
               </span>
             </h2>
@@ -565,16 +560,15 @@ const StaffSchedulePage = () => {
 
           {isLoading ? (
             <div className="flex items-center justify-center h-48">
-              <span className="w-8 h-8 border-2 rounded-full animate-spin"
-                style={{ borderColor: 'rgba(26,82,118,0.15)', borderTopColor: '#1a5276' }} />
+              <span className="w-8 h-8 border-2 rounded-full animate-spin border-primary/15 border-t-primary" />
             </div>
           ) : toursForSelected.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
+            <div className="bg-white rounded border border-gray-100 shadow-sm p-16 text-center">
               <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                className="w-16 h-16 rounded flex items-center justify-center mx-auto mb-4"
                 style={{ backgroundColor: '#f0f7ff' }}
               >
-                <Clock size={28} style={{ color: '#1a5276' }} />
+                <Clock size={28} className="text-primary" />
               </div>
               <p className="font-semibold text-gray-500 text-sm">
                 Không có tour nào trong ngày này

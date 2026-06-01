@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+﻿import { useState, useCallback, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -42,29 +42,29 @@ type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const INCIDENT_TYPES = [
-  { value: 'WEATHER',       emoji: '⛈',  label: 'Thời tiết xấu' },
-  { value: 'TRANSPORT',     emoji: '🚌', label: 'Phương tiện gặp sự cố' },
-  { value: 'HEALTH',        emoji: '🏥', label: 'Khách hàng cần y tế' },
-  { value: 'PASSENGER',     emoji: '👥', label: 'Vấn đề hành khách' },
+  { value: 'WEATHER', emoji: '⛈', label: 'Thời tiết xấu' },
+  { value: 'TRANSPORT', emoji: '🚌', label: 'Phương tiện gặp sự cố' },
+  { value: 'HEALTH', emoji: '🏥', label: 'Khách hàng cần y tế' },
+  { value: 'PASSENGER', emoji: '👥', label: 'Vấn đề hành khách' },
   { value: 'ACCOMMODATION', emoji: '🏨', label: 'Khách sạn/Nhà hàng' },
-  { value: 'OTHER',         emoji: '📋', label: 'Khác' },
+  { value: 'OTHER', emoji: '📋', label: 'Khác' },
 ]
 
 const SEVERITY_CONFIG: Record<Severity, { label: string; bg: string; color: string; border: string }> = {
-  LOW:    { label: 'Thấp',      bg: '#dcfce7', color: '#16a34a', border: '#86efac' },
+  LOW: { label: 'Thấp', bg: '#dcfce7', color: '#16a34a', border: '#86efac' },
   MEDIUM: { label: 'Trung bình', bg: '#fef9c3', color: '#ca8a04', border: '#fde047' },
-  HIGH:   { label: 'Cao',       bg: '#ffedd5', color: '#ea580c', border: '#fdba74' },
-  URGENT: { label: 'Khẩn cấp',  bg: '#fee2e2', color: '#dc2626', border: '#fca5a5' },
+  HIGH: { label: 'Cao', bg: '#ffedd5', color: '#ea580c', border: '#fdba74' },
+  URGENT: { label: 'Khẩn cấp', bg: '#fee2e2', color: '#dc2626', border: '#fca5a5' },
 }
 
 const REPORT_STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
-  OPEN:      { label: 'Đang xử lý', bg: '#fef9c3', color: '#ca8a04' },
+  OPEN: { label: 'Đang xử lý', bg: '#fef9c3', color: '#ca8a04' },
   REVIEWING: { label: 'Đang xem xét', bg: '#eaf4fb', color: '#1a5276' },
-  RESOLVED:  { label: 'Đã xử lý',   bg: '#dcfce7', color: '#16a34a' },
+  RESOLVED: { label: 'Đã xử lý', bg: '#dcfce7', color: '#16a34a' },
 }
 
-const MAX_IMAGES   = 5
-const MAX_FILE_MB  = 5
+const MAX_IMAGES = 5
+const MAX_FILE_MB = 5
 const MIN_DESC_LEN = 20
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -136,7 +136,7 @@ const ImageUploadZone = ({ files, onAdd, onRemove }: ImageUploadZoneProps) => {
         `}
       >
         <Upload size={24} className="mx-auto mb-2 text-gray-400" />
-        <p className="text-sm font-medium text-gray-600">Kéo thả ảnh hoặc <span style={{ color: '#1a5276' }}>chọn từ máy</span></p>
+        <p className="text-sm font-medium text-gray-600">Kéo thả ảnh hoặc <span className="text-primary">chọn từ máy</span></p>
         <p className="text-xs text-gray-400 mt-1">Tối đa {MAX_IMAGES} ảnh, mỗi ảnh ≤ {MAX_FILE_MB}MB</p>
         <input
           ref={inputRef}
@@ -180,7 +180,7 @@ const IncidentDetailSheet = ({
 }: { report: IncidentReport | null; open: boolean; onClose: () => void }) => {
   if (!report) return null
   const statusCfg = REPORT_STATUS_CONFIG[report.status] ?? REPORT_STATUS_CONFIG['OPEN']
-  const sevCfg    = SEVERITY_CONFIG[(report.severity ?? 'LOW') as Severity]
+  const sevCfg = SEVERITY_CONFIG[(report.severity ?? 'LOW') as Severity]
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -268,18 +268,18 @@ const IncidentReportPage = () => {
   const queryClient = useQueryClient()
 
   // Form state
-  const [departureId,  setDepartureId]  = useState('')
+  const [departureId, setDepartureId] = useState('')
   const [incidentType, setIncidentType] = useState('OTHER')
-  const [description,  setDescription]  = useState('')
-  const [severity,     setSeverity]     = useState<Severity>('MEDIUM')
-  const [images,       setImages]       = useState<File[]>([])
+  const [description, setDescription] = useState('')
+  const [severity, setSeverity] = useState<Severity>('MEDIUM')
+  const [images, setImages] = useState<File[]>([])
 
   // Filter state
   const [filterType, setFilterType] = useState('')
 
   // Detail sheet
   const [detailReport, setDetailReport] = useState<IncidentReport | null>(null)
-  const [detailOpen,   setDetailOpen]   = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
 
   // ── Queries ───────────────────────────────────────────────────────────────
 
@@ -346,13 +346,13 @@ const IncidentReportPage = () => {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="p-6" >
       <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-6">
 
         {/* ── Report form ───────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
           <h2 className="font-black text-gray-900 text-base mb-5 flex items-center gap-2">
-            <AlertCircle size={18} style={{ color: '#e67e22' }} />
+            <AlertCircle size={18} className="text-accent" />
             Báo cáo sự cố mới
           </h2>
 
@@ -367,8 +367,7 @@ const IncidentReportPage = () => {
                 <select
                   value={departureId}
                   onChange={e => setDepartureId(e.target.value)}
-                  className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white pr-10"
-                  style={{ '--tw-ring-color': '#1a5276' } as React.CSSProperties}
+                  className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent bg-white pr-10"
                 >
                   <option value="">— Chọn chuyến đi —</option>
                   {departures.map(d => (
@@ -393,11 +392,10 @@ const IncidentReportPage = () => {
                     key={type.value}
                     type="button"
                     onClick={() => setIncidentType(type.value)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium text-left transition-all ${
-                      incidentType === type.value
-                        ? 'border-transparent'
-                        : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium text-left transition-all ${incidentType === type.value
+                      ? 'border-transparent'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
                     style={
                       incidentType === type.value
                         ? { backgroundColor: '#eaf4fb', borderColor: '#1a5276', color: '#1a5276' }
@@ -472,7 +470,7 @@ const IncidentReportPage = () => {
               type="submit"
               disabled={submitMutation.isPending}
               className="w-full py-3 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{ backgroundColor: '#e67e22' }}
+              className="bg-accent"
             >
               {submitMutation.isPending ? (
                 <>
@@ -508,8 +506,7 @@ const IncidentReportPage = () => {
 
           {reportsLoading ? (
             <div className="flex justify-center py-16">
-              <span className="w-8 h-8 border-2 rounded-full animate-spin"
-                style={{ borderColor: 'rgba(26,82,118,0.15)', borderTopColor: '#1a5276' }} />
+              <span className="w-8 h-8 border-2 rounded-full animate-spin border-primary/15 border-t-primary" />
             </div>
           ) : filteredReports.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
@@ -523,7 +520,7 @@ const IncidentReportPage = () => {
 
               <div className="space-y-4">
                 {filteredReports.map(report => {
-                  const sevCfg    = SEVERITY_CONFIG[(report.severity ?? 'LOW') as Severity]
+                  const sevCfg = SEVERITY_CONFIG[(report.severity ?? 'LOW') as Severity]
                   const statusCfg = REPORT_STATUS_CONFIG[report.status] ?? REPORT_STATUS_CONFIG['OPEN']
 
                   return (

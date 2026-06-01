@@ -8,6 +8,7 @@ import {
   ArrowLeft, Star, MapPin, Wifi, Waves, Car, Utensils, Dumbbell,
   Bath, Tv, Wind, Coffee, Users, Bed, Square, Heart,
   ChevronLeft, ChevronRight, X, ImageIcon, Phone, Clock,
+  Loader2, CalendarOff,
 } from 'lucide-react'
 import api from '@/api/axiosInstance'
 import Navbar from '@/components/layout/Navbar'
@@ -87,17 +88,54 @@ const AMENITY_MAP: Array<{ keys: string[]; icon: React.ReactNode; label: string 
   { keys: ['lễ tân 24', 'reception'],   icon: <Clock size={18} />,    label: 'Lễ tân 24h' },
 ]
 
-const FALLBACK_HOTEL = (id: number) => `https://picsum.photos/seed/hotel${id}/800/500`
-const FALLBACK_ROOM  = (id: number) => `https://picsum.photos/seed/room${id}/400/250`
+// Ảnh theo thành phố (giống HotelsPage)
+const CITY_PHOTOS_DETAIL: Record<string, string[]> = {
+  'nha trang':  ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=85','https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=85','https://images.unsplash.com/photo-1540541338537-71beef4c41ba?w=800&q=85'],
+  'đà nẵng':   ['https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=85','https://images.unsplash.com/photo-1540541338537-71beef4c41ba?w=800&q=85','https://images.unsplash.com/photo-1596701062351-8c2c14d1fdd0?w=800&q=85'],
+  'hà nội':    ['https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=85','https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=85','https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&q=85'],
+  'hồ chí minh':['https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=85','https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=85','https://images.unsplash.com/photo-1551882547-ff40c242b0e0?w=800&q=85'],
+  'đà lạt':    ['https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=85','https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=85','https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=85'],
+  'phú quốc':  ['https://images.unsplash.com/photo-1596701062351-8c2c14d1fdd0?w=800&q=85','https://images.unsplash.com/photo-1540541338537-71beef4c41ba?w=800&q=85','https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=85'],
+  'hội an':    ['https://images.unsplash.com/photo-1592595896616-c37162298647?w=800&q=85','https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=85','https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=85'],
+  'huế':       ['https://images.unsplash.com/photo-1565082508778-efce12d30e17?w=800&q=85','https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=85','https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=85'],
+  'vũng tàu':  ['https://images.unsplash.com/photo-1615880484746-a134be9a6ecf?w=800&q=85','https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=85','https://images.unsplash.com/photo-1596701062351-8c2c14d1fdd0?w=800&q=85'],
+}
+const DEFAULT_HOTEL_DETAIL = [
+  'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=85',
+  'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=85',
+  'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=85',
+  'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=85',
+]
+
+function getCityPhotos(city: string | undefined): string[] {
+  const key = (city ?? '').toLowerCase().trim()
+  return Object.entries(CITY_PHOTOS_DETAIL).find(([k]) => key.includes(k))?.[1] ?? DEFAULT_HOTEL_DETAIL
+}
+
+// Verified Unsplash room photos
+const ROOM_PHOTOS = [
+  'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80',
+  'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=500&q=80',
+  'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=500&q=80',
+  'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80',
+  'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500&q=80',
+]
+const FALLBACK_HOTEL_URL = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80'
+const FALLBACK_ROOM = (id: number) => ROOM_PHOTOS[id % ROOM_PHOTOS.length]
+const FALLBACK_HOTEL = (_id: number) => FALLBACK_HOTEL_URL
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function buildGallery(hotel: HotelDetail): string[] {
   if (hotel.images?.length) {
-    return hotel.images.map(img => resolveBase64Image(img.photo, FALLBACK_HOTEL(hotel.id)))
+    const imgs = hotel.images.map(img => resolveBase64Image(img.photo, ''))
+    if (imgs.some(i => i)) return imgs.filter(Boolean)
   }
-  if (hotel.photo) return [resolveBase64Image(hotel.photo, FALLBACK_HOTEL(hotel.id))]
-  return [FALLBACK_HOTEL(hotel.id)]
+  if (hotel.photo) {
+    const p = resolveBase64Image(hotel.photo, '')
+    if (p) return [p]
+  }
+  return getCityPhotos(hotel.city)
 }
 
 function parseAmenities(raw: string | undefined): Array<{ icon: React.ReactNode; label: string }> {
@@ -130,7 +168,7 @@ function HotelGallery({ images, name }: { images: string[]; name: string }) {
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-2 h-72 sm:h-96 rounded-xl overflow-hidden mb-6">
+      <div className="grid grid-cols-3 gap-2 h-72 sm:h-96 rounded overflow-hidden mb-6">
         {/* Main image — 2/3 width */}
         <div className="col-span-2 relative overflow-hidden group">
           <img
@@ -260,7 +298,7 @@ function RoomCard({ room, hotelId, checkIn, checkOut }: {
 
   return (
     <div className={cn(
-      'flex flex-col sm:flex-row gap-4 p-4 rounded-xl border transition-all duration-200',
+      'flex flex-col sm:flex-row gap-4 p-4 rounded border transition-all duration-200',
       available
         ? 'border-border hover:border-primary hover:shadow-sm cursor-default'
         : 'border-border opacity-70',
@@ -318,7 +356,7 @@ function ReviewSection({ reviews }: { reviews: Review[] }) {
   return (
     <div className="space-y-6">
       {reviews.length > 0 && (
-        <div className="bg-muted/40 rounded-xl p-5">
+        <div className="bg-muted/40 rounded p-5">
           <div className="flex items-start gap-8 flex-wrap">
             <div className="text-center">
               <p className="text-5xl font-bold text-foreground">{avg.toFixed(1)}</p>
@@ -347,7 +385,7 @@ function ReviewSection({ reviews }: { reviews: Review[] }) {
       ) : (
         <div className="space-y-4">
           {reviews.map(rv => (
-            <div key={rv.id} className="rounded-xl border border-border p-4">
+            <div key={rv.id} className="rounded border border-border p-4">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex items-center gap-2">
                   <div className="size-9 rounded-full bg-gradient-to-tr from-primary to-blue-400 text-white flex items-center justify-center font-bold text-sm shrink-0">
@@ -383,8 +421,8 @@ function ReviewSection({ reviews }: { reviews: Review[] }) {
 
 // ─── Booking Sidebar ──────────────────────────────────────────────────────────
 
-function BookingSidebar({ hotel, rooms, hotelId }: {
-  hotel: HotelDetail; rooms: Room[]; hotelId: string
+function BookingSidebar({ hotel, rooms, hotelId, loadingRooms }: {
+  hotel: HotelDetail; rooms: Room[]; hotelId: string; loadingRooms?: boolean
 }) {
   const navigate  = useNavigate()
   const [checkIn,  setCheckIn]  = useState<Date | null>(null)
@@ -393,6 +431,8 @@ function BookingSidebar({ hotel, rooms, hotelId }: {
   const [adults,   setAdults]   = useState(1)
   const [children, setChildren] = useState(0)
   const [liked,    setLiked]    = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [bookError,  setBookError]  = useState('')
 
   const availableRooms = rooms.filter(r => !r.status || r.status === 'AVAILABLE')
   const selectedRoom   = rooms.find(r => r.id === Number(roomId))
@@ -401,12 +441,16 @@ function BookingSidebar({ hotel, rooms, hotelId }: {
   const basePrice = availableRooms.length > 0 ? Math.min(...availableRooms.map(r => r.roomPrice)) : 0
 
   const handleBook = () => {
-    if (!roomId) return
-    navigate(`/hotels/${hotelId}/book/${roomId}`, { state: { checkIn, checkOut, adults, children } })
+    if (!roomId) { setBookError('Vui lòng chọn loại phòng'); return }
+    setBookError('')
+    setSubmitting(true)
+    setTimeout(() => {
+      navigate(`/hotels/${hotelId}/book/${roomId}`, { state: { checkIn, checkOut, adults, children } })
+    }, 350)
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-md border border-border p-6 sticky top-24 space-y-4">
+    <div className="bg-white rounded shadow-md border border-border p-6 sticky top-24 space-y-4">
       <div>
         <p className="text-xs text-muted-foreground mb-0.5">Giá từ</p>
         <p className="text-3xl font-bold text-accent">
@@ -442,22 +486,35 @@ function BookingSidebar({ hotel, rooms, hotelId }: {
         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">
           Loại phòng
         </label>
-        <Select value={roomId} onValueChange={setRoomId}>
-          <SelectTrigger className="text-sm">
-            <SelectValue placeholder="Chọn loại phòng..." />
-          </SelectTrigger>
-          <SelectContent>
-            {availableRooms.map(r => (
-              <SelectItem key={r.id} value={String(r.id)}>
-                {r.roomType} — {formatCurrency(r.roomPrice)}/đêm
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {loadingRooms ? (
+          <div className="h-10 rounded-md bg-muted animate-pulse" />
+        ) : availableRooms.length === 0 ? (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-2.5">
+            <CalendarOff size={15} className="text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-700">Không có phòng trống</p>
+              <p className="text-xs text-amber-600 mt-0.5">Hãy thử chọn ngày khác hoặc liên hệ trực tiếp.</p>
+            </div>
+          </div>
+        ) : (
+          <Select value={roomId} onValueChange={v => { setRoomId(v); setBookError('') }}>
+            <SelectTrigger className="text-sm">
+              <SelectValue placeholder="Chọn loại phòng..." />
+            </SelectTrigger>
+            <SelectContent>
+              {availableRooms.map(r => (
+                <SelectItem key={r.id} value={String(r.id)}>
+                  {r.roomType} — {formatCurrency(r.roomPrice)}/đêm
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {bookError && <p className="text-xs text-destructive mt-1">{bookError}</p>}
       </div>
 
       {/* Guests */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">
             Người lớn
@@ -506,11 +563,14 @@ function BookingSidebar({ hotel, rooms, hotelId }: {
       )}
 
       <Button
-        className="w-full bg-accent hover:bg-accent/90 text-white font-semibold active:scale-[0.98]"
-        disabled={!roomId || hotel.active === false}
+        className="w-full bg-accent hover:bg-accent/90 text-white font-semibold active:scale-[0.98] transition-all"
+        disabled={submitting || hotel.active === false}
         onClick={handleBook}
       >
-        Đặt phòng ngay
+        {submitting
+          ? <><Loader2 size={15} className="animate-spin mr-1.5" />Đang xử lý...</>
+          : 'Đặt phòng ngay'
+        }
       </Button>
 
       <Button
@@ -567,14 +627,14 @@ export default function HotelDetailPage() {
     <div className="min-h-screen">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 pt-24 pb-16 space-y-6">
-        <Skeleton className="h-96 w-full rounded-xl" />
+        <Skeleton className="h-96 w-full rounded" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             <Skeleton className="h-10 w-72" />
             <Skeleton className="h-5 w-48" />
-            <Skeleton className="h-40 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded" />
           </div>
-          <Skeleton className="h-80 w-full rounded-xl" />
+          <Skeleton className="h-80 w-full rounded" />
         </div>
       </div>
       <Footer />
@@ -590,7 +650,7 @@ export default function HotelDetailPage() {
   const filteredRooms = roomFilter === 'ALL' ? rooms : rooms.filter(r => r.status === roomFilter)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f8f5ee]">
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 pt-24 pb-16 animate-in fade-in slide-in-from-bottom-2 duration-400">
@@ -656,7 +716,7 @@ export default function HotelDetailPage() {
               {/* Tab: Tổng quan */}
               <TabsContent value="overview" className="space-y-6">
                 {hotel.description && (
-                  <section className="bg-white rounded-xl border border-border p-6">
+                  <section className="bg-white rounded border border-border p-6">
                     <h2 className="font-semibold text-base mb-3">Giới thiệu</h2>
                     <div
                       className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none"
@@ -666,7 +726,7 @@ export default function HotelDetailPage() {
                 )}
 
                 {amenities.length > 0 && (
-                  <section className="bg-white rounded-xl border border-border p-6">
+                  <section className="bg-white rounded border border-border p-6">
                     <h2 className="font-semibold text-base mb-4">Tiện ích</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {amenities.map((a, i) => (
@@ -680,7 +740,7 @@ export default function HotelDetailPage() {
                 )}
 
                 {/* Map placeholder */}
-                <section className="bg-white rounded-xl border border-border p-6">
+                <section className="bg-white rounded border border-border p-6">
                   <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                     <MapPin size={16} className="text-accent" /> Vị trí
                   </h2>
@@ -717,7 +777,7 @@ export default function HotelDetailPage() {
 
                 {loadingRooms ? (
                   <div className="space-y-3">
-                    {[1,2,3].map(i => <Skeleton key={i} className="h-36 w-full rounded-xl" />)}
+                    {[1,2,3].map(i => <Skeleton key={i} className="h-36 w-full rounded" />)}
                   </div>
                 ) : filteredRooms.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground text-sm">
@@ -747,7 +807,7 @@ export default function HotelDetailPage() {
 
           {/* ── Sidebar ── */}
           <div>
-            <BookingSidebar hotel={hotel} rooms={rooms} hotelId={hotelId!} />
+            <BookingSidebar hotel={hotel} rooms={rooms} hotelId={hotelId!} loadingRooms={loadingRooms} />
           </div>
         </div>
       </div>

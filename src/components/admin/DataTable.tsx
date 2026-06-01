@@ -22,6 +22,8 @@ interface DataTableProps<T> {
   data: T[]
   columns: Column<T>[]
   loading?: boolean
+  isError?: boolean
+  onRetry?: () => void
   totalCount?: number
   page?: number
   pageSize?: number
@@ -54,6 +56,7 @@ const EmptyIllustration = () => (
 
 export default function DataTable<T>({
   data, columns, loading = false,
+  isError = false, onRetry,
   totalCount = 0, page = 0, pageSize = 10,
   onPageChange, onPageSizeChange,
   onSort, sortKey, sortDir,
@@ -111,16 +114,30 @@ export default function DataTable<T>({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
       {toolbar && (
         <div className="px-5 py-4 border-b border-gray-100">{toolbar}</div>
+      )}
+
+      {isError && (
+        <div className="flex items-center justify-between mx-5 my-3 px-4 py-2.5 rounded border border-red-200 bg-red-50">
+          <p className="text-sm text-red-700">Không tải được dữ liệu</p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-800 transition-colors"
+            >
+              <span className="text-xs">↺</span> Tải lại
+            </button>
+          )}
+        </div>
       )}
 
       <ScrollArea className="w-full">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/70">
+              <tr className="border-b border-gray-100 bg-[#f8f5ee]/70">
                 {hasSelection && (
                   <th className="w-10 px-4 py-3 text-left">
                     <Checkbox
@@ -141,7 +158,7 @@ export default function DataTable<T>({
                     onClick={() => col.sortable && handleSort(col.key)}
                   >
                     <span className={`inline-flex items-center gap-1 ${activeSortKey === col.key ? '' : ''}`}
-                      style={activeSortKey === col.key ? { color: '#1a5276' } : {}}>
+                      style={activeSortKey === col.key ? { color: '#0a1628' } : {}}>
                       {col.header}
                       {col.sortable && (
                         activeSortKey === col.key
@@ -157,7 +174,7 @@ export default function DataTable<T>({
             </thead>
             <tbody>
               {loading
-                ? Array.from({ length: 8 }).map((_, i) => (
+                ? Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b border-gray-50">
                       {hasSelection && (
                         <td className="px-4 py-3">
@@ -189,7 +206,7 @@ export default function DataTable<T>({
                       <tr
                         key={String(rowId)}
                         className={`border-b border-gray-50 transition-colors
-                          ${isSelected ? 'bg-blue-50/40' : 'hover:bg-gray-50/50'}`}
+                          ${isSelected ? 'bg-blue-50/40' : 'hover:bg-[#f8f5ee]/50'}`}
                       >
                         {hasSelection && (
                           <td className="px-4 py-3">
@@ -231,7 +248,7 @@ export default function DataTable<T>({
             <button
               onClick={() => onPageChange?.(page - 1)}
               disabled={page === 0 || loading}
-              className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={15} />
             </button>
@@ -245,8 +262,8 @@ export default function DataTable<T>({
                     onClick={() => onPageChange?.(p as number)}
                     disabled={loading}
                     className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors
-                      ${p === page ? 'text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                    style={p === page ? { backgroundColor: '#1a5276' } : {}}
+                      ${p === page ? 'text-white' : 'border border-gray-200 text-gray-600 hover:bg-[#f8f5ee]'}`}
+                    style={p === page ? { backgroundColor: '#0a1628' } : {}}
                   >
                     {(p as number) + 1}
                   </button>
@@ -256,7 +273,7 @@ export default function DataTable<T>({
             <button
               onClick={() => onPageChange?.(page + 1)}
               disabled={page >= totalPages - 1 || loading}
-              className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight size={15} />
             </button>

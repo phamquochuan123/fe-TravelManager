@@ -77,7 +77,7 @@ const MenuBar = () => {
                 <div className="flex justify-between items-center px-6 md:px-12 h-16">
                     {/* Logo */}
                     <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-                        <div className="bg-gradient-to-br from-sky-500 to-blue-600 p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-sky-200">
+                        <div className="bg-gradient-to-br from-sky-500 to-blue-600 p-2 rounded group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-sky-200">
                             <img src={assets.logo_home} alt="logo" className="w-7 h-7 object-contain" />
                         </div>
                         <span className="font-['Be_Vietnam_Pro'] font-black text-xl tracking-tighter text-gray-900">
@@ -91,7 +91,7 @@ const MenuBar = () => {
                             <button
                                 key={link.path}
                                 onClick={() => navigate(link.path)}
-                                className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-sky-500 transition-colors px-3 py-2 rounded-xl hover:bg-sky-50"
+                                className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-sky-500 transition-colors px-3 py-2 rounded hover:bg-sky-50"
                             >
                                 <i className={`bi ${link.icon} text-xs`} /> {link.label}
                             </button>
@@ -99,7 +99,7 @@ const MenuBar = () => {
                         {userData && (
                             <button
                                 onClick={() => navigate("/my-bookings")}
-                                className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-sky-500 transition-colors px-3 py-2 rounded-xl hover:bg-sky-50"
+                                className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-sky-500 transition-colors px-3 py-2 rounded hover:bg-sky-50"
                             >
                                 <i className="bi bi-calendar-check text-xs" /> Đặt chỗ
                             </button>
@@ -107,7 +107,7 @@ const MenuBar = () => {
                         {userData && (userData.roleName === "ADMIN" || userData.roleName === "STAFF") && (
                             <button
                                 onClick={() => navigate("/staff")}
-                                className="flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors px-3 py-2 rounded-xl bg-blue-50"
+                                className="flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors px-3 py-2 rounded bg-blue-50"
                             >
                                 <i className="bi bi-person-badge text-xs" /> Staff
                             </button>
@@ -115,7 +115,7 @@ const MenuBar = () => {
                         {userData && userData.roleName === "ADMIN" && (
                             <button
                                 onClick={() => navigate("/admin")}
-                                className="flex items-center gap-1.5 text-sm font-semibold text-red-500 hover:text-red-600 transition-colors px-3 py-2 rounded-xl bg-red-50"
+                                className="flex items-center gap-1.5 text-sm font-semibold text-red-500 hover:text-red-600 transition-colors px-3 py-2 rounded bg-red-50"
                             >
                                 <i className="bi bi-shield-check text-xs" /> Admin
                             </button>
@@ -128,7 +128,7 @@ const MenuBar = () => {
                             <div className="relative" ref={dropDownRef}>
                                 <button
                                     onClick={() => setDropdownOpen(p => !p)}
-                                    className="flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-full bg-gray-50 hover:bg-sky-50 border border-gray-200 hover:border-sky-200 transition-all group"
+                                    className="flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-full bg-[#f8f5ee] hover:bg-sky-50 border border-gray-200 hover:border-sky-200 transition-all group"
                                 >
                                     <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-500 to-blue-500 text-white flex items-center justify-center font-bold text-sm shadow">
                                         {userData?.name?.charAt(0).toUpperCase()}
@@ -140,7 +140,7 @@ const MenuBar = () => {
                                 </button>
 
                                 {dropdownOpen && (
-                                    <div className="absolute top-full right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl shadow-sky-100/30 border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                    <div className="absolute top-full right-0 mt-2 w-60 bg-white rounded shadow-2xl shadow-sky-100/30 border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                         {/* Header */}
                                         <div className="px-4 py-3.5 bg-gradient-to-r from-sky-50 to-blue-50 border-b border-gray-100">
                                             <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">Đăng nhập với</p>
@@ -158,18 +158,18 @@ const MenuBar = () => {
 
                                         <div className="p-2">
                                             <button onClick={() => { navigate("/profile"); setDropdownOpen(false); }}
-                                                className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-sky-50 hover:text-sky-600 rounded-xl transition-colors flex items-center gap-2.5">
+                                                className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-sky-50 hover:text-sky-600 rounded transition-colors flex items-center gap-2.5">
                                                 <i className="bi bi-person-circle text-sky-400" /> Hồ sơ cá nhân
                                             </button>
                                             <button onClick={() => { navigate("/my-bookings"); setDropdownOpen(false); }}
-                                                className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-sky-50 hover:text-sky-600 rounded-xl transition-colors flex items-center gap-2.5">
+                                                className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-sky-50 hover:text-sky-600 rounded transition-colors flex items-center gap-2.5">
                                                 <i className="bi bi-calendar-check text-sky-400" /> Lịch sử đặt chỗ
                                             </button>
 
                                             <div className="lg:hidden">
                                                 {NAV_LINKS.map(link => (
                                                     <button key={link.path} onClick={() => { navigate(link.path); setDropdownOpen(false); }}
-                                                        className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-2.5">
+                                                        className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-[#f8f5ee] rounded transition-colors flex items-center gap-2.5">
                                                         <i className={`bi ${link.icon} text-gray-400`} /> {link.label}
                                                     </button>
                                                 ))}
@@ -177,26 +177,26 @@ const MenuBar = () => {
 
                                             {(userData.roleName === "ADMIN" || userData.roleName === "STAFF") && (
                                                 <button onClick={() => { navigate("/staff"); setDropdownOpen(false); }}
-                                                    className="w-full text-left px-3 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-xl transition-colors flex items-center gap-2.5">
+                                                    className="w-full text-left px-3 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded transition-colors flex items-center gap-2.5">
                                                     <i className="bi bi-person-badge text-blue-400" /> Staff Dashboard
                                                 </button>
                                             )}
                                             {userData.roleName === "ADMIN" && (
                                                 <button onClick={() => { navigate("/admin"); setDropdownOpen(false); }}
-                                                    className="w-full text-left px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-2.5">
+                                                    className="w-full text-left px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded transition-colors flex items-center gap-2.5">
                                                     <i className="bi bi-shield-check text-red-400" /> Admin Dashboard
                                                 </button>
                                             )}
                                             {!userData.isAccountVerified && (
                                                 <button onClick={sendVerificationOTP}
-                                                    className="w-full text-left px-3 py-2.5 text-sm font-medium text-amber-600 hover:bg-amber-50 rounded-xl transition-colors flex items-center gap-2.5">
+                                                    className="w-full text-left px-3 py-2.5 text-sm font-medium text-amber-600 hover:bg-amber-50 rounded transition-colors flex items-center gap-2.5">
                                                     <i className="bi bi-patch-check text-amber-400" /> Xác thực Email
                                                 </button>
                                             )}
 
                                             <div className="border-t border-gray-100 mt-1 pt-1">
                                                 <button onClick={handleLogout}
-                                                    className="w-full text-left px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-2.5">
+                                                    className="w-full text-left px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 rounded transition-colors flex items-center gap-2.5">
                                                     <i className="bi bi-box-arrow-right text-red-400" /> Đăng xuất
                                                 </button>
                                             </div>
@@ -208,7 +208,7 @@ const MenuBar = () => {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => navigate("/login")}
-                                    className="text-sm font-semibold text-gray-600 hover:text-sky-500 px-4 py-2 rounded-xl transition-colors hidden sm:block"
+                                    className="text-sm font-semibold text-gray-600 hover:text-sky-500 px-4 py-2 rounded transition-colors hidden sm:block"
                                 >
                                     Đăng nhập
                                 </button>

@@ -1,8 +1,15 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import './App.css'
 import { ToastContainer } from 'react-toastify'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+
+// Scroll to top on every route change
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
 
 // ─── Eager (critical landing page) ───────────────────────────────────────────
 import HomePage from './pages/user/HomePage'
@@ -16,6 +23,7 @@ const EmailVerify      = lazy(() => import('./pages/auth/EmailVerify'))
 
 const HotelList      = lazy(() => import('./pages/hotels/HotelsPage'))
 const HotelDetail    = lazy(() => import('./pages/hotels/HotelDetailPage'))
+const BookHotelPage  = lazy(() => import('./pages/hotels/BookHotelPage'))
 
 const ToursPage      = lazy(() => import('./pages/tours/ToursPage'))
 const TourDetailPage = lazy(() => import('./pages/tours/TourDetailPage'))
@@ -27,14 +35,13 @@ const RestaurantList    = lazy(() => import('./pages/restaurants/RestaurantsPage
 const RestaurantDetail  = lazy(() => import('./pages/restaurants/RestaurantDetailPage'))
 const BookRestaurant    = lazy(() => import('./pages/restaurants/BookRestaurant'))
 
+const DestinationDetail = lazy(() => import('./pages/destinations/DestinationDetailPage'))
+
 
 const MyOrdersPage         = lazy(() => import('./pages/user/MyOrdersPage'))
 const ProfilePage          = lazy(() => import('./pages/user/ProfilePage'))
 const PaymentResultPage    = lazy(() => import('./pages/payment/PaymentResultPage'))
 const PaymentHistoryPage   = lazy(() => import('./pages/payment/PaymentHistoryPage'))
-
-const AddRoom  = lazy(() => import('./components/room/AddRoom'))
-const EditRoom = lazy(() => import('./components/room/EditRoom'))
 
 // ─── Admin section (nested layout) ───────────────────────────────────────────
 const AdminLayout           = lazy(() => import('./components/layout/AdminLayout'))
@@ -64,8 +71,7 @@ const IncidentReportPage = lazy(() => import('./pages/staff/IncidentReportPage')
 // ─── Full-page loading fallback ───────────────────────────────────────────────
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <span className="w-8 h-8 border-2 rounded-full animate-spin"
-      style={{ borderColor: 'rgba(26,82,118,0.2)', borderTopColor: '#1a5276' }} />
+    <span className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
   </div>
 )
 
@@ -74,6 +80,7 @@ const App = () => {
     <div>
       <ToastContainer position="top-right" autoClose={3000} />
       <Suspense fallback={<PageLoader />}>
+        <ScrollToTop />
         <Routes>
           {/* Public */}
           <Route path="/"                element={<HomePage />} />
@@ -83,9 +90,17 @@ const App = () => {
           <Route path="/reset-passWord"  element={<ResetPassword />} />
           <Route path="/verify-email"    element={<EmailVerify />} />
 
+          {/* Destinations */}
+          <Route path="/destinations/:id" element={<DestinationDetail />} />
+
           {/* Hotels */}
           <Route path="/hotels"                        element={<HotelList />} />
           <Route path="/hotels/:hotelId"               element={<HotelDetail />} />
+          <Route path="/hotels/:hotelId/book/:roomId"  element={
+            <ProtectedRoute allowedRoles={['USER', 'STAFF', 'ADMIN']}>
+              <BookHotelPage />
+            </ProtectedRoute>
+          } />
 
           {/* Tours */}
           <Route path="/tours"              element={<ToursPage />} />
@@ -122,18 +137,6 @@ const App = () => {
             </ProtectedRoute>
           } />
 
-          {/* Rooms */}
-          <Route path="/add-room" element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <AddRoom />
-            </ProtectedRoute>
-          } />
-          <Route path="/edit-room/:roomId" element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
-              <EditRoom />
-            </ProtectedRoute>
-          } />
-
           {/* Payment */}
           <Route path="/payment/result"  element={<PaymentResultPage />} />
           <Route path="/payment/success" element={<PaymentSuccessPage />} />
@@ -157,9 +160,9 @@ const App = () => {
             <Route path="restaurants"         element={<AdminRestaurantsPage />} />
             <Route path="orders">
               <Route index                    element={<AdminOrdersPage />} />
-              <Route path="tours"             element={<AdminOrdersPage />} />
-              <Route path="rooms"             element={<AdminOrdersPage />} />
-              <Route path="restaurants"       element={<AdminOrdersPage />} />
+              <Route path="tours"             element={<AdminOrdersPage defaultServiceType="TOUR" />} />
+              <Route path="rooms"             element={<AdminOrdersPage defaultServiceType="HOTEL" />} />
+              <Route path="restaurants"       element={<AdminOrdersPage defaultServiceType="RESTAURANT" />} />
             </Route>
             <Route path="customers"           element={<AdminUsersPage />} />
             <Route path="staff"               element={<AdminStaffPage />} />

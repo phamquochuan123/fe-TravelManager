@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom"
+import { resolveBase64Image } from '../../lib/utils'
 
 const HOTEL_TYPE_LABEL = { HOTEL: "Khách sạn", RESORT: "Resort", HOMESTAY: "Homestay" }
 const HOTEL_TYPE_COLOR = {
@@ -25,13 +26,13 @@ const HotelCard = ({ hotel }) => {
             tabIndex={0}
             onClick={() => navigate(`/hotels/${hotel.id}`)}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/hotels/${hotel.id}`) } }}
-            className="bg-card rounded-2xl border border-border hover:shadow-xl hover:shadow-sky-100/40 hover:-translate-y-2 transition-all duration-300 cursor-pointer group overflow-hidden"
+            className="bg-card rounded border border-border hover:shadow-xl hover:shadow-sky-100/40 hover:-translate-y-2 transition-all duration-300 cursor-pointer group overflow-hidden"
         >
             {/* Image */}
             <div className="h-52 bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100 relative overflow-hidden flex items-center justify-center">
                 {hotel.photo ? (
                     <img
-                        src={`data:image/jpeg;base64,${hotel.photo}`}
+                        src={resolveBase64Image(hotel.photo, '')}
                         alt={hotel.name}
                         loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -100,7 +101,7 @@ const HotelCard = ({ hotel }) => {
                     </div>
                     <button
                         onClick={(e) => { e.stopPropagation(); navigate(`/hotels/${hotel.id}`) }}
-                        className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold py-2.5 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md hover:shadow-sky-200"
+                        className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold py-2.5 rounded transition-all text-sm flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md hover:shadow-sky-200"
                     >
                         Đặt phòng <i className="bi bi-arrow-right text-xs" />
                     </button>

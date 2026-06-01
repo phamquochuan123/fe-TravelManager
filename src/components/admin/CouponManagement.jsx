@@ -16,7 +16,7 @@ const CouponManagement = () => {
     const [editId, setEditId] = useState(null)
     const [showForm, setShowForm] = useState(false)
     const [saving, setSaving] = useState(false)
-    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => { } })
 
     const fetchCoupons = async () => {
         try { setCoupons(await getAllCoupons()) }
@@ -101,14 +101,14 @@ const CouponManagement = () => {
                     <p className="text-sm text-gray-500 mt-0.5">{coupons.length} mã coupon</p>
                 </div>
                 <button onClick={openCreate}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded text-sm font-semibold transition-colors">
                     <i className="bi bi-plus-lg" /> Tạo mã mới
                 </button>
             </div>
 
             {/* Form */}
             {showForm && (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6">
+                <div className="bg-indigo-50 border border-indigo-200 rounded p-6">
                     <h3 className="font-bold text-gray-900 mb-4">
                         {editId ? "Chỉnh sửa mã giảm giá" : "Tạo mã giảm giá mới"}
                     </h3>
@@ -117,12 +117,12 @@ const CouponManagement = () => {
                             <label className="text-sm font-semibold text-gray-700 block mb-1">Mã coupon *</label>
                             <input value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
                                 placeholder="VD: SUMMER2025"
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono uppercase" />
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono uppercase" />
                         </div>
                         <div>
                             <label className="text-sm font-semibold text-gray-700 block mb-1">Loại giảm giá *</label>
                             <select value={form.couponType} onChange={e => setForm(f => ({ ...f, couponType: e.target.value }))}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <option value="PERCENT">Phần trăm (%)</option>
                                 <option value="FIXED">Số tiền cố định (₫)</option>
                             </select>
@@ -135,20 +135,20 @@ const CouponManagement = () => {
                                 onChange={e => setForm(f => ({ ...f, discountValue: e.target.value }))}
                                 min="1" max={form.couponType === "PERCENT" ? 100 : undefined}
                                 placeholder={form.couponType === "PERCENT" ? "VD: 20" : "VD: 200000"}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <label className="text-sm font-semibold text-gray-700 block mb-1">Đơn hàng tối thiểu (₫)</label>
                             <input type="number" value={form.minOrderValue}
                                 onChange={e => setForm(f => ({ ...f, minOrderValue: e.target.value }))}
                                 placeholder="Để trống nếu không giới hạn"
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <label className="text-sm font-semibold text-gray-700 block mb-1">Giới hạn sử dụng</label>
                             <input type="number" value={form.usageLimit}
                                 onChange={e => setForm(f => ({ ...f, usageLimit: e.target.value }))}
-                                min="1" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                min="1" className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div className="flex items-center gap-3">
                             <label className="text-sm font-semibold text-gray-700">Kích hoạt</label>
@@ -161,21 +161,21 @@ const CouponManagement = () => {
                             <label className="text-sm font-semibold text-gray-700 block mb-1">Ngày bắt đầu *</label>
                             <input type="date" value={form.startDate}
                                 onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <label className="text-sm font-semibold text-gray-700 block mb-1">Ngày kết thúc *</label>
                             <input type="date" value={form.endDate}
                                 onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div className="md:col-span-2 flex gap-3">
                             <button type="submit" disabled={saving}
-                                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-5 py-2.5 rounded text-sm font-semibold transition-colors">
                                 {saving ? "Đang lưu..." : editId ? "Lưu thay đổi" : "Tạo mã"}
                             </button>
                             <button type="button" onClick={closeForm}
-                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded text-sm font-semibold transition-colors">
                                 Hủy
                             </button>
                         </div>
@@ -186,7 +186,7 @@ const CouponManagement = () => {
             {/* Danh sách */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {coupons.map(c => (
-                    <div key={c.id} className={`bg-white rounded-2xl border p-5 shadow-sm ${isActive(c) ? "border-emerald-200" : "border-gray-100 opacity-70"}`}>
+                    <div key={c.id} className={`bg-white rounded border p-5 shadow-sm ${isActive(c) ? "border-emerald-200" : "border-gray-100 opacity-70"}`}>
                         <div className="flex items-start justify-between mb-3">
                             <div>
                                 <p className="font-black text-gray-900 font-mono text-lg tracking-wide">{c.code}</p>
@@ -219,11 +219,11 @@ const CouponManagement = () => {
 
                         <div className="flex gap-2">
                             <button onClick={() => openEdit(c)}
-                                className="flex-1 text-indigo-600 border border-indigo-200 hover:bg-indigo-50 py-1.5 rounded-xl text-xs font-semibold transition-colors">
+                                className="flex-1 text-indigo-600 border border-indigo-200 hover:bg-indigo-50 py-1.5 rounded text-xs font-semibold transition-colors">
                                 <i className="bi bi-pencil mr-1" />Sửa
                             </button>
                             <button onClick={() => handleDelete(c.id, c.code)}
-                                className="flex-1 text-red-500 border border-red-200 hover:bg-red-50 py-1.5 rounded-xl text-xs font-semibold transition-colors">
+                                className="flex-1 text-red-500 border border-red-200 hover:bg-red-50 py-1.5 rounded text-xs font-semibold transition-colors">
                                 <i className="bi bi-trash3 mr-1" />Xoá
                             </button>
                         </div>

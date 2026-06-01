@@ -4,11 +4,10 @@ import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import {
   TrendingUp, Users, ShoppingCart, DollarSign,
-  Download, RefreshCw, FileSpreadsheet, FileText, ChevronDown, Loader2
+  Download, RefreshCw, FileSpreadsheet, FileText, Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select'
@@ -56,10 +55,10 @@ interface ReportData {
 
 // ─── Color palette ────────────────────────────────────────────────────────────
 const COLORS = {
-  tours: '#1a5276',
+  tours: '#0a1628',
   hotels: '#8e44ad',
-  restaurants: '#e67e22',
-  pie: ['#1a5276', '#e67e22', '#8e44ad', '#27ae60', '#e74c3c']
+  restaurants: '#c9a84c',
+  pie: ['#0a1628', '#c9a84c', '#8e44ad', '#27ae60', '#e74c3c']
 }
 
 // ─── Date presets ─────────────────────────────────────────────────────────────
@@ -79,9 +78,9 @@ function getDateRange(preset: string): { from: string; to: string } {
     case '30d':
       return { from: now.subtract(29, 'day').format('YYYY-MM-DD'), to: now.format('YYYY-MM-DD') }
     case 'quarter':
-      return { from: now.startOf('quarter').format('YYYY-MM-DD'), to: now.format('YYYY-MM-DD') }
+      return { from: now.startOf('quarter' as dayjs.OpUnitType).format('YYYY-MM-DD'), to: now.format('YYYY-MM-DD') }
     case 'year':
-      return { from: now.startOf('year').format('YYYY-MM-DD'), to: now.format('YYYY-MM-DD') }
+      return { from: now.startOf('year' as dayjs.OpUnitType).format('YYYY-MM-DD'), to: now.format('YYYY-MM-DD') }
     default:
       return { from: now.subtract(29, 'day').format('YYYY-MM-DD'), to: now.format('YYYY-MM-DD') }
   }
@@ -89,7 +88,7 @@ function getDateRange(preset: string): { from: string; to: string } {
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 function KpiCard({
-  title, value, growth, icon: Icon, format = 'number', color
+  title, value, growth, icon: Icon, format = 'number', color, index = 0
 }: {
   title: string
   value: number
@@ -97,6 +96,7 @@ function KpiCard({
   icon: React.ElementType
   format?: 'number' | 'currency' | 'count'
   color: string
+  index?: number
 }) {
   const formatted = format === 'currency'
     ? new Intl.NumberFormat('vi-VN', { notation: 'compact', maximumFractionDigits: 1 }).format(value) + ' ₫'
@@ -107,21 +107,24 @@ function KpiCard({
   const isPositive = growth >= 0
 
   return (
-    <div className="bg-white rounded-xl border p-5 space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">{title}</p>
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: color + '20' }}>
-          <Icon className="w-5 h-5" style={{ color }} />
+    <div
+      className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm animate-fade-in-up"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-slate-500">{title}</p>
+          <p className="mt-3 text-3xl font-semibold text-slate-900">{formatted}</p>
+        </div>
+        <div className="grid h-12 w-12 place-items-center rounded" style={{ background: `${color}20` }}>
+          <Icon className="h-5 w-5" style={{ color }} />
         </div>
       </div>
-      <p className="text-2xl font-bold text-gray-800">{formatted}</p>
-      <div className="flex items-center gap-1">
-        <Badge
-          className={`text-xs border-0 ${isPositive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}
-        >
-          {isPositive ? '↑' : '↓'} {Math.abs(growth).toFixed(1)}%
+      <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+        <Badge className={`rounded-full px-2 py-1 text-xs font-semibold ${isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+          {isPositive ? 'Tăng' : 'Giảm'} {Math.abs(growth).toFixed(1)}%
         </Badge>
-        <span className="text-xs text-gray-400">so với kỳ trước</span>
+        <span className="text-slate-500">so với kỳ trước</span>
       </div>
     </div>
   )
@@ -269,148 +272,163 @@ export default function AdminReportsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#1a5276' }}>Báo cáo & Thống kê</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {from} → {to}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2 items-center">
-          {/* Preset selector */}
-          <Select value={preset} onValueChange={setPreset}>
-            <SelectTrigger className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PRESETS.map(p => (
-                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {preset === 'custom' && (
-            <div className="flex gap-2 items-center">
-              <input
-                type="date"
-                value={customFrom}
-                onChange={e => setCustomFrom(e.target.value)}
-                className="border rounded-md px-2 py-1.5 text-sm"
-              />
-              <span className="text-gray-400 text-sm">→</span>
-              <input
-                type="date"
-                value={customTo}
-                onChange={e => setCustomTo(e.target.value)}
-                className="border rounded-md px-2 py-1.5 text-sm"
-              />
+      <div className="grid gap-6 lg:grid-cols-[1.7fr_0.9fr]">
+        <section className="rounded-[32px] bg-slate-950/95 p-6 text-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="space-y-3">
+              <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Báo cáo & thống kê</p>
+              <h1 className="text-4xl font-semibold tracking-tight text-white">Hiệu suất kênh kinh doanh</h1>
+              <p className="max-w-2xl text-sm text-slate-300">Xem doanh thu, đơn đặt và khách hàng trong kỳ bạn cần.</p>
             </div>
-          )}
 
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => refetch()}
-            disabled={isFetching}
-          >
-            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-          </Button>
+            <div className="grid gap-3 sm:auto-cols-min sm:grid-flow-col">
+              <div className="rounded-sm bg-slate-900/70 p-4">
+                <p className="text-sm text-slate-400">Khoảng thời gian</p>
+                <p className="mt-2 text-xl font-semibold text-white">{from} → {to}</p>
+              </div>
+              <div className="rounded-sm bg-slate-900/70 p-4">
+                <p className="text-sm text-slate-400">Trạng thái dữ liệu</p>
+                <p className="mt-2 text-xl font-semibold text-white">{isFetching ? 'Đang tải...' : 'Cập nhật gần nhất'}</p>
+              </div>
+            </div>
+          </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" disabled={isExporting} className="gap-2">
-                {isExporting
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <Download className="w-4 h-4" />
-                }
-                Xuất báo cáo
-                <ChevronDown className="w-3 h-3" />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-32 rounded-[28px] bg-slate-900/70 animate-pulse" />
+              ))
+            ) : kpi ? (
+              <>
+                <KpiCard title="Tổng doanh thu" value={kpi.totalRevenue} growth={kpi.revenueGrowth}
+                  icon={DollarSign} format="currency" color="#0a1628" index={0} />
+                <KpiCard title="Tổng đơn đặt" value={kpi.totalOrders} growth={kpi.ordersGrowth}
+                  icon={ShoppingCart} format="count" color="#c9a84c" index={1} />
+                <KpiCard title="Khách hàng mới" value={kpi.totalCustomers} growth={kpi.customersGrowth}
+                  icon={Users} format="count" color="#27ae60" index={2} />
+                <KpiCard title="Giá trị TB/đơn" value={kpi.avgOrderValue} growth={kpi.avgOrderGrowth}
+                  icon={TrendingUp} format="currency" color="#8e44ad" index={3} />
+              </>
+            ) : null}
+          </div>
+        </section>
+
+        <aside className="space-y-4">
+          <div className="rounded-[32px] border border-slate-200/70 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Bộ lọc</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">Chọn thời gian</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
+                <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => downloadExport('/admin/export/excel/tour-bookings', 'bookings_tour.xlsx')}>
-                <FileSpreadsheet className="w-4 h-4 mr-2 text-green-600" />
-                Đặt tour → Excel
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadExport('/admin/export/excel/restaurant-bookings', 'bookings_restaurant.xlsx')}>
-                <FileSpreadsheet className="w-4 h-4 mr-2 text-green-600" />
-                Nhà hàng → Excel
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => downloadExport('/admin/export/pdf/tour-bookings', 'bookings_tour.pdf')}>
-                <FileText className="w-4 h-4 mr-2 text-red-500" />
-                Đặt tour → PDF
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadExport('/admin/export/pdf/restaurant-bookings', 'bookings_restaurant.pdf')}>
-                <FileText className="w-4 h-4 mr-2 text-red-500" />
-                Nhà hàng → PDF
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </div>
 
-          <Button
-            variant="outline"
-            onClick={handleExportXlsx}
-            disabled={exportingXlsx || !data}
-            className="gap-2"
-          >
-            {exportingXlsx
-              ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              : <FileSpreadsheet className="w-4 h-4" />
-            }
-            Excel
-          </Button>
+            <div className="mt-4 space-y-4">
+              <Select value={preset} onValueChange={setPreset}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRESETS.map(p => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-          <Button
-            onClick={handleExportPdf}
-            disabled={exportingPdf || !data}
-            className="gap-2 text-white"
-            style={{ background: '#1a5276' }}
-          >
-            {exportingPdf
-              ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              : <FileText className="w-4 h-4" />
-            }
-            PDF
-          </Button>
-        </div>
+              {preset === 'custom' && (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block space-y-1 text-sm text-slate-600">
+                    Từ ngày
+                    <input
+                      type="date"
+                      value={customFrom}
+                      onChange={e => setCustomFrom(e.target.value)}
+                      className="w-full rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400"
+                    />
+                  </label>
+                  <label className="block space-y-1 text-sm text-slate-600">
+                    Đến ngày
+                    <input
+                      type="date"
+                      value={customTo}
+                      onChange={e => setCustomTo(e.target.value)}
+                      className="w-full rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400"
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-[32px] border border-slate-200/70 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Hành động</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">Xuất dữ liệu</p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              <Button variant="outline" onClick={handleExportXlsx} disabled={exportingXlsx || !data} className="gap-2 w-full justify-center">
+                {exportingXlsx ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+                Xuất Excel chung
+              </Button>
+              <Button variant="outline" onClick={handleExportPdf} disabled={exportingPdf || !data} className="gap-2 w-full justify-center">
+                {exportingPdf ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <FileText className="w-4 h-4" />}
+                Xuất PDF chung
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" className="gap-2 w-full justify-center" disabled={isExporting}>
+                    {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    Xuất theo loại
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => downloadExport('/admin/export/excel/tour-bookings', 'bookings_tour.xlsx')}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2 text-green-600" />
+                    Đặt tour → Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadExport('/admin/export/excel/restaurant-bookings', 'bookings_restaurant.xlsx')}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2 text-green-600" />
+                    Nhà hàng → Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => downloadExport('/admin/export/pdf/tour-bookings', 'bookings_tour.pdf')}>
+                    <FileText className="w-4 h-4 mr-2 text-red-500" />
+                    Đặt tour → PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadExport('/admin/export/pdf/restaurant-bookings', 'bookings_restaurant.pdf')}>
+                    <FileText className="w-4 h-4 mr-2 text-red-500" />
+                    Nhà hàng → PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </aside>
       </div>
 
       {/* Report body - captured for PDF */}
       <div ref={reportRef} className="space-y-6">
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="rounded-[32px] border border-slate-200/70 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">Doanh thu theo thời gian</h2>
+              <p className="text-sm text-slate-500">Theo dõi xu hướng doanh thu từng ngày trong khoảng đã chọn.</p>
+            </div>
+            <div className="inline-flex flex-wrap items-center gap-2">
+              <Badge className="bg-slate-100 text-slate-700">Tour</Badge>
+              <Badge className="bg-slate-100 text-slate-700">Khách sạn</Badge>
+              <Badge className="bg-slate-100 text-slate-700">Nhà hàng</Badge>
+            </div>
+          </div>
           {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-xl border p-5 space-y-3">
-                <div className="h-4 bg-gray-100 rounded animate-pulse w-1/2" />
-                <div className="h-8 bg-gray-100 rounded animate-pulse w-3/4" />
-                <div className="h-4 bg-gray-100 rounded animate-pulse w-1/3" />
-              </div>
-            ))
-          ) : kpi ? (
-            <>
-              <KpiCard title="Tổng doanh thu" value={kpi.totalRevenue} growth={kpi.revenueGrowth}
-                icon={DollarSign} format="currency" color="#1a5276" />
-              <KpiCard title="Tổng đơn đặt" value={kpi.totalOrders} growth={kpi.ordersGrowth}
-                icon={ShoppingCart} format="count" color="#e67e22" />
-              <KpiCard title="Khách hàng mới" value={kpi.totalCustomers} growth={kpi.customersGrowth}
-                icon={Users} format="count" color="#27ae60" />
-              <KpiCard title="Giá trị TB/đơn" value={kpi.avgOrderValue} growth={kpi.avgOrderGrowth}
-                icon={TrendingUp} format="currency" color="#8e44ad" />
-            </>
-          ) : null}
-        </div>
-
-        {/* Revenue Area Chart */}
-        <div className="bg-white rounded-xl border p-5">
-          <h2 className="font-semibold text-gray-700 mb-4">Doanh thu theo thời gian</h2>
-          {isLoading ? (
-            <div className="h-64 bg-gray-50 rounded animate-pulse" />
+            <div className="mt-6 h-[280px] rounded-sm bg-slate-100 animate-pulse" />
           ) : (
-            <ResponsiveContainer width="100%" height={280}>
+            <div className="mt-6 h-[280px]"><ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data?.revenueTimeline ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                 <defs>
                   <linearGradient id="gradTours" x1="0" y1="0" x2="0" y2="1">
@@ -435,19 +453,23 @@ export default function AdminReportsPage() {
                 <Area type="monotone" dataKey="hotels" name="hotels" stroke={COLORS.hotels} fill="url(#gradHotels)" strokeWidth={2} />
                 <Area type="monotone" dataKey="restaurants" name="restaurants" stroke={COLORS.restaurants} fill="url(#gradRestaurants)" strokeWidth={2} />
               </AreaChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer></div>
           )}
         </div>
 
-        {/* Bar chart + Pie chart */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Bar chart - 2/3 */}
-          <div className="lg:col-span-2 bg-white rounded-xl border p-5">
-            <h2 className="font-semibold text-gray-700 mb-4">So sánh theo dịch vụ</h2>
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.7fr_1fr]">
+          <div className="rounded-[32px] border border-slate-200/70 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">So sánh theo dịch vụ</h2>
+                <p className="text-sm text-slate-500">So sánh doanh thu giữa tour, khách sạn và nhà hàng.</p>
+              </div>
+              <Badge className="bg-slate-100 text-slate-700">Tổng quan</Badge>
+            </div>
             {isLoading ? (
-              <div className="h-56 bg-gray-50 rounded animate-pulse" />
+              <div className="mt-6 h-[240px] rounded-sm bg-slate-100 animate-pulse" />
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
+              <div className="mt-6 h-[240px]"><ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.serviceBreakdown ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
@@ -458,17 +480,17 @@ export default function AdminReportsPage() {
                   <Bar dataKey="hotels" name="hotels" fill={COLORS.hotels} radius={[4, 4, 0, 0]} />
                   <Bar dataKey="restaurants" name="restaurants" fill={COLORS.restaurants} radius={[4, 4, 0, 0]} />
                 </BarChart>
-              </ResponsiveContainer>
+              </ResponsiveContainer></div>
             )}
           </div>
 
-          {/* Pie chart - 1/3 */}
-          <div className="bg-white rounded-xl border p-5">
-            <h2 className="font-semibold text-gray-700 mb-4">Cơ cấu doanh thu</h2>
+          <div className="rounded-[32px] border border-slate-200/70 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-semibold text-slate-900">Cơ cấu doanh thu</h2>
+            <p className="text-sm text-slate-500">Tỷ lệ doanh thu từng dịch vụ trong tổng doanh thu.</p>
             {isLoading ? (
-              <div className="h-56 bg-gray-50 rounded animate-pulse" />
+              <div className="mt-6 h-[240px] rounded-sm bg-slate-100 animate-pulse" />
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
+              <div className="mt-6 h-[240px]"><ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={data?.servicePie ?? []}
@@ -478,73 +500,80 @@ export default function AdminReportsPage() {
                     outerRadius={80}
                     paddingAngle={3}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                     labelLine={false}
                   >
                     {(data?.servicePie ?? []).map((_: PiePoint, index: number) => (
                       <Cell key={index} fill={COLORS.pie[index % COLORS.pie.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => [fmt(v) + '₫', '']} />
+                  <Tooltip formatter={(value: any) => [fmt(Number(value ?? 0)) + '₫', '']} />
                 </PieChart>
-              </ResponsiveContainer>
+              </ResponsiveContainer></div>
             )}
           </div>
         </div>
 
-        {/* Top tours + Top customers */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Top tours */}
-          <div className="bg-white rounded-xl border p-5">
-            <h2 className="font-semibold text-gray-700 mb-4">Tour hàng đầu</h2>
-            <div className="space-y-2">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <div className="rounded-[32px] border border-slate-200/70 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-3 pb-4 border-b border-slate-200/70">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Tour hàng đầu</h2>
+                <p className="text-sm text-slate-500">Các tour có doanh thu và lượt đặt tốt nhất.</p>
+              </div>
+              <Badge className="bg-slate-100 text-slate-700">Top {data?.topTours.length ?? 0}</Badge>
+            </div>
+            <div className="mt-4 space-y-3">
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-10 bg-gray-50 rounded animate-pulse" />
+                  <div key={i} className="h-14 rounded-sm bg-slate-100 animate-pulse" />
                 ))
               ) : (data?.topTours ?? []).length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-8">Chưa có dữ liệu</p>
               ) : (data?.topTours ?? []).map((t: TopTour, i: number) => (
-                <div key={t.id} className="flex items-center gap-3 py-2">
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                    style={{ background: i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#cd7c2e' : '#1a5276' }}>
-                    {i + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-800 truncate">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.bookings} lượt đặt</p>
+                <div key={t.id} className="flex items-center gap-4 rounded-sm bg-slate-50 px-4 py-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded" style={{ background: i === 0 ? '#f59e0b20' : i === 1 ? '#9ca3af20' : i === 2 ? '#cd7c2e20' : '#0a162820' }}>
+                    <span className="text-sm font-semibold" style={{ color: i === 0 ? '#b45309' : i === 1 ? '#475569' : i === 2 ? '#7c2d12' : '#0a1628' }}>{i + 1}</span>
                   </div>
-                  <span className="font-semibold text-sm shrink-0" style={{ color: '#e67e22' }}>
-                    {fmt(t.revenue)}₫
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-900 truncate">{t.name}</p>
+                    <p className="text-xs text-slate-500">{t.bookings} lượt đặt</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-slate-900">{fmt(t.revenue)}₫</p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Top customers */}
-          <div className="bg-white rounded-xl border p-5">
-            <h2 className="font-semibold text-gray-700 mb-4">Khách hàng VIP</h2>
-            <div className="space-y-2">
+          <div className="rounded-[32px] border border-slate-200/70 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-3 pb-4 border-b border-slate-200/70">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Khách hàng VIP</h2>
+                <p className="text-sm text-slate-500">Các khách hàng chi tiêu cao nhất.</p>
+              </div>
+              <Badge className="bg-slate-100 text-slate-700">Top {data?.topCustomers.length ?? 0}</Badge>
+            </div>
+            <div className="mt-4 space-y-3">
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-10 bg-gray-50 rounded animate-pulse" />
+                  <div key={i} className="h-14 rounded-sm bg-slate-100 animate-pulse" />
                 ))
               ) : (data?.topCustomers ?? []).length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-8">Chưa có dữ liệu</p>
               ) : (data?.topCustomers ?? []).map((c: TopCustomer, i: number) => (
-                <div key={c.id} className="flex items-center gap-3 py-2">
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                    style={{ background: i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#cd7c2e' : '#1a5276' }}>
-                    {i + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-800 truncate">{c.name}</p>
-                    <p className="text-xs text-gray-400">{c.bookings} đơn đặt</p>
+                <div key={c.id} className="flex items-center gap-4 rounded-sm bg-slate-50 px-4 py-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded" style={{ background: i === 0 ? '#f59e0b20' : i === 1 ? '#9ca3af20' : i === 2 ? '#cd7c2e20' : '#0a162820' }}>
+                    <span className="text-sm font-semibold" style={{ color: i === 0 ? '#b45309' : i === 1 ? '#475569' : i === 2 ? '#7c2d12' : '#0a1628' }}>{i + 1}</span>
                   </div>
-                  <span className="font-semibold text-sm shrink-0" style={{ color: '#1a5276' }}>
-                    {fmt(c.totalSpent)}₫
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-900 truncate">{c.name}</p>
+                    <p className="text-xs text-slate-500">{c.bookings} đơn đặt</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-slate-900">{fmt(c.totalSpent)}₫</p>
+                  </div>
                 </div>
               ))}
             </div>

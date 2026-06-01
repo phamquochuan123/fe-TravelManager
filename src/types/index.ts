@@ -23,13 +23,15 @@ export enum TourStatus {
 // ─── Core entities ────────────────────────────────────────────────────────────
 
 export interface User {
-  id: number;
+  userId: string;
   name: string;
   email: string;
   phone?: string;
   avatar?: string;
   roleName: Role;
   isAccountVerified: boolean;
+  isActive?: boolean;
+  lockReason?: string;
   createdAt?: string;
 }
 

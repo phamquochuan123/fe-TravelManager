@@ -24,7 +24,7 @@ export function ImageGallery({ images, aspectRatio = 'video', className }: Image
 
   if (!images.length) {
     return (
-      <div className={cn('flex items-center justify-center rounded-xl bg-muted', aspectClass, className)}>
+      <div className={cn('flex items-center justify-center rounded bg-muted', aspectClass, className)}>
         <ImageOff className="size-12 text-muted-foreground/50" />
       </div>
     )
@@ -34,7 +34,7 @@ export function ImageGallery({ images, aspectRatio = 'video', className }: Image
   const next = () => setCurrent(p => (p + 1) % images.length)
 
   return (
-    <div className={cn('overflow-hidden rounded-xl', className)}>
+    <div className={cn('overflow-hidden rounded', className)}>
       {/* Main image */}
       <div className={cn('relative group overflow-hidden', aspectClass)}>
         <img

@@ -105,7 +105,7 @@ const BookRestaurant = () => {
     }
 
     if (loading) return (
-        <div className="min-h-screen bg-gray-50 font-['Be_Vietnam_Pro']">
+        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro']">
             <MenuBar />
             <div className="flex items-center justify-center min-h-screen">
                 <span className="w-10 h-10 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
@@ -130,13 +130,13 @@ const BookRestaurant = () => {
     }
 
     if (booking) return (
-        <div className="min-h-screen bg-gray-50 font-['Be_Vietnam_Pro']">
+        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro']">
             <MenuBar />
             <div className="flex items-center justify-center min-h-screen px-6 pt-20 pb-12">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 max-w-md w-full overflow-hidden">
+                <div className="bg-white rounded shadow-sm border border-gray-100 max-w-md w-full overflow-hidden">
                     {/* Header */}
                     <div className="bg-gray-900 px-8 pt-8 pb-6 text-center">
-                        <div className="w-16 h-16 bg-amber-500/20 border-2 border-amber-500/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <div className="w-16 h-16 bg-amber-500/20 border-2 border-amber-500/40 rounded flex items-center justify-center mx-auto mb-4">
                             <i className="bi bi-check-circle-fill text-3xl text-amber-400" />
                         </div>
                         <h2 className="text-xl font-black text-white mb-1">Đặt bàn thành công!</h2>
@@ -167,7 +167,7 @@ const BookRestaurant = () => {
                         <button
                             onClick={handlePayDeposit}
                             disabled={payingVNPay}
-                            className="w-full flex items-center justify-center gap-3 py-3.5 bg-[#0065AC] hover:bg-[#005494] disabled:opacity-60 text-white font-bold rounded-xl transition-colors mb-3"
+                            className="w-full flex items-center justify-center gap-3 py-3.5 bg-[#0065AC] hover:bg-[#005494] disabled:opacity-60 text-white font-bold rounded transition-colors mb-3"
                         >
                             {payingVNPay ? (
                                 <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang chuyển hướng...</>
@@ -177,11 +177,11 @@ const BookRestaurant = () => {
                         </button>
                         <div className="flex gap-3">
                             <button onClick={() => navigate("/my-bookings")}
-                                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors text-sm">
+                                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded transition-colors text-sm">
                                 Bỏ qua
                             </button>
                             <button onClick={() => navigate("/restaurants")}
-                                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors text-sm">
+                                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded transition-colors text-sm">
                                 Về danh sách
                             </button>
                         </div>
@@ -195,7 +195,7 @@ const BookRestaurant = () => {
     )
 
     return (
-        <div className="min-h-screen bg-gray-50 font-['Be_Vietnam_Pro']">
+        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro']">
             <MenuBar />
             <div className="pt-24 pb-12 px-6 max-w-5xl mx-auto">
                 <button
@@ -209,22 +209,22 @@ const BookRestaurant = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                     <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6">
                         {/* Date & Time */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
                             <h2 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
                                 <i className="bi bi-calendar3 text-orange-500" /> Ngày & Giờ
                             </h2>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ngày <span className="text-red-500">*</span></label>
                                     <input type="date" name="bookingDate" value={form.bookingDate} min={today}
                                         onChange={handleChange}
-                                        className={`w-full border ${errors.bookingDate ? "border-red-400" : "border-gray-200"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all`} />
+                                        className={`w-full border ${errors.bookingDate ? "border-red-400" : "border-gray-200"} rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all`} />
                                     {errors.bookingDate && <p className="text-red-500 text-xs mt-1">{errors.bookingDate}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Giờ <span className="text-red-500">*</span></label>
                                     <select name="bookingTime" value={form.bookingTime} onChange={handleChange}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all">
+                                        className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all">
                                         {getAvailableSlots(form.bookingDate).map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
                                     {getAvailableSlots(form.bookingDate).length === 0 && (
@@ -235,7 +235,7 @@ const BookRestaurant = () => {
                         </div>
 
                         {/* Guests */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
                             <h2 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
                                 <i className="bi bi-people text-orange-500" /> Số khách
                             </h2>
@@ -252,7 +252,7 @@ const BookRestaurant = () => {
                         </div>
 
                         {/* Contact */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
                             <h2 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
                                 <i className="bi bi-person-circle text-orange-500" /> Thông tin liên hệ
                             </h2>
@@ -267,7 +267,7 @@ const BookRestaurant = () => {
                                         <input name={field.name} type={field.type} value={form[field.name]}
                                             placeholder={field.placeholder}
                                             onChange={handleChange}
-                                            className={`w-full border ${errors[field.name] ? "border-red-400 focus:ring-red-100" : "border-gray-200 focus:ring-orange-100 focus:border-orange-400"} rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all`} />
+                                            className={`w-full border ${errors[field.name] ? "border-red-400 focus:ring-red-100" : "border-gray-200 focus:ring-orange-100 focus:border-orange-400"} rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all`} />
                                         {errors[field.name] && <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>}
                                     </div>
                                 ))}
@@ -276,13 +276,13 @@ const BookRestaurant = () => {
                                     <textarea name="specialRequests" value={form.specialRequests} onChange={handleChange}
                                         placeholder="Chế độ ăn kiêng, dị ứng thực phẩm, bàn riêng..."
                                         rows={3}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 resize-none transition-all" />
+                                        className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 resize-none transition-all" />
                                 </div>
                             </div>
                         </div>
 
                         <button type="submit" disabled={submitting}
-                            className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:shadow-lg hover:shadow-orange-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 text-base">
+                            className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:shadow-lg hover:shadow-orange-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 rounded transition-all flex items-center justify-center gap-2 text-base">
                             {submitting
                                 ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang xử lý...</>
                                 : <><i className="bi bi-calendar-check" /> Xác nhận đặt bàn</>
@@ -292,9 +292,9 @@ const BookRestaurant = () => {
 
                     {/* Summary */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
+                        <div className="bg-white rounded shadow-sm border border-gray-100 p-6 sticky top-24">
                             <h2 className="font-bold text-gray-900 mb-5">Tóm tắt đặt bàn</h2>
-                            <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 rounded-xl p-4 mb-5">
+                            <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 rounded p-4 mb-5">
                                 <h3 className="font-bold text-gray-900 text-sm mb-1">{restaurant?.name}</h3>
                                 <p className="text-xs text-gray-500 flex items-center gap-1">
                                     <i className="bi bi-geo-alt text-orange-400" /> {restaurant?.city}
@@ -306,20 +306,20 @@ const BookRestaurant = () => {
                                 )}
                             </div>
                             <div className="space-y-3 text-sm text-gray-600">
-                                <div className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl">
+                                <div className="flex items-center gap-3 p-2.5 bg-[#f8f5ee] rounded">
                                     <i className="bi bi-calendar text-orange-400 w-4 text-center" />
                                     <span>{form.bookingDate ? new Date(form.bookingDate).toLocaleDateString("vi-VN", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "—"}</span>
                                 </div>
-                                <div className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl">
+                                <div className="flex items-center gap-3 p-2.5 bg-[#f8f5ee] rounded">
                                     <i className="bi bi-clock text-orange-400 w-4 text-center" />
                                     <span>{form.bookingTime}</span>
                                 </div>
-                                <div className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl">
+                                <div className="flex items-center gap-3 p-2.5 bg-[#f8f5ee] rounded">
                                     <i className="bi bi-people text-orange-400 w-4 text-center" />
                                     <span>{form.guestCount} khách</span>
                                 </div>
                             </div>
-                            <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                            <div className="mt-4 bg-amber-50 border border-amber-200 rounded p-3">
                                 <p className="text-xs text-amber-700 flex items-start gap-1.5">
                                     <i className="bi bi-info-circle shrink-0 mt-0.5" />
                                     Nhà hàng sẽ liên hệ xác nhận trong vòng 30 phút.

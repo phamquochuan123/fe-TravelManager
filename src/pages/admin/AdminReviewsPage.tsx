@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
@@ -149,7 +149,7 @@ function ReplyDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2" style={{ color: '#1a5276' }}>
+            <DialogTitle className="flex items-center gap-2" className="text-primary">
               <MessageSquare className="w-5 h-5" />
               Phản hồi đánh giá
             </DialogTitle>
@@ -158,7 +158,7 @@ function ReplyDialog({
           <ScrollArea className="flex-1 overflow-hidden">
             <div className="space-y-4 py-2 pr-2">
               {/* Review card */}
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div className="bg-[#f8f5ee] rounded-lg p-4 space-y-3">
                 <div className="flex items-start gap-3">
                   <Avatar className="w-9 h-9">
                     <AvatarImage src={review.authorAvatar} />
@@ -213,7 +213,7 @@ function ReplyDialog({
             <Button
               onClick={handleSave}
               disabled={saving || !reply.trim()}
-              style={{ background: '#1a5276' }}
+              className="bg-primary"
               className="text-white"
             >
               {saving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />}
@@ -303,7 +303,7 @@ export default function AdminReviewsPage() {
     <div className="p-6 space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: '#1a5276' }}>Quản lý đánh giá</h1>
+        <h1 className="text-2xl font-bold" className="text-primary">Quản lý đánh giá</h1>
         <p className="text-sm text-gray-500 mt-0.5">Kiểm duyệt và phản hồi đánh giá của khách hàng</p>
       </div>
 
@@ -365,10 +365,10 @@ export default function AdminReviewsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-white rounded border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-[#f8f5ee] border-b">
               <tr>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Người đánh giá</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Dịch vụ</th>
@@ -399,7 +399,7 @@ export default function AdminReviewsPage() {
                   </td>
                 </tr>
               ) : reviews.map(r => (
-                <tr key={r.id} className={`hover:bg-gray-50 transition-colors ${!r.visible ? 'opacity-50' : ''}`}>
+                <tr key={r.id} className={`hover:bg-[#f8f5ee] transition-colors ${!r.visible ? 'opacity-50' : ''}`}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Avatar className="w-8 h-8">
@@ -489,7 +489,7 @@ export default function AdminReviewsPage() {
                     key={pg}
                     variant={pg === page ? 'default' : 'outline'}
                     size="sm"
-                    style={pg === page ? { background: '#1a5276' } : undefined}
+                    style={pg === page ? { background: '#0a1628' } : undefined}
                     onClick={() => setPage(pg)}
                   >
                     {pg + 1}

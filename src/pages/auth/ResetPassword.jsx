@@ -91,7 +91,7 @@ const ResetpassWord = () => {
 
             {/* Logo */}
             <Link to="/" className="absolute top-8 left-8 flex items-center gap-3 no-underline group">
-                <div className="bg-white/20 backdrop-blur-md p-2.5 rounded-xl group-hover:scale-110 transition-transform border border-white/30">
+                <div className="bg-white/20 backdrop-blur-md p-2.5 rounded group-hover:scale-110 transition-transform border border-white/30">
                     <img src={assets.logo_home} alt="logo" className="w-7 h-7 invert" />
                 </div>
                 <span className="text-xl font-black text-white tracking-tighter hidden md:block">
@@ -100,12 +100,12 @@ const ResetpassWord = () => {
             </Link>
 
             {/* Card */}
-            <div className="w-full max-w-[450px] bg-white rounded-3xl p-8 md:p-12 shadow-2xl border border-gray-100 animate-in fade-in zoom-in duration-500 relative z-10">
+            <div className="w-full max-w-[450px] bg-white rounded-sm p-8 md:p-12 shadow-2xl border border-gray-100 animate-in fade-in zoom-in duration-500 relative z-10">
 
                 {/* STEP 1: Email */}
                 {!isEmailSent && (
                     <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
-                        <div className="w-16 h-16 bg-gradient-to-br from-sky-100 to-blue-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                        <div className="w-16 h-16 bg-gradient-to-br from-sky-100 to-blue-100 text-sky-600 rounded flex items-center justify-center mx-auto mb-5">
                             <i className="bi bi-envelope-paper-fill text-3xl"></i>
                         </div>
                         <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Quên mật khẩu?</h2>
@@ -118,7 +118,7 @@ const ResetpassWord = () => {
                                 </div>
                                 <input
                                     type="email"
-                                    className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100 transition-all outline-none text-gray-800"
+                                    className="block w-full pl-11 pr-4 py-3.5 bg-[#f8f5ee] border-2 border-transparent rounded focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100 transition-all outline-none text-gray-800"
                                     placeholder="Email của bạn"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -126,7 +126,7 @@ const ResetpassWord = () => {
                                 />
                             </div>
                             <button
-                                className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-lg hover:shadow-sky-200 hover:-translate-y-0.5 text-white font-bold py-3.5 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-lg hover:shadow-sky-200 hover:-translate-y-0.5 text-white font-bold py-3.5 rounded transition-all active:scale-95 flex items-center justify-center gap-2"
                                 type="submit" disabled={loading}
                             >
                                 {loading
@@ -144,7 +144,7 @@ const ResetpassWord = () => {
                 {/* STEP 2: OTP */}
                 {!isOtpSubmitted && isEmailSent && (
                     <div className="text-center animate-in slide-in-from-right-4 duration-500">
-                        <div className="w-16 h-16 bg-gradient-to-br from-amber-100 to-yellow-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                        <div className="w-16 h-16 bg-gradient-to-br from-amber-100 to-yellow-100 text-amber-600 rounded flex items-center justify-center mx-auto mb-5">
                             <i className="bi bi-shield-lock-fill text-3xl"></i>
                         </div>
                         <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Xác nhận OTP</h2>
@@ -159,14 +159,14 @@ const ResetpassWord = () => {
                                     type="text"
                                     maxLength={1}
                                     ref={(el) => (inputRef.current[i] = el)}
-                                    className="w-12 h-16 md:w-14 md:h-16 text-center text-2xl font-bold bg-gray-50 border-2 border-transparent rounded-2xl focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100 transition-all outline-none"
+                                    className="w-12 h-16 md:w-14 md:h-16 text-center text-2xl font-bold bg-[#f8f5ee] border-2 border-transparent rounded focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100 transition-all outline-none"
                                     onChange={(e) => handleChange(e, i)}
                                     onKeyDown={(e) => handleKeyDown(e, i)}
                                 />
                             ))}
                         </div>
                         <button
-                            className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-sky-200 hover:shadow-lg text-white font-bold py-3.5 rounded-2xl transition-all active:scale-95 mb-4"
+                            className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-sky-200 hover:shadow-lg text-white font-bold py-3.5 rounded transition-all active:scale-95 mb-4"
                             onClick={handleVerify} disabled={loading}
                         >
                             Xác nhận OTP
@@ -183,7 +183,7 @@ const ResetpassWord = () => {
                 {/* STEP 3: New password */}
                 {isOtpSubmitted && isEmailSent && (
                     <div className="text-center animate-in slide-in-from-right-4 duration-500">
-                        <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-green-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                        <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-green-100 text-emerald-600 rounded flex items-center justify-center mx-auto mb-5">
                             <i className="bi bi-lock-fill text-3xl"></i>
                         </div>
                         <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Mật khẩu mới</h2>
@@ -196,14 +196,14 @@ const ResetpassWord = () => {
                                 </div>
                                 <input
                                     type="password"
-                                    className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100 transition-all outline-none text-gray-800"
+                                    className="block w-full pl-11 pr-4 py-3.5 bg-[#f8f5ee] border-2 border-transparent rounded focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100 transition-all outline-none text-gray-800"
                                     placeholder="Mật khẩu mới (ít nhất 8 ký tự)"
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     required
                                 />
                             </div>
                             <button
-                                className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-sky-200 hover:shadow-lg hover:-translate-y-0.5 text-white font-bold py-3.5 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-sky-200 hover:shadow-lg hover:-translate-y-0.5 text-white font-bold py-3.5 rounded transition-all active:scale-95 flex items-center justify-center gap-2"
                                 type="submit" disabled={loading}
                             >
                                 {loading

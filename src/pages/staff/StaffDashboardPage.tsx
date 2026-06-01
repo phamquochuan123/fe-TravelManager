@@ -7,7 +7,6 @@ import {
   ChevronLeft, ChevronRight, Users, Eye, RefreshCw,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Badge } from '../../components/ui/badge'
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from '../../components/ui/sheet'
@@ -54,8 +53,10 @@ interface Passenger {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
-  UPCOMING:    { label: 'Sắp tới',      bg: '#eaf4fb', color: '#1a5276' },
-  CONFIRMED:   { label: 'Đã xác nhận',  bg: '#eaf4fb', color: '#1a5276' },
+  SCHEDULED:   { label: 'Đã lên lịch',  bg: '#eaf4fb', color: '#0a1628' },
+  UPCOMING:    { label: 'Sắp tới',      bg: '#eaf4fb', color: '#0a1628' },
+  CONFIRMED:   { label: 'Đã xác nhận',  bg: '#eaf4fb', color: '#0a1628' },
+  ONGOING:     { label: 'Đang diễn ra', bg: '#f3e8ff', color: '#7c3aed' },
   IN_PROGRESS: { label: 'Đang diễn ra', bg: '#f3e8ff', color: '#7c3aed' },
   COMPLETED:   { label: 'Hoàn thành',   bg: '#dcfce7', color: '#16a34a' },
   CANCELLED:   { label: 'Đã hủy',       bg: '#fee2e2', color: '#dc2626' },
@@ -105,7 +106,7 @@ const DarkMetricStrip = ({ total, today, upcoming }: DarkMetricStripProps) => {
   ]
 
   return (
-    <div className="bg-foreground rounded-2xl px-6 py-5">
+    <div className="bg-foreground rounded px-6 py-5">
       <div className="flex items-stretch divide-x divide-white/10">
         {metrics.map((m, i) => (
           <div
@@ -190,7 +191,7 @@ const PassengerModal = ({
           />
           <button
             onClick={handleExport}
-            className="px-3 py-2 rounded-xl text-sm font-semibold text-primary-foreground bg-primary transition-all hover:opacity-90 shrink-0"
+            className="px-3 py-2 rounded text-sm font-semibold text-primary-foreground bg-primary transition-all hover:opacity-90 shrink-0"
           >
             Xuất CSV
           </button>
@@ -256,7 +257,7 @@ const TourDetailSheet = ({
           <img
             src={`https://picsum.photos/seed/tour-${departure.tourId}/400/200`}
             alt={departure.tourName}
-            className="w-full h-40 object-cover rounded-xl"
+            className="w-full h-40 object-cover rounded"
           />
 
           <div className="space-y-3">
@@ -306,11 +307,23 @@ const StaffDashboardPage = () => {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) =>
       api.patch(`/staff/departures/${id}/status`, { status }),
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['staff', 'my-tours'] })
+      const previous = queryClient.getQueryData<Departure[]>(['staff', 'my-tours'])
+      queryClient.setQueryData<Departure[]>(['staff', 'my-tours'], old =>
+        old?.map(d => d.departureId === id ? { ...d, status } : d) ?? []
+      )
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['staff', 'my-tours'], context.previous)
+      }
+      toast.error('Cập nhật trạng thái thất bại')
+    },
     onSuccess: () => {
       toast.success('Cập nhật trạng thái thành công')
-      queryClient.invalidateQueries({ queryKey: ['staff', 'my-tours'] })
     },
-    onError: (err: Error) => toast.error(err.message),
   })
 
   // ── Stats ─────────────────────────────────────────────────────────────────
@@ -403,7 +416,7 @@ const StaffDashboardPage = () => {
       />
 
       {/* ── Week timeline ─────────────────────────────────── */}
-      <section className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+      <section className="bg-card rounded border border-border shadow-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="font-bold text-foreground text-sm">Lịch tuần này</h2>
@@ -411,7 +424,7 @@ const StaffDashboardPage = () => {
             <button
               onClick={() => setWeekOffset(p => p - 1)}
               aria-label="Tuần trước"
-              className="w-11 h-11 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="w-11 h-11 flex items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
@@ -421,7 +434,7 @@ const StaffDashboardPage = () => {
             <button
               onClick={() => setWeekOffset(p => p + 1)}
               aria-label="Tuần sau"
-              className="w-11 h-11 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="w-11 h-11 flex items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <ChevronRight size={16} />
             </button>
@@ -492,7 +505,7 @@ const StaffDashboardPage = () => {
 
       {/* ── Upcoming tours table ───────────────────────────── */}
       {upcomingTours.length > 0 && (
-        <section className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+        <section className="bg-card rounded border border-border shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <h2 className="font-bold text-foreground text-sm">Danh sách tour sắp tới</h2>
             <span className="text-xs text-muted-foreground">{upcomingTours.length} tour</span>
@@ -546,7 +559,7 @@ const StaffDashboardPage = () => {
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] rounded-lg text-xs font-semibold border border-border text-foreground hover:bg-muted transition-colors">
+                            <button type="button" className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] rounded-lg text-xs font-semibold border border-border text-foreground hover:bg-muted transition-colors">
                               <RefreshCw size={12} /> Cập nhật
                             </button>
                           </DropdownMenuTrigger>

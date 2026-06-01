@@ -15,6 +15,9 @@ export const updateTour = (id, data) =>
 export const deleteTour = (id) =>
     axiosInstance.delete(`/tours/${id}`)
 
+export const toggleTourActive = (id) =>
+    axiosInstance.patch(`/tours/${id}/active`).then(r => r.data)
+
 export const addTourImage = (tourId, file) => {
     const fd = new FormData()
     fd.append("file", file)

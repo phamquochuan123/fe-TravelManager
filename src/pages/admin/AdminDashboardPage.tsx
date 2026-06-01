@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import 'dayjs/locale/vi'
 import {
@@ -96,8 +97,8 @@ const ORDER_STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   PAID:        { label: 'Đã thanh toán',cls: 'bg-teal-100 text-teal-700'     },
 }
 
-const PIE_COLORS = ['#1a5276', '#e67e22', '#16a085']
-const RANK_COLORS = ['#e67e22', '#94a3b8', '#b45309', '#1a5276', '#64748b']
+const PIE_COLORS = ['#0a1628', '#c9a84c', '#16a085']
+const RANK_COLORS = ['#c9a84c', '#94a3b8', '#b45309', '#0a1628', '#64748b']
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -164,7 +165,7 @@ const MetricStrip = ({
   ]
 
   return (
-    <div className="bg-card border border-border rounded-2xl">
+    <div className="bg-card border border-border rounded">
       <div className="overflow-x-auto">
         <div className="flex items-stretch min-w-[560px] divide-x divide-border px-8 py-6">
           {items.map((item, i) => (
@@ -219,7 +220,7 @@ const RevenueChart = ({ data, loading }: { data: MonthlyPoint[]; loading: boolea
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null
     return (
-      <div className="bg-card border border-border rounded-xl shadow-xl p-3 text-xs min-w-[160px]">
+      <div className="bg-card border border-border rounded shadow-xl p-3 text-xs min-w-[160px]">
         <p className="font-bold text-foreground mb-2">Tháng {label?.replace('T', '')}</p>
         {payload.map((p: any) => (
           <div key={p.dataKey} className="flex items-center justify-between gap-3 py-0.5">
@@ -237,7 +238,7 @@ const RevenueChart = ({ data, loading }: { data: MonthlyPoint[]; loading: boolea
   }
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm p-5 h-full">
+    <div className="bg-card rounded border border-border shadow-sm p-5 h-full">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h3 className="font-bold text-foreground text-sm">Doanh thu theo tháng</h3>
@@ -247,7 +248,7 @@ const RevenueChart = ({ data, loading }: { data: MonthlyPoint[]; loading: boolea
           <select
             value={year}
             onChange={e => setYear(Number(e.target.value))}
-            className="appearance-none border border-border rounded-xl text-sm px-3 py-1.5 pr-7 font-medium focus:outline-none bg-card text-foreground"
+            className="appearance-none border border-border rounded text-sm px-3 py-1.5 pr-7 font-medium focus:outline-none bg-card text-foreground"
           >
             {years.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
@@ -262,12 +263,12 @@ const RevenueChart = ({ data, loading }: { data: MonthlyPoint[]; loading: boolea
           <AreaChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#1a5276" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#1a5276" stopOpacity={0} />
+                <stop offset="5%"  stopColor="#0a1628" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="#0a1628" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="ordersGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#e67e22" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#e67e22" stopOpacity={0} />
+                <stop offset="5%"  stopColor="#c9a84c" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#c9a84c" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -279,11 +280,11 @@ const RevenueChart = ({ data, loading }: { data: MonthlyPoint[]; loading: boolea
               tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={28} />
             <RechartsTooltip content={<CustomTooltip />} />
             <Area yAxisId="revenue" type="monotone" dataKey="revenue" name="Doanh thu"
-              stroke="#1a5276" strokeWidth={2.5} fill="url(#revenueGrad)"
-              dot={false} activeDot={{ r: 4, fill: '#1a5276' }} />
+              stroke="#0a1628" strokeWidth={2.5} fill="url(#revenueGrad)"
+              dot={false} activeDot={{ r: 4, fill: '#0a1628' }} />
             <Area yAxisId="orders" type="monotone" dataKey="orders" name="Số đơn"
-              stroke="#e67e22" strokeWidth={2} fill="url(#ordersGrad)"
-              dot={false} activeDot={{ r: 4, fill: '#e67e22' }} />
+              stroke="#c9a84c" strokeWidth={2} fill="url(#ordersGrad)"
+              dot={false} activeDot={{ r: 4, fill: '#c9a84c' }} />
           </AreaChart>
         </ResponsiveContainer>
       )}
@@ -300,7 +301,7 @@ const OrderPieChart = ({ data, loading }: { data: PieSegment[]; loading: boolean
     if (!active || !payload?.length) return null
     const d = payload[0].payload
     return (
-      <div className="bg-card border border-border rounded-xl shadow-xl p-3 text-xs">
+      <div className="bg-card border border-border rounded shadow-xl p-3 text-xs">
         <p className="font-bold text-foreground">{d.name}</p>
         <p className="text-muted-foreground mt-0.5">{d.value.toLocaleString('vi-VN')} đơn</p>
         <p className="font-bold mt-0.5" style={{ color: d.color }}>{d.pct}%</p>
@@ -309,7 +310,7 @@ const OrderPieChart = ({ data, loading }: { data: PieSegment[]; loading: boolean
   }
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm p-5 h-full">
+    <div className="bg-card rounded border border-border shadow-sm p-5 h-full">
       <div className="mb-4">
         <h3 className="font-bold text-foreground text-sm">Phân loại đơn hàng</h3>
         <p className="text-muted-foreground text-xs mt-0.5">Tỉ lệ theo dịch vụ</p>
@@ -361,7 +362,7 @@ const LatestOrdersTable = ({ orders, loading }: { orders: RecentOrder[]; loading
   const navigate = useNavigate()
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+    <div className="bg-card rounded border border-border shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <h3 className="font-bold text-foreground text-sm">Đơn hàng mới nhất</h3>
         <button
@@ -403,7 +404,7 @@ const LatestOrdersTable = ({ orders, loading }: { orders: RecentOrder[]; loading
               : orders.map(order => {
                   const cfg = ORDER_STATUS_CONFIG[order.status] ?? { label: order.status, cls: 'bg-gray-100 text-gray-500' }
                   return (
-                    <TableRow key={order.id} className="hover:bg-gray-50 transition-colors cursor-default">
+                    <TableRow key={order.id} className="hover:bg-[#f8f5ee] transition-colors cursor-default">
                       <TableCell className="font-mono text-xs text-muted-foreground">
                         #{String(order.id).slice(-6).toUpperCase()}
                       </TableCell>
@@ -444,7 +445,7 @@ const TopToursList = ({ tours, loading }: { tours: TopTour[]; loading: boolean }
   const maxBookings = tours[0]?.bookings ?? 1
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
+    <div className="bg-card rounded border border-border shadow-sm p-5">
       <div className="mb-4">
         <h3 className="font-bold text-foreground text-sm">Top tour bán chạy</h3>
         <p className="text-muted-foreground text-xs mt-0.5">Dựa theo số lượng đặt chỗ</p>
@@ -510,8 +511,8 @@ const IncidentAlert = ({ count }: { count: number }) => {
   const navigate = useNavigate()
   if (!count) return null
   return (
-    <div className="flex items-center gap-3 p-4 rounded-2xl border border-red-200 bg-red-50 mb-6">
-      <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+    <div className="flex items-center gap-3 p-4 rounded border border-red-200 bg-red-50 mb-6">
+      <div className="w-10 h-10 rounded bg-red-100 flex items-center justify-center shrink-0">
         <AlertTriangle size={18} className="text-red-600" />
       </div>
       <div className="flex-1 min-w-0">
@@ -522,7 +523,7 @@ const IncidentAlert = ({ count }: { count: number }) => {
       </div>
       <button
         onClick={() => navigate('/admin/analytics')}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition-colors shrink-0"
+        className="flex items-center gap-1.5 px-4 py-2 rounded text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition-colors shrink-0"
       >
         Xem chi tiết <ArrowRight size={14} />
       </button>
@@ -552,31 +553,31 @@ const AdminDashboardPage = () => {
 
   const currentYear = new Date().getFullYear()
 
-  const { data: rawMonthly, isLoading: chartLoading } = useQuery<MonthlyPoint[]>({
+  const { data: rawMonthly, isLoading: chartLoading, isError: revenueError } = useQuery<MonthlyPoint[]>({
     queryKey: ['admin', 'revenue', currentYear],
     queryFn: async () => {
-      try {
-        const res = await api.get(`/admin/statistics/revenue?year=${currentYear}`)
-        return res.data
-      } catch {
-        return DEMO_MONTHLY
-      }
+      const res = await api.get(`/admin/statistics/revenue?year=${currentYear}`)
+      return res.data
     },
   })
   const monthlyData = rawMonthly ?? DEMO_MONTHLY
 
-  const { data: rawTopTours, isLoading: topLoading } = useQuery<TopTour[]>({
+  useEffect(() => {
+    if (revenueError) toast.warning('Không tải được dữ liệu — đang hiển thị dữ liệu mẫu')
+  }, [revenueError])
+
+  const { data: rawTopTours, isLoading: topLoading, isError: topToursError } = useQuery<TopTour[]>({
     queryKey: ['admin', 'top-tours'],
     queryFn: async () => {
-      try {
-        const res = await api.get('/admin/statistics/top-tours')
-        return res.data
-      } catch {
-        return DEMO_TOP_TOURS
-      }
+      const res = await api.get('/admin/statistics/top-tours')
+      return res.data
     },
   })
   const topTours = rawTopTours ?? DEMO_TOP_TOURS
+
+  useEffect(() => {
+    if (topToursError) toast.warning('Không tải được dữ liệu — đang hiển thị dữ liệu mẫu')
+  }, [topToursError])
 
   const { data: rawOrders, isLoading: ordersLoading } = useQuery<RecentOrder[]>({
     queryKey: ['admin', 'recent-orders'],

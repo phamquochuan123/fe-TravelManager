@@ -126,10 +126,7 @@ const BREADCRUMB_MAP: Record<string, string> = {
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
-    <span
-      className="w-8 h-8 border-2 rounded-full animate-spin"
-      style={{ borderColor: 'rgba(26,82,118,0.15)', borderTopColor: '#1a5276' }}
-    />
+    <span className="w-8 h-8 border-2 border-primary/15 border-t-primary rounded-full animate-spin" />
   </div>
 )
 
@@ -205,7 +202,7 @@ const AdminLayout = () => {
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className="flex h-screen bg-gray-50 overflow-hidden" style={{ fontFamily: 'Poppins, sans-serif' }}>
+      <div className="flex h-screen bg-[#f8f5ee] overflow-hidden">
 
         {/* Mobile backdrop */}
         {mobileSidebarOpen && (
@@ -218,20 +215,17 @@ const AdminLayout = () => {
         {/* ── Sidebar ─────────────────────────────────────── */}
         <aside
           className={`
-            fixed inset-y-0 left-0 z-40 flex flex-col text-white overflow-hidden
+            fixed inset-y-0 left-0 z-40 flex flex-col text-white overflow-hidden bg-primary
             transition-all duration-300
             ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
             lg:translate-x-0
           `}
-          style={{ width: sidebarWidth, backgroundColor: '#1a5276' }}
+          style={{ width: sidebarWidth }}
         >
           {/* Logo */}
-          <div
-            className="h-16 flex items-center px-4 shrink-0"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}
-          >
+          <div className="h-16 flex items-center px-4 shrink-0 border-b border-white/12">
             <Link to="/" className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 select-none">
+              <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center text-white font-black text-sm shrink-0 select-none">
                 VN
               </div>
               {!collapsed && (
@@ -254,7 +248,7 @@ const AdminLayout = () => {
                       {group.label}
                     </p>
                   ) : (
-                    <div className="my-1.5 mx-3" style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }} />
+                    <div className="my-1.5 mx-3 border-t border-white/12" />
                   )}
 
                   <div className="space-y-0.5">
@@ -267,14 +261,14 @@ const AdminLayout = () => {
                           end={end}
                           onClick={() => setMobileSidebarOpen(false)}
                           className={({ isActive }) => `
-                            relative flex items-center rounded-xl transition-all text-sm font-medium
+                            relative flex items-center rounded transition-all duration-200 text-sm font-medium
                             ${collapsed
                               ? 'justify-center w-10 h-10 mx-auto'
-                              : 'gap-3 px-3 py-2.5 w-full'
+                              : 'gap-3 px-3 py-2.5 w-full border-l-2'
                             }
                             ${isActive
-                              ? 'bg-white/20 text-white font-semibold'
-                              : 'text-white/65 hover:bg-white/10 hover:text-white'
+                              ? 'bg-white/20 text-white font-semibold border-l-white/80'
+                              : 'text-white/65 hover:bg-white/10 hover:text-white border-l-transparent hover:border-l-white/40'
                             }
                           `}
                         >
@@ -292,7 +286,7 @@ const AdminLayout = () => {
                           )}
 
                           {collapsed && !!badge && (
-                            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-orange-400 rounded-full border border-[#1a5276] text-[8px] text-white font-bold flex items-center justify-center">
+                            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-orange-400 rounded-full border border-[#0a1628] text-[8px] text-white font-bold flex items-center justify-center">
                               {badge > 9 ? '9+' : badge}
                             </span>
                           )}
@@ -323,16 +317,13 @@ const AdminLayout = () => {
           </ScrollArea>
 
           {/* Bottom: user + logout */}
-          <div
-            className="shrink-0 p-3"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}
-          >
+          <div className="shrink-0 p-3 border-t border-white/12">
             {collapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleLogout}
-                    className="w-10 h-10 mx-auto flex items-center justify-center rounded-xl hover:bg-white/10 transition-colors"
+                    className="w-10 h-10 mx-auto flex items-center justify-center rounded hover:bg-white/10 transition-colors"
                   >
                     <Avatar className="w-8 h-8">
                       <AvatarImage src={user?.avatar} />
@@ -347,7 +338,7 @@ const AdminLayout = () => {
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl hover:bg-white/10 transition-colors">
+              <div className="flex items-center gap-3 px-2 py-1.5 rounded hover:bg-white/10 transition-colors">
                 <Avatar className="w-9 h-9 shrink-0">
                   <AvatarImage src={user?.avatar} />
                   <AvatarFallback className="text-white text-xs font-bold bg-white/20">
@@ -381,7 +372,7 @@ const AdminLayout = () => {
             {/* Collapse / hamburger toggle */}
             <button
               onClick={() => isDesktop ? setCollapsed(p => !p) : setMobileSidebarOpen(p => !p)}
-              className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 transition-colors shrink-0"
+              className="w-9 h-9 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 transition-colors shrink-0"
               title={isDesktop ? (collapsed ? 'Mở sidebar' : 'Thu sidebar') : (mobileSidebarOpen ? 'Đóng menu' : 'Mở menu')}
             >
               {isDesktop
@@ -408,9 +399,9 @@ const AdminLayout = () => {
 
             {/* Global search */}
             <div
-              className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl border bg-gray-50 transition-all
+              className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded border bg-[#f8f5ee] transition-all
                 ${searchFocused
-                  ? 'border-[#1a5276] ring-2 ring-[#1a5276]/10 w-60'
+                  ? 'border-[#0a1628] ring-2 ring-[#0a1628]/10 w-60'
                   : 'border-gray-200 hover:border-gray-300 w-48'
                 }`}
             >
@@ -434,13 +425,10 @@ const AdminLayout = () => {
               {/* Bell popover */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="relative w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 transition-colors">
+                  <button className="relative w-9 h-9 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 transition-colors">
                     <Bell size={18} />
                     {(totalPending + openIncidents) > 0 && (
-                      <span
-                        className="absolute top-1 right-1 w-4 h-4 rounded-full text-white text-[9px] font-bold flex items-center justify-center"
-                        style={{ backgroundColor: '#e67e22' }}
-                      >
+                      <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center">
                         {totalPending + openIncidents > 9 ? '9+' : totalPending + openIncidents}
                       </span>
                     )}
@@ -455,11 +443,10 @@ const AdminLayout = () => {
                       {badges.tourPending > 0 && (
                         <button
                           onClick={() => navigate('/admin/orders/tours')}
-                          className="w-full flex items-center gap-3 p-2.5 rounded-xl text-left hover:bg-orange-50 transition-colors"
-                          style={{ backgroundColor: '#fff7ed' }}
+                          className="w-full flex items-center gap-3 p-2.5 rounded text-left bg-orange-50 hover:bg-orange-100 transition-colors"
                         >
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#fed7aa' }}>
-                            <ShoppingCart size={14} style={{ color: '#e67e22' }} />
+                          <div className="w-8 h-8 rounded-lg bg-orange-200 flex items-center justify-center shrink-0">
+                            <ShoppingCart size={14} className="text-accent" />
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-gray-900">{badges.tourPending} đơn tour chờ duyệt</p>
@@ -470,8 +457,7 @@ const AdminLayout = () => {
                       {badges.restPending > 0 && (
                         <button
                           onClick={() => navigate('/admin/orders/restaurants')}
-                          className="w-full flex items-center gap-3 p-2.5 rounded-xl text-left hover:bg-blue-50 transition-colors"
-                          style={{ backgroundColor: '#eff6ff' }}
+                          className="w-full flex items-center gap-3 p-2.5 rounded text-left bg-blue-50 hover:bg-blue-100 transition-colors"
                         >
                           <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
                             <UtensilsCrossed size={14} className="text-blue-600" />
@@ -485,8 +471,7 @@ const AdminLayout = () => {
                       {openIncidents > 0 && (
                         <button
                           onClick={() => navigate('/admin/incidents')}
-                          className="w-full flex items-center gap-3 p-2.5 rounded-xl text-left hover:bg-red-50 transition-colors"
-                          style={{ backgroundColor: '#fff1f2' }}
+                          className="w-full flex items-center gap-3 p-2.5 rounded text-left bg-red-50 hover:bg-red-100 transition-colors"
                         >
                           <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
                             <Bell size={14} className="text-red-600" />
@@ -505,13 +490,10 @@ const AdminLayout = () => {
               {/* Avatar dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-gray-200 hover:ring-[#1a5276] transition-all">
+                  <button className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-gray-200 hover:ring-primary transition-all">
                     <Avatar className="w-9 h-9">
                       <AvatarImage src={user?.avatar} />
-                      <AvatarFallback
-                        className="text-white text-xs font-bold"
-                        style={{ background: 'linear-gradient(135deg, #1a5276, #2980b9)' }}
-                      >
+                      <AvatarFallback className="text-white text-xs font-bold bg-primary">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
@@ -544,7 +526,9 @@ const AdminLayout = () => {
           {/* Page */}
           <main className="flex-1 overflow-y-auto">
             <Suspense fallback={<PageLoader />}>
-              <Outlet />
+              <div key={location.pathname} className="animate-fade-in-up">
+                <Outlet />
+              </div>
             </Suspense>
           </main>
         </div>

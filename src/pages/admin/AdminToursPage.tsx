@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+﻿import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   Plus, Search, MapPin, Pencil, Trash2, GripVertical,
-  X, ImagePlus, ChevronLeft, ChevronRight, Loader2,
+  X, ImagePlus, ChevronLeft, ChevronRight, Loader2, AlertCircle, RefreshCw as RefreshCwIcon,
 } from 'lucide-react'
 import api from '../../api/axiosInstance'
 import { Button } from '../../components/ui/button'
@@ -34,6 +34,7 @@ interface Tour {
   departureCount: number
   status: 'ACTIVE' | 'INACTIVE' | 'FULL'
   imageUrl?: string
+  imageUrls?: string[]
   description?: string
   hotels?: number[]
   restaurants?: number[]
@@ -99,23 +100,39 @@ function ImageUploadZone({ files, previews, onChange }: {
   const add = useCallback((incoming: FileList | null) => {
     if (!incoming) return
     const valid = Array.from(incoming).filter(f => f.type.startsWith('image/'))
-    const combined = [...files, ...valid].slice(0, 10)
-    const newPreviews = combined.map((f, i) =>
-      i < files.length ? previews[i] : URL.createObjectURL(f)
-    )
+    // Số ảnh hiện có (data URLs không có File tương ứng)
+    const existingCount = previews.length - files.length
+    const maxNew = Math.max(0, 10 - existingCount - files.length)
+    const newValid = valid.slice(0, maxNew)
+    const combined = [...files, ...newValid]
+    const existingPreviews = previews.slice(0, existingCount)
+    const filePreviews = previews.slice(existingCount)
+    const newPreviews = [
+      ...existingPreviews,
+      ...filePreviews,
+      ...newValid.map(f => URL.createObjectURL(f)),
+    ]
     onChange(combined, newPreviews)
   }, [files, previews, onChange])
 
   const remove = (idx: number) => {
-    if (idx >= files.length) URL.revokeObjectURL(previews[idx])
-    onChange(files.filter((_, i) => i !== idx), previews.filter((_, i) => i !== idx))
+    const existingCount = previews.length - files.length
+    if (idx < existingCount) {
+      // Xóa ảnh hiện có (data URL)
+      onChange(files, previews.filter((_, i) => i !== idx))
+    } else {
+      // Xóa file mới
+      const fileIdx = idx - existingCount
+      URL.revokeObjectURL(previews[idx])
+      onChange(files.filter((_, i) => i !== fileIdx), previews.filter((_, i) => i !== idx))
+    }
   }
 
   return (
     <div className="space-y-3">
       <div
-        className={`border-2 border-dashed rounded-xl py-8 flex flex-col items-center gap-2 cursor-pointer transition-colors
-          ${drag ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}
+        className={`border-2 border-dashed rounded py-8 flex flex-col items-center gap-2 cursor-pointer transition-colors
+          ${drag ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-[#f8f5ee]'}`}
         onDragOver={e => { e.preventDefault(); setDrag(true) }}
         onDragLeave={() => setDrag(false)}
         onDrop={e => { e.preventDefault(); setDrag(false); add(e.dataTransfer.files) }}
@@ -130,11 +147,10 @@ function ImageUploadZone({ files, previews, onChange }: {
       {previews.length > 0 && (
         <div className="grid grid-cols-4 gap-2">
           {previews.map((src, i) => (
-            <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-gray-100">
+            <div key={i} className="relative group aspect-square rounded overflow-hidden border border-gray-100">
               <img src={src} alt="" className="w-full h-full object-cover" />
               {i === 0 && (
-                <span className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                  style={{ backgroundColor: '#e67e22' }}>Chính</span>
+                <span className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white bg-accent">Chính</span>
               )}
               <button type="button" onClick={e => { e.stopPropagation(); remove(i) }}
                 className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -188,8 +204,7 @@ function LinkedItemCombobox({ label, endpoint, selected, onAdd, onRemove }: {
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {selected.map(it => (
-            <span key={it.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white"
-              style={{ backgroundColor: '#1a5276' }}>
+            <span key={it.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-primary">
               {it.name}
               <button type="button" onClick={() => onRemove(it.id)} className="hover:opacity-75"><X size={10} /></button>
             </span>
@@ -204,7 +219,7 @@ function LinkedItemCombobox({ label, endpoint, selected, onAdd, onRemove }: {
           {busy && <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />}
         </div>
         {open && results.length > 0 && (
-          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
             <ScrollArea className="max-h-48">
               {results.map(it => {
                 const sel = !!selected.find(s => s.id === it.id)
@@ -212,7 +227,7 @@ function LinkedItemCombobox({ label, endpoint, selected, onAdd, onRemove }: {
                   <button key={it.id} type="button" onClick={() => { if (!sel) { onAdd(it); setQ(''); setOpen(false) } }}
                     disabled={sel}
                     className={`w-full text-left px-3 py-2 text-sm flex justify-between transition-colors
-                      ${sel ? 'text-gray-400 bg-gray-50 cursor-not-allowed' : 'hover:bg-blue-50 hover:text-blue-700'}`}>
+                      ${sel ? 'text-gray-400 bg-[#f8f5ee] cursor-not-allowed' : 'hover:bg-blue-50 hover:text-blue-700'}`}>
                     <span>{it.name}</span>
                     {sel && <span className="text-xs">Đã chọn</span>}
                   </button>
@@ -270,7 +285,7 @@ function SeasonalPriceDialog({ open, onOpenChange, tourId, price, onSuccess }: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle style={{ fontFamily: 'Poppins, sans-serif' }}>
+          <DialogTitle >
             {isEdit ? 'Chỉnh sửa giá theo mùa' : 'Thêm giá theo mùa'}
           </DialogTitle>
         </DialogHeader>
@@ -303,7 +318,7 @@ function SeasonalPriceDialog({ open, onOpenChange, tourId, price, onSuccess }: {
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Hủy</Button>
-          <Button onClick={submit} disabled={busy} className="text-white" style={{ backgroundColor: '#1a5276' }}>
+          <Button onClick={submit} disabled={busy} className="text-white bg-primary">
             {busy && <Loader2 size={14} className="mr-1.5 animate-spin" />}
             {isEdit ? 'Cập nhật' : 'Thêm'}
           </Button>
@@ -340,7 +355,7 @@ function SeasonalPricesTab({ tourId, isTabActive }: { tourId: number; isTabActiv
       <div className="flex items-center justify-between">
         <span className="text-sm font-semibold text-gray-700">Giá theo mùa</span>
         <Button size="sm" onClick={() => { setEditPrice(null); setDialogOpen(true) }}
-          className="text-white gap-1.5 h-8 text-xs" style={{ backgroundColor: '#1a5276' }}>
+          className="text-white gap-1.5 h-8 text-xs bg-primary">
           <Plus size={13} /> Thêm
         </Button>
       </div>
@@ -348,16 +363,16 @@ function SeasonalPricesTab({ tourId, isTabActive }: { tourId: number; isTabActiv
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
           ))}
         </div>
       ) : prices.length === 0 ? (
         <div className="py-12 text-center text-sm text-gray-400">Chưa có giá theo mùa nào</div>
       ) : (
-        <div className="rounded-xl border border-gray-100 overflow-hidden">
+        <div className="rounded border border-gray-100 overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50/70 border-b border-gray-100">
+              <tr className="bg-[#f8f5ee]/70 border-b border-gray-100">
                 {['Tên mùa', 'Từ ngày → Đến ngày', 'Giá NL', 'Giá TE', 'Trạng thái', ''].map(h => (
                   <th key={h} className={`px-3 py-2.5 text-xs font-semibold text-gray-500
                     ${h === 'Giá NL' || h === 'Giá TE' ? 'text-right' : h === 'Trạng thái' ? 'text-center' : 'text-left'}`}>
@@ -368,15 +383,15 @@ function SeasonalPricesTab({ tourId, isTabActive }: { tourId: number; isTabActiv
             </thead>
             <tbody>
               {prices.map(p => (
-                <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+                <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-[#f8f5ee]/50 transition-colors">
                   <td className="px-3 py-2.5 font-medium text-gray-800">{p.name}</td>
                   <td className="px-3 py-2.5 text-gray-600 whitespace-nowrap text-xs">
                     {p.startDate} → {p.endDate}
                   </td>
-                  <td className="px-3 py-2.5 text-right font-bold text-xs" style={{ color: '#e67e22' }}>
+                  <td className="px-3 py-2.5 text-right font-bold text-xs text-accent">
                     {fmtVND(p.priceAdult)}
                   </td>
-                  <td className="px-3 py-2.5 text-right font-bold text-xs" style={{ color: '#e67e22' }}>
+                  <td className="px-3 py-2.5 text-right font-bold text-xs text-accent">
                     {fmtVND(p.priceChild)}
                   </td>
                   <td className="px-3 py-2.5 text-center">
@@ -444,7 +459,8 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
         hotels: (tour.hotels ?? []).map(id => ({ id, name: `Hotel #${id}` })),
         restaurants: (tour.restaurants ?? []).map(id => ({ id, name: `Restaurant #${id}` })),
       })
-      setImages([]); setPreviews(tour.imageUrl ? [tour.imageUrl] : [])
+      setImages([])
+      setPreviews(tour.imageUrls?.length ? tour.imageUrls : tour.imageUrl ? [tour.imageUrl] : [])
     } else {
       setForm(INIT); setImages([]); setPreviews([])
     }
@@ -495,7 +511,7 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-2xl flex flex-col p-0 gap-0">
         <SheetHeader className="px-6 py-5 border-b shrink-0">
-          <SheetTitle style={{ fontFamily: 'Poppins, sans-serif' }}>
+          <SheetTitle >
             {isEdit ? 'Chỉnh sửa tour' : 'Thêm tour mới'}
           </SheetTitle>
         </SheetHeader>
@@ -560,7 +576,7 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
 
             <TabsContent value="itinerary" className="mt-4 space-y-4">
               {form.itinerary.map((day, i) => (
-                <div key={i} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
+                <div key={i} className="border border-gray-200 rounded p-4 space-y-3 bg-[#f8f5ee]/40">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <GripVertical size={16} className="text-gray-400" />
@@ -586,7 +602,7 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
                 </div>
               ))}
               <button type="button" onClick={addDay}
-                className="w-full py-2.5 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
+                className="w-full py-2.5 border-2 border-dashed border-gray-300 rounded text-sm font-medium text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
                 <Plus size={15} /> Thêm ngày
               </button>
             </TabsContent>
@@ -613,8 +629,7 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
 
         <div className="px-6 py-4 border-t shrink-0 flex justify-end gap-3">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Hủy</Button>
-          <Button onClick={submit} disabled={busy} className="text-white"
-            style={{ backgroundColor: '#1a5276' }}>
+          <Button onClick={submit} disabled={busy} className="text-white bg-primary">
             {busy && <Loader2 size={14} className="mr-1.5 animate-spin" />}
             {isEdit ? 'Cập nhật' : 'Thêm tour'}
           </Button>
@@ -653,10 +668,11 @@ export default function AdminToursPage() {
     ...(filterStatus !== 'all' ? { status: filterStatus } : {}),
   }).toString()
 
-  const { data: paged, isLoading, isFetching } = useQuery<PagedResponse>({
+  const { data: paged, isLoading, isFetching, isError, refetch } = useQuery<PagedResponse>({
     queryKey: ['admin', 'tours', params],
     queryFn: async () => (await api.get(`/admin/tours?${params}`)).data,
     placeholderData: prev => prev,
+    retry: false,
   })
 
   const { data: destinations = [] } = useQuery<Destination[]>({
@@ -672,7 +688,10 @@ export default function AdminToursPage() {
   const totalPages = paged?.totalPages ?? 1
   const totalElements = paged?.totalElements ?? 0
 
-  const inv = () => qc.invalidateQueries({ queryKey: ['admin', 'tours'] })
+  const inv = () => {
+    qc.invalidateQueries({ queryKey: ['admin', 'tours'] })
+    qc.invalidateQueries({ queryKey: ['admin', 'tours-all'] })
+  }
 
   const delMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/admin/tours/${id}`),
@@ -702,20 +721,19 @@ export default function AdminToursPage() {
   })
 
   return (
-    <div className="p-6 space-y-5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="p-6 space-y-5" >
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Quản lý Tour</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{totalElements.toLocaleString('vi-VN')} tour trong hệ thống</p>
         </div>
         <Button onClick={() => { setEditTour(null); setSheetOpen(true) }}
-          className="text-white rounded-xl font-semibold gap-2" style={{ backgroundColor: '#1a5276' }}>
+          className="text-white rounded font-semibold gap-2 bg-primary">
           <Plus size={16} /> Thêm Tour
         </Button>
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl border"
+        <div className="flex items-center justify-between px-4 py-3 rounded border"
           style={{ backgroundColor: '#fff7ed', borderColor: '#fdba74' }}>
           <span className="text-sm font-medium" style={{ color: '#c2410c' }}>Đã chọn {selectedIds.size} tour</span>
           <Button variant="destructive" size="sm" className="gap-1.5" onClick={() => setBulkOpen(true)}>
@@ -748,17 +766,32 @@ export default function AdminToursPage() {
         </Select>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Error banner */}
+      {isError && (
+        <div className="flex items-center justify-between px-4 py-3 rounded border border-red-200 bg-red-50">
+          <div className="flex items-center gap-2 text-sm text-red-700">
+            <AlertCircle size={14} /> Không tải được danh sách tour
+          </div>
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-800 transition-colors"
+          >
+            <RefreshCwIcon size={13} /> Tải lại
+          </button>
+        </div>
+      )}
+
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/70">
+              <tr className="border-b border-gray-100 bg-[#f8f5ee]/70">
                 <th className="w-10 px-4 py-3">
                   <Checkbox checked={allChecked}
                     ref={el => { if (el) (el as unknown as HTMLInputElement).indeterminate = someChecked }}
                     onCheckedChange={toggleAll} aria-label="Chọn tất cả" />
                 </th>
-                {['Ảnh', 'Tên tour', 'Điểm đến', 'Thời gian', 'Giá người lớn', 'Số lịch', 'Trạng thái', 'Thao tác'].map(h => (
+                {['Tên tour', 'Điểm đến', 'Thời gian', 'Giá người lớn', 'Số lịch', 'Trạng thái', 'Thao tác'].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -767,7 +800,7 @@ export default function AdminToursPage() {
               {isLoading
                 ? Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i} className="border-b border-gray-50">
-                      {Array.from({ length: 9 }).map((__, j) => (
+                      {Array.from({ length: 8 }).map((__, j) => (
                         <td key={j} className="px-4 py-3">
                           <div className="h-4 bg-gray-100 rounded animate-pulse" />
                         </td>
@@ -776,7 +809,7 @@ export default function AdminToursPage() {
                   ))
                 : tours.length === 0
                 ? (
-                  <tr><td colSpan={9} className="py-16 text-center">
+                  <tr><td colSpan={8} className="py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <MapPin size={40} className="text-gray-200" />
                       <p className="text-sm text-gray-400 font-medium">Không có tour nào</p>
@@ -788,14 +821,9 @@ export default function AdminToursPage() {
                     const checked = selectedIds.has(t.id)
                     return (
                       <tr key={t.id}
-                        className={`border-b border-gray-50 transition-colors ${checked ? 'bg-blue-50/40' : 'hover:bg-gray-50/50'}`}>
+                        className={`border-b border-gray-50 transition-colors ${checked ? 'bg-blue-50/40' : 'hover:bg-[#f8f5ee]/50'}`}>
                         <td className="px-4 py-3">
                           <Checkbox checked={checked} onCheckedChange={() => toggleRow(t.id)} />
-                        </td>
-                        <td className="px-4 py-3">
-                          <img src={t.imageUrl || PLACEHOLDER} alt={t.name}
-                            className="w-14 h-14 rounded-xl object-cover border border-gray-100 bg-gray-100"
-                            onError={e => { (e.currentTarget as HTMLImageElement).src = PLACEHOLDER }} />
                         </td>
                         <td className="px-4 py-3 max-w-[180px]">
                           <p className="font-semibold text-gray-900 truncate">{t.name}</p>
@@ -810,12 +838,12 @@ export default function AdminToursPage() {
                         <td className="px-4 py-3 whitespace-nowrap text-gray-600 text-sm">
                           {t.durationDays}N{t.durationNights}Đ
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap font-bold text-right" style={{ color: '#e67e22' }}>
+                        <td className="px-4 py-3 whitespace-nowrap font-bold text-right text-accent">
                           {fmtVND(t.priceAdult)}
                         </td>
                         <td className="px-4 py-3 text-center text-gray-600 font-medium">{t.departureCount}</td>
                         <td className="px-4 py-3">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap ${sc.cls}`}>{sc.label}</span>
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors duration-300 ${sc.cls}`}>{sc.label}</span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1.5">
@@ -842,7 +870,7 @@ export default function AdminToursPage() {
             <p className="text-xs text-gray-400">Trang {page + 1}/{totalPages} — {totalElements.toLocaleString('vi-VN')} tour</p>
             <div className="flex items-center gap-1">
               <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0 || isFetching}
-                className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition-colors">
+                className="p-1.5 rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40 transition-colors">
                 <ChevronLeft size={15} />
               </button>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -851,14 +879,14 @@ export default function AdminToursPage() {
                 return (
                   <button key={pn} onClick={() => setPage(pn)}
                     className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors
-                      ${pn === page ? 'text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                    style={pn === page ? { backgroundColor: '#1a5276' } : {}}>
+                      ${pn === page ? 'text-white' : 'border border-gray-200 text-gray-600 hover:bg-[#f8f5ee]'}`}
+                    style={pn === page ? { backgroundColor: '#0a1628' } : {}}>
                     {pn + 1}
                   </button>
                 )
               })}
               <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1 || isFetching}
-                className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition-colors">
+                className="p-1.5 rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40 transition-colors">
                 <ChevronRight size={15} />
               </button>
             </div>

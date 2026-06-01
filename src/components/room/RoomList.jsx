@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { resolveBase64Image } from '../../lib/utils'
 import { getAllRooms } from '../../api/roomApi'
 
 const RoomList = () => {
@@ -20,7 +21,7 @@ const RoomList = () => {
     )
 
     if (error) return (
-        <div className="px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm font-medium flex items-center gap-2">
+        <div className="px-4 py-3 rounded bg-red-50 text-red-700 text-sm font-medium flex items-center gap-2">
             <i className="bi bi-exclamation-circle"></i>{error}
         </div>
     )
@@ -35,10 +36,10 @@ const RoomList = () => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {rooms.map((room) => (
-                <div key={room.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                <div key={room.id} className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                     {room.photo ? (
                         <img
-                            src={`data:image/jpeg;base64,${room.photo}`}
+                            src={resolveBase64Image(room.photo, '')}
                             alt={room.roomType}
                             className="w-full h-48 object-cover"
                         />

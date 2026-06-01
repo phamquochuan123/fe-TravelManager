@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -47,7 +47,7 @@ const INCIDENT_TYPES: Record<string, { emoji: string; label: string }> = {
 
 const STATUS_CONFIG: Record<Status, { label: string; bg: string; color: string }> = {
   OPEN:      { label: 'Đang xử lý',   bg: '#fef9c3', color: '#ca8a04' },
-  REVIEWING: { label: 'Đang xem xét', bg: '#eaf4fb', color: '#1a5276' },
+  REVIEWING: { label: 'Đang xem xét', bg: '#eaf4fb', color: '#0a1628' },
   RESOLVED:  { label: 'Đã xử lý',     bg: '#dcfce7', color: '#16a34a' },
 }
 
@@ -142,7 +142,7 @@ function IncidentSheet({
             </div>
 
             {/* Info grid */}
-            <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+            <div className="bg-[#f8f5ee] rounded p-4 space-y-2 text-sm">
               {[
                 ['Staff', report.staffName ?? '—'],
                 ['Email', report.staffEmail ?? '—'],
@@ -173,7 +173,7 @@ function IncidentSheet({
                   {report.imageUrls.map((url, i) => (
                     <a key={i} href={url} target="_blank" rel="noopener noreferrer">
                       <img src={url} alt={`img-${i}`}
-                        className="w-full aspect-square object-cover rounded-xl border hover:opacity-90 transition-opacity" />
+                        className="w-full aspect-square object-cover rounded border hover:opacity-90 transition-opacity" />
                     </a>
                   ))}
                 </div>
@@ -194,7 +194,7 @@ function IncidentSheet({
                         key={s}
                         type="button"
                         onClick={() => setStatus(s)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all"
+                        className="px-3 py-1.5 rounded text-xs font-bold border-2 transition-all"
                         style={
                           status === s
                             ? { backgroundColor: cfg.bg, borderColor: cfg.color, color: cfg.color }
@@ -223,7 +223,7 @@ function IncidentSheet({
                 onClick={() => updateMutation.mutate()}
                 disabled={updateMutation.isPending}
                 className="w-full text-white"
-                style={{ backgroundColor: '#1a5276' }}
+                className="bg-primary"
               >
                 {updateMutation.isPending ? (
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
@@ -283,11 +283,11 @@ export default function AdminIncidentsPage() {
   }
 
   return (
-    <div className="p-6 space-y-5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="p-6 space-y-5" >
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#1a5276' }}>
+          <h1 className="text-2xl font-bold" className="text-primary">
             Báo cáo sự cố
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">{reports.length} báo cáo từ staff</p>
@@ -302,11 +302,11 @@ export default function AdminIncidentsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Đang xử lý', value: counts.open,      color: '#ca8a04', bg: '#fef9c3' },
-          { label: 'Đang xem',   value: counts.reviewing, color: '#1a5276', bg: '#eaf4fb' },
+          { label: 'Đang xem',   value: counts.reviewing, color: '#0a1628', bg: '#eaf4fb' },
           { label: 'Đã giải quyết', value: counts.resolved, color: '#16a34a', bg: '#dcfce7' },
           { label: 'Khẩn cấp',   value: counts.urgent,    color: '#dc2626', bg: '#fee2e2' },
         ].map(k => (
-          <div key={k.label} className="bg-white rounded-xl border p-4 text-center">
+          <div key={k.label} className="bg-white rounded border p-4 text-center">
             <p className="text-2xl font-black" style={{ color: k.color }}>{k.value}</p>
             <p className="text-xs text-gray-500 mt-0.5">{k.label}</p>
           </div>
@@ -318,7 +318,7 @@ export default function AdminIncidentsPage() {
         <select
           value={filterStatus}
           onChange={e => setFilterStatus(e.target.value as Status | '')}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none bg-white"
+          className="border border-gray-200 rounded px-3 py-2 text-xs font-medium focus:outline-none bg-white"
         >
           <option value="">Tất cả trạng thái</option>
           {ALL_STATUSES.map(s => (
@@ -329,7 +329,7 @@ export default function AdminIncidentsPage() {
         <select
           value={filterSeverity}
           onChange={e => setFilterSeverity(e.target.value as Severity | '')}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none bg-white"
+          className="border border-gray-200 rounded px-3 py-2 text-xs font-medium focus:outline-none bg-white"
         >
           <option value="">Tất cả mức độ</option>
           {(['URGENT', 'HIGH', 'MEDIUM', 'LOW'] as Severity[]).map(s => (
@@ -340,7 +340,7 @@ export default function AdminIncidentsPage() {
         <select
           value={filterType}
           onChange={e => setFilterType(e.target.value)}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none bg-white"
+          className="border border-gray-200 rounded px-3 py-2 text-xs font-medium focus:outline-none bg-white"
         >
           <option value="">Tất cả loại</option>
           {Object.entries(INCIDENT_TYPES).map(([v, { emoji, label }]) => (
@@ -351,7 +351,7 @@ export default function AdminIncidentsPage() {
         {(filterStatus || filterSeverity || filterType) && (
           <button
             onClick={() => { setFilterStatus(''); setFilterSeverity(''); setFilterType('') }}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl px-3 py-2 transition-colors"
+            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded px-3 py-2 transition-colors"
           >
             <X size={12} /> Xóa lọc
           </button>
@@ -359,11 +359,10 @@ export default function AdminIncidentsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="flex justify-center py-20">
-            <span className="w-8 h-8 border-2 rounded-full animate-spin"
-              style={{ borderColor: 'rgba(26,82,118,0.15)', borderTopColor: '#1a5276' }} />
+            <span className="w-8 h-8 border-2 rounded-full animate-spin border-primary/15 border-t-primary" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
@@ -374,7 +373,7 @@ export default function AdminIncidentsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
+                <tr className="bg-[#f8f5ee] border-b border-gray-100">
                   <th className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs uppercase tracking-wide">Loại</th>
                   <th className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs uppercase tracking-wide">Staff</th>
                   <th className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs uppercase tracking-wide">Tour</th>
@@ -386,7 +385,7 @@ export default function AdminIncidentsPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map(r => (
-                  <tr key={r.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={r.id} className="hover:bg-[#f8f5ee] transition-colors">
                     <td className="px-5 py-4 whitespace-nowrap">
                       <span className="font-medium text-gray-900">
                         {incidentEmoji(r.incidentType)} {incidentLabel(r.incidentType)}

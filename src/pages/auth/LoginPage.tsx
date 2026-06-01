@@ -25,12 +25,12 @@ type FormData = z.infer<typeof schema>
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
 const inputCls = (hasError?: boolean, extraRight = false) =>
-  `block w-full pl-11 ${extraRight ? 'pr-12' : 'pr-4'} py-3.5 bg-gray-50 border-2 rounded-2xl
+  `block w-full pl-11 ${extraRight ? 'pr-12' : 'pr-4'} py-3.5 bg-[#f8f5ee] border-2 rounded
    text-sm font-medium text-gray-700 placeholder-gray-400
    focus:bg-white focus:outline-none focus:ring-4 transition-all
    ${hasError
      ? 'border-red-400 focus:border-red-500 focus:ring-red-50'
-     : 'border-transparent focus:border-[#1a5276] focus:ring-[#1a5276]/10'}`
+     : 'border-transparent focus:[border-color:#0a1628] focus:ring-4 focus:[--tw-ring-color:rgba(10,22,40,0.1)]'}`
 
 const FieldError = ({ msg }: { msg?: string }) =>
   msg ? (
@@ -74,7 +74,7 @@ const LoginPage = () => {
       imageSeed="vietnam-mountain-fog"
       quote="Mỗi chuyến đi là một câu chuyện mới đang chờ được viết."
     >
-      <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-10">
+      <div className="bg-white rounded-sm border border-gray-100 p-8 md:p-10" style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
 
         {/* Heading */}
         <div className="mb-8">
@@ -91,7 +91,7 @@ const LoginPage = () => {
               <MdEmail
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                           text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                           text-gray-400 group-focus-within:text-primary transition-colors"
               />
               <input
                 type="email"
@@ -111,7 +111,7 @@ const LoginPage = () => {
               <MdLock
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                           text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                           text-gray-400 group-focus-within:text-primary transition-colors"
               />
               <input
                 type={showPw ? 'text' : 'password'}
@@ -125,7 +125,7 @@ const LoginPage = () => {
                 tabIndex={-1}
                 onClick={() => setShowPw(p => !p)}
                 className="absolute right-4 top-1/2 -translate-y-1/2
-                           text-gray-400 hover:text-[#1a5276] transition-colors"
+                           text-gray-400 hover:text-primary transition-colors"
               >
                 {showPw ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
               </button>
@@ -139,7 +139,7 @@ const LoginPage = () => {
               <input
                 type="checkbox"
                 {...register('rememberMe')}
-                className="w-4 h-4 rounded cursor-pointer accent-[#1a5276]"
+                className="w-4 h-4 rounded cursor-pointer accent-[#0a1628]"
               />
               <span className="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
                 Ghi nhớ đăng nhập
@@ -147,7 +147,7 @@ const LoginPage = () => {
             </label>
             <Link
               to="/forgot-password"
-              className="text-sm font-bold text-[#1a5276] hover:text-[#e67e22] transition-colors"
+              className="text-sm font-bold text-[#0a1628] hover:text-[#c9a84c] transition-colors"
             >
               Quên mật khẩu?
             </Link>
@@ -157,13 +157,10 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 text-white font-bold
-                       py-3.5 rounded-2xl transition-all active:scale-95 hover:opacity-90
+            className="w-full flex items-center justify-center gap-2 text-white font-black
+                       py-4 rounded transition-all active:scale-95 hover:opacity-90
                        disabled:opacity-60 disabled:cursor-not-allowed group mt-1"
-            style={{
-              background: 'linear-gradient(135deg, #1a5276, #2980b9)',
-              boxShadow: '0 8px 24px rgba(26,82,118,0.30)',
-            }}
+            style={{ background: 'linear-gradient(135deg, #0a1628, #1a3a5c)', boxShadow: '0 6px 20px rgba(10,22,40,0.35)' }}
           >
             {isSubmitting ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -185,7 +182,7 @@ const LoginPage = () => {
 
         <p className="text-center text-sm text-gray-500">
           Chưa có tài khoản?{' '}
-          <Link to="/register" className="font-black text-[#1a5276] hover:underline">
+          <Link to="/register" className="font-black text-primary hover:underline">
             Đăng ký ngay
           </Link>
         </p>

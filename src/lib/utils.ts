@@ -6,11 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    minimumFractionDigits: 0,
-  }).format(amount)
+  return new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 0 }).format(amount) + ' VNĐ'
 }
 
 export function formatDate(date: string | Date): string {
@@ -25,9 +21,11 @@ export function truncate(str: string, length: number): string {
   return str.length > length ? str.slice(0, length) + '...' : str
 }
 
-export function resolveBase64Image(raw: string | null | undefined, fallback: string): string {
-  if (!raw) return fallback
-  if (raw.startsWith('http') || raw.startsWith('data:')) return raw
-  try { return `data:image/jpeg;base64,${btoa(unescape(encodeURIComponent(raw)))}` }
-  catch { return fallback }
+export function resolveBase64Image(data: string | null | undefined, fallback: string): string {
+  if (!data) return fallback
+  if (data.startsWith('http') || data.startsWith('data:')) return data
+  if (data.startsWith('iVBORw')) return `data:image/png;base64,${data}`
+  if (data.startsWith('R0lGOD')) return `data:image/gif;base64,${data}`
+  if (data.startsWith('UklGR')) return `data:image/webp;base64,${data}`
+  return `data:image/jpeg;base64,${data}`
 }

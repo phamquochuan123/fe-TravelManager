@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
@@ -73,7 +73,7 @@ function LockDialog({
 
         <div className="space-y-4 py-2">
           {customer && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-[#f8f5ee] rounded-lg">
               <Avatar className="w-10 h-10">
                 <AvatarImage src={customer.avatarUrl} />
                 <AvatarFallback>{customer.fullName.charAt(0)}</AvatarFallback>
@@ -219,7 +219,7 @@ function CustomerDetailSheet({
                   <p className="text-xs text-gray-500 mt-1">Đơn đặt</p>
                 </div>
                 <div className="bg-orange-50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold" style={{ color: '#e67e22' }}>
+                  <p className="text-2xl font-bold" className="text-accent">
                     {((customer.totalSpent ?? 0) / 1_000_000).toFixed(1)}M
                   </p>
                   <p className="text-xs text-gray-500 mt-1">Chi tiêu (VNĐ)</p>
@@ -254,7 +254,7 @@ function CustomerDetailSheet({
           {isLocked ? (
             <Button
               className="flex-1"
-              style={{ background: '#1a5276' }}
+              className="bg-primary"
               onClick={() => onUnlock(customer)}
             >
               <Shield className="w-4 h-4 mr-2" /> Mở khóa
@@ -317,7 +317,7 @@ export default function AdminUsersPage() {
   // ── Lock mutation ──
   const lockMutation = useMutation({
     mutationFn: async ({ id, reason, lockType, days }: { id: number; reason: string; lockType: string; days?: number }) => {
-      await axiosInstance.post(`/admin/customers/${id}/lock`, { reason, lockType, days })
+      await axiosInstance.patch(`/admin/customers/${id}/lock`, { reason, lockType, days })
     },
     onSuccess: () => {
       toast.success('Đã khóa tài khoản')
@@ -331,7 +331,7 @@ export default function AdminUsersPage() {
   // ── Unlock mutation ──
   const unlockMutation = useMutation({
     mutationFn: async (id: number) => {
-      await axiosInstance.post(`/admin/customers/${id}/unlock`)
+      await axiosInstance.patch(`/admin/customers/${id}/unlock`)
     },
     onSuccess: () => {
       toast.success('Đã mở khóa tài khoản')
@@ -356,7 +356,7 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#1a5276' }}>Quản lý người dùng</h1>
+          <h1 className="text-2xl font-bold" className="text-primary">Quản lý người dùng</h1>
           <p className="text-sm text-gray-500 mt-0.5">Danh sách khách hàng đã đăng ký</p>
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -399,10 +399,10 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-white rounded border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-[#f8f5ee] border-b">
               <tr>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Khách hàng</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Liên hệ</th>
@@ -432,7 +432,7 @@ export default function AdminUsersPage() {
                   </td>
                 </tr>
               ) : customers.map(c => (
-                <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={c.id} className="hover:bg-[#f8f5ee] transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-9 h-9">
@@ -450,7 +450,7 @@ export default function AdminUsersPage() {
                     {c.phone && <p className="text-xs text-gray-400">{c.phone}</p>}
                   </td>
                   <td className="px-4 py-3 text-center font-medium">{c.bookingsCount ?? 0}</td>
-                  <td className="px-4 py-3 text-right font-medium" style={{ color: '#e67e22' }}>
+                  <td className="px-4 py-3 text-right font-medium" className="text-accent">
                     {((c.totalSpent ?? 0) / 1_000_000).toFixed(1)}M
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">
@@ -519,7 +519,7 @@ export default function AdminUsersPage() {
                     key={pg}
                     variant={pg === page ? 'default' : 'outline'}
                     size="sm"
-                    style={pg === page ? { background: '#1a5276' } : undefined}
+                    style={pg === page ? { background: '#0a1628' } : undefined}
                     onClick={() => setPage(pg)}
                   >
                     {pg + 1}

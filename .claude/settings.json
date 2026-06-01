@@ -2,10 +2,22 @@
   "permissions": {
     "allow": [
       "Read(//d/springjava/travel/travel/src/main/resources/**)",
-      "Read(//d/springjava/travel/travel/**)"
+      "Read(//d/springjava/travel/travel/**)",
+      "Bash(node -e ' *)",
+      "Bash(xargs sed -i 's/Nunito/Be Vietnam Pro/g')",
+      "Bash(xargs sed -i -e 's/#1a5276/#0a1628/g' -e 's/#e67e22/#c9a84c/g' -e 's/#2e86c1/#1a3a5c/g' -e 's/#f39c12/#b8960e/g' -e 's/rgba\\(230,126,34,/rgba\\(201,168,76,/g' -e 's/rgba\\(26,82,118,/rgba\\(10,22,40,/g' -e 's/rgba\\(46,134,193,/rgba\\(26,58,92,/g' -e 's/bg-gray-50\\\\b/bg-[#f8f5ee]/g' -e 's/bg-gray-950/bg-[#06101e]/g' -e s/rounded-3xl/rounded-sm/g -e s/rounded-2xl/rounded/g -e s/rounded-xl/rounded/g)",
+      "Bash(xargs sed -i -e 's/font-black text-gray-900 leading-tight\\\\\\(.*\\\\\\)fontSize/font-semibold text-gray-900 leading-tight\\\\1fontFamily: '\\\\''\"Cormorant Garamond\", serif'\\\\'', fontSize/g' -e 's/font-black text-white leading-tight\\\\\\(.*\\\\\\)fontSize/font-semibold text-white leading-tight\\\\1fontFamily: '\\\\''\"Cormorant Garamond\", serif'\\\\'', fontSize/g')",
+      "Bash(curl -s http://localhost:8080/is-authenticated)",
+      "Bash(curl -s http://localhost:8080/actuator/health)",
+      "Bash(curl -s http://localhost:8080/hotels)",
+      "Bash(xargs cat)",
+      "Read(//c/Program Files/MySQL/**)",
+      "PowerShell(& \"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" --version)",
+      "PowerShell(& \"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p travelmanager \"--execute=source D:/springjava/travel/seed_data.sql\" 2>&1)"
     ],
     "additionalDirectories": [
-      "d:\\springjava\\travel\\travel"
+      "d:\\springjava\\travel\\travel",
+      "C:\\Users\\phamq\\Desktop"
     ]
   }
 }

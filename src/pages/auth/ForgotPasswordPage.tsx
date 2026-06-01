@@ -31,12 +31,12 @@ type Step2Data = z.infer<typeof step2Schema>
 // ─── UI helpers ───────────────────────────────────────────────────────────────
 
 const inputCls = (hasError?: boolean, extraRight = false) =>
-  `block w-full pl-11 ${extraRight ? 'pr-12' : 'pr-4'} py-3.5 bg-gray-50 border-2 rounded-2xl
+  `block w-full pl-11 ${extraRight ? 'pr-12' : 'pr-4'} py-3.5 bg-[#f8f5ee] border-2 rounded
    text-sm font-medium text-gray-700 placeholder-gray-400
    focus:bg-white focus:outline-none focus:ring-4 transition-all
    ${hasError
      ? 'border-red-400 focus:border-red-500 focus:ring-red-50'
-     : 'border-transparent focus:border-[#1a5276] focus:ring-[#1a5276]/10'}`
+     : 'border-transparent focus:border-primary focus:ring-primary/10'}`
 
 const FieldError = ({ msg }: { msg?: string }) =>
   msg ? (
@@ -117,42 +117,39 @@ const ForgotPasswordPage = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-6 py-12 relative overflow-hidden"
-      style={{ fontFamily: 'Poppins, sans-serif', backgroundColor: '#f8fafc' }}
+      className="min-h-screen flex items-center justify-center px-6 py-12 relative overflow-hidden bg-[#f8fafc]"
     >
       {/* Background */}
       <div
-        className="absolute top-0 left-0 right-0 h-72"
-        style={{ background: 'linear-gradient(160deg, #1a5276 0%, #2980b9 100%)' }}
+        className="absolute top-0 left-0 right-0 h-72 bg-primary"
       />
       <div className="absolute top-12 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-3xl opacity-10 bg-white" />
 
       {/* Logo */}
       <Link to="/" className="absolute top-6 left-6 flex items-center gap-2.5 group z-10">
         <div
-          className="p-2 rounded-xl backdrop-blur bg-white/20 group-hover:rotate-12 transition-transform"
+          className="p-2 rounded backdrop-blur bg-white/20 group-hover:rotate-12 transition-transform"
           style={{ border: '1px solid rgba(255,255,255,0.25)' }}
         >
           <MdFlight className="text-white" size={18} />
         </div>
         <span className="font-black text-lg text-white tracking-tight">
-          Travel<span style={{ color: '#e67e22' }}>VN</span>
+          Travel<span className="text-accent">VN</span>
         </span>
       </Link>
 
       {/* Card */}
       <div className="relative z-10 w-full max-w-md mt-16">
-        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 md:p-10">
+        <div className="bg-white rounded-sm shadow-2xl border border-gray-100 p-8 md:p-10">
 
           {step === 1 ? (
             /* ── Step 1: Email ─────────────────────────────────────────────── */
             <>
               <div className="flex justify-center mb-6">
                 <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                  style={{ backgroundColor: '#eaf4fb' }}
+                  className="w-16 h-16 rounded flex items-center justify-center bg-primary/10"
                 >
-                  <MdEmail size={32} style={{ color: '#1a5276' }} />
+                  <MdEmail size={32} className="text-primary" />
                 </div>
               </div>
 
@@ -170,7 +167,7 @@ const ForgotPasswordPage = () => {
                     <MdEmail
                       size={18}
                       className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                                 text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                                 text-gray-400 group-focus-within:text-primary transition-colors"
                     />
                     <input
                       type="email"
@@ -187,11 +184,11 @@ const ForgotPasswordPage = () => {
                   type="submit"
                   disabled={form1.formState.isSubmitting}
                   className="w-full flex items-center justify-center gap-2 text-white font-bold
-                             py-3.5 rounded-2xl transition-all active:scale-95 hover:opacity-90
+                             py-3.5 rounded transition-all active:scale-95 hover:opacity-90
                              disabled:opacity-60 disabled:cursor-not-allowed group"
                   style={{
-                    background: 'linear-gradient(135deg, #1a5276, #2980b9)',
-                    boxShadow: '0 8px 24px rgba(26,82,118,0.28)',
+                    background: 'linear-gradient(135deg, #0a1628, #2980b9)',
+                    boxShadow: '0 8px 24px rgba(10,22,40,0.28)',
                   }}
                 >
                   {form1.formState.isSubmitting ? (
@@ -208,7 +205,7 @@ const ForgotPasswordPage = () => {
               <div className="mt-6 text-center">
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-[#1a5276] transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-[#0a1628] transition-colors"
                 >
                   <MdArrowBack size={16} /> Quay lại đăng nhập
                 </Link>
@@ -221,7 +218,7 @@ const ForgotPasswordPage = () => {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-500 shrink-0"
+                  className="p-2 rounded hover:bg-gray-100 transition-colors text-gray-500 shrink-0"
                 >
                   <MdArrowBack size={18} />
                 </button>
@@ -229,7 +226,7 @@ const ForgotPasswordPage = () => {
                   <h2 className="text-xl font-black text-gray-900 tracking-tight">Đặt lại mật khẩu</h2>
                   <p className="text-xs text-gray-500 mt-0.5">
                     Mã OTP đã gửi về{' '}
-                    <span className="font-bold text-[#1a5276]">{sentEmail}</span>
+                    <span className="font-bold text-[#0a1628]">{sentEmail}</span>
                   </p>
                 </div>
               </div>
@@ -246,12 +243,12 @@ const ForgotPasswordPage = () => {
                     maxLength={6}
                     autoFocus
                     {...form2.register('otp')}
-                    className={`block w-full px-4 py-3.5 bg-gray-50 border-2 rounded-2xl text-sm font-mono
+                    className={`block w-full px-4 py-3.5 bg-[#f8f5ee] border-2 rounded text-sm font-mono
                                text-center tracking-[0.5em] placeholder-gray-400
                                focus:bg-white focus:outline-none focus:ring-4 transition-all
                                ${form2.formState.errors.otp
                                  ? 'border-red-400 focus:border-red-500 focus:ring-red-50'
-                                 : 'border-transparent focus:border-[#1a5276] focus:ring-[#1a5276]/10'}`}
+                                 : 'border-transparent focus:border-primary focus:ring-primary/10'}`}
                   />
                   <div className="flex items-start justify-between mt-1">
                     <FieldError msg={form2.formState.errors.otp?.message} />
@@ -259,8 +256,8 @@ const ForgotPasswordPage = () => {
                       type="button"
                       onClick={onResend}
                       disabled={countdown > 0}
-                      className="flex items-center gap-1 text-xs font-bold text-[#1a5276]
-                                 hover:text-[#e67e22] disabled:text-gray-400 disabled:cursor-not-allowed
+                      className="flex items-center gap-1 text-xs font-bold text-[#0a1628]
+                                 hover:text-[#c9a84c] disabled:text-gray-400 disabled:cursor-not-allowed
                                  transition-colors shrink-0 ml-auto"
                     >
                       <MdRefresh size={13} />
@@ -276,7 +273,7 @@ const ForgotPasswordPage = () => {
                     <MdLock
                       size={18}
                       className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                                 text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                                 text-gray-400 group-focus-within:text-primary transition-colors"
                     />
                     <input
                       type={showPw ? 'text' : 'password'}
@@ -288,7 +285,7 @@ const ForgotPasswordPage = () => {
                       type="button"
                       tabIndex={-1}
                       onClick={() => setShowPw(p => !p)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a5276] transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#0a1628] transition-colors"
                     >
                       {showPw ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
                     </button>
@@ -303,7 +300,7 @@ const ForgotPasswordPage = () => {
                     <MdLock
                       size={18}
                       className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                                 text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                                 text-gray-400 group-focus-within:text-primary transition-colors"
                     />
                     <input
                       type={showConfirm ? 'text' : 'password'}
@@ -315,7 +312,7 @@ const ForgotPasswordPage = () => {
                       type="button"
                       tabIndex={-1}
                       onClick={() => setShowConfirm(p => !p)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1a5276] transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#0a1628] transition-colors"
                     >
                       {showConfirm ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
                     </button>
@@ -327,11 +324,11 @@ const ForgotPasswordPage = () => {
                   type="submit"
                   disabled={form2.formState.isSubmitting}
                   className="w-full flex items-center justify-center gap-2 text-white font-bold
-                             py-3.5 rounded-2xl transition-all active:scale-95 hover:opacity-90
+                             py-3.5 rounded transition-all active:scale-95 hover:opacity-90
                              disabled:opacity-60 disabled:cursor-not-allowed group mt-2"
                   style={{
-                    background: 'linear-gradient(135deg, #1a5276, #2980b9)',
-                    boxShadow: '0 8px 24px rgba(26,82,118,0.28)',
+                    background: 'linear-gradient(135deg, #0a1628, #2980b9)',
+                    boxShadow: '0 8px 24px rgba(10,22,40,0.28)',
                   }}
                 >
                   {form2.formState.isSubmitting ? (

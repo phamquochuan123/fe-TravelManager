@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Plus, Search, Pencil, Trash2, ImagePlus, X, Loader2 } from 'lucide-react'
@@ -95,8 +95,8 @@ function MultiImageUpload({ previews, onChange }: {
 
   return (
     <div className="space-y-3">
-      <div className={`border-2 border-dashed rounded-xl py-6 flex flex-col items-center gap-2 cursor-pointer transition-colors
-        ${drag ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}
+      <div className={`border-2 border-dashed rounded py-6 flex flex-col items-center gap-2 cursor-pointer transition-colors
+        ${drag ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-[#f8f5ee]'}`}
         onDragOver={e => { e.preventDefault(); setDrag(true) }}
         onDragLeave={() => setDrag(false)}
         onDrop={e => { e.preventDefault(); setDrag(false); add(e.dataTransfer.files) }}
@@ -108,10 +108,10 @@ function MultiImageUpload({ previews, onChange }: {
       {previews.length > 0 && (
         <div className="grid grid-cols-4 gap-2">
           {previews.map((src, i) => (
-            <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-gray-100">
+            <div key={i} className="relative group aspect-square rounded overflow-hidden border border-gray-100">
               <img src={src} alt="" className="w-full h-full object-cover" />
               {i === 0 && <span className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                style={{ backgroundColor: '#e67e22' }}>Chính</span>}
+                className="bg-accent">Chính</span>}
               <button type="button" onClick={e => { e.stopPropagation(); remove(i) }}
                 className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <X size={10} />
@@ -208,7 +208,7 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-2xl flex flex-col p-0 gap-0">
         <SheetHeader className="px-6 py-5 border-b shrink-0">
-          <SheetTitle style={{ fontFamily: 'Poppins, sans-serif' }}>
+          <SheetTitle >
             {isEdit ? 'Chỉnh sửa nhà hàng' : 'Thêm nhà hàng mới'}
           </SheetTitle>
         </SheetHeader>
@@ -278,7 +278,7 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
                   return (
                     <TabsContent key={catName} value={catName} className="space-y-3">
                       {items.map((it, i) => (
-                        <div key={i} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
+                        <div key={i} className="border border-gray-200 rounded p-4 space-y-3 bg-[#f8f5ee]/40">
                           <div className="flex justify-between items-center">
                             <span className="text-xs font-semibold text-gray-600">Món {i + 1}</span>
                             <button type="button" onClick={() => removeItem(catName, i)}
@@ -318,7 +318,7 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
                         </div>
                       ))}
                       <button type="button" onClick={() => addItem(catName)}
-                        className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
+                        className="w-full py-2 border-2 border-dashed border-gray-300 rounded text-sm font-medium text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
                         <Plus size={14} /> Thêm món
                       </button>
                     </TabsContent>
@@ -335,7 +335,7 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
         </Tabs>
         <div className="px-6 py-4 border-t shrink-0 flex justify-end gap-3">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Hủy</Button>
-          <Button onClick={submit} disabled={busy} className="text-white" style={{ backgroundColor: '#1a5276' }}>
+          <Button onClick={submit} disabled={busy} className="text-white" className="bg-primary">
             {busy && <Loader2 size={14} className="mr-1.5 animate-spin" />}
             {isEdit ? 'Cập nhật' : 'Thêm nhà hàng'}
           </Button>
@@ -388,14 +388,13 @@ export default function AdminRestaurantsPage() {
   })
 
   return (
-    <div className="p-6 space-y-5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="p-6 space-y-5" >
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Quản lý Nhà hàng</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{(paged?.totalElements ?? 0).toLocaleString('vi-VN')} nhà hàng</p>
         </div>
         <Button onClick={() => { setEditRest(null); setSheetOpen(true) }}
-          className="text-white rounded-xl font-semibold gap-2" style={{ backgroundColor: '#1a5276' }}>
+          className="text-white rounded font-semibold gap-2" className="bg-primary">
           <Plus size={16} /> Thêm nhà hàng
         </Button>
       </div>
@@ -423,12 +422,12 @@ export default function AdminRestaurantsPage() {
         </Select>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/70">
-                {['Ảnh', 'Tên nhà hàng', 'Địa chỉ', 'Loại ẩm thực', 'Rating', 'Trạng thái', 'Thao tác'].map(h => (
+              <tr className="border-b border-gray-100 bg-[#f8f5ee]/70">
+                {['Tên nhà hàng', 'Địa chỉ', 'Loại ẩm thực', 'Rating', 'Trạng thái', 'Thao tác'].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -437,20 +436,15 @@ export default function AdminRestaurantsPage() {
               {isLoading
                 ? Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b border-gray-50">
-                      {Array.from({ length: 7 }).map((__, j) => (
+                      {Array.from({ length: 6 }).map((__, j) => (
                         <td key={j} className="px-4 py-3"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>
                       ))}
                     </tr>
                   ))
                 : restaurants.length === 0
-                ? <tr><td colSpan={7} className="py-16 text-center text-gray-400 text-sm">Không có nhà hàng nào</td></tr>
+                ? <tr><td colSpan={6} className="py-16 text-center text-gray-400 text-sm">Không có nhà hàng nào</td></tr>
                 : restaurants.map(r => (
-                    <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      <td className="px-4 py-3">
-                        <img src={r.imageUrls?.[0] || PLACEHOLDER} alt={r.name}
-                          className="w-14 h-14 rounded-xl object-cover border border-gray-100 bg-gray-100"
-                          onError={e => { (e.currentTarget as HTMLImageElement).src = PLACEHOLDER }} />
-                      </td>
+                    <tr key={r.id} className="border-b border-gray-50 hover:bg-[#f8f5ee]/50 transition-colors">
                       <td className="px-4 py-3 max-w-[160px]">
                         <p className="font-semibold text-gray-900 truncate">{r.name}</p>
                         <p className="text-[11px] text-gray-400">{r.openTime}–{r.closeTime}</p>
@@ -495,9 +489,9 @@ export default function AdminRestaurantsPage() {
             <p className="text-xs text-gray-400">Trang {page + 1}/{totalPages}</p>
             <div className="flex gap-1">
               <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-                className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40">← Trước</button>
+                className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40">← Trước</button>
               <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-                className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40">Tiếp →</button>
+                className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40">Tiếp →</button>
             </div>
           </div>
         )}

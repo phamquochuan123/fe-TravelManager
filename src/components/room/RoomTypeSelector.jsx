@@ -37,7 +37,7 @@ const RoomTypeSelector = ({ handleNewRoomInputChange, newRoom }) => {
                         handleNewRoomInputChange(e)
                     }
                 }}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-2.5 rounded border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
                 <option value="">Chọn loại phòng</option>
                 <option value="Add New">+ Thêm loại phòng mới</option>
@@ -53,12 +53,12 @@ const RoomTypeSelector = ({ handleNewRoomInputChange, newRoom }) => {
                         placeholder="Nhập loại phòng mới"
                         value={newRoomType}
                         onChange={handleNewRoomTypeInputChange}
-                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="flex-1 px-4 py-2.5 rounded border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <button
                         type="button"
                         onClick={handleAddNewRoomType}
-                        className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors"
+                        className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded transition-colors"
                     >
                         Thêm
                     </button>

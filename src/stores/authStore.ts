@@ -5,6 +5,7 @@ interface AuthState {
   user: User | null;
   isLoggedIn: boolean;
   isLoading: boolean;
+  loginTime: number | null;
 
   // Actions
   login: (user: User) => void;
@@ -17,10 +18,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoggedIn: false,
   isLoading: true,
+  loginTime: null,
 
-  login: (user) => set({ user, isLoggedIn: true, isLoading: false }),
+  login: (user) => set({ user, isLoggedIn: true, isLoading: false, loginTime: Date.now() }),
 
-  logout: () => set({ user: null, isLoggedIn: false, isLoading: false }),
+  logout: () => set({ user: null, isLoggedIn: false, isLoading: false, loginTime: null }),
 
   setUser: (user) => set({ user, isLoggedIn: !!user, isLoading: false }),
 
@@ -34,3 +36,5 @@ export const selectRole      = (s: AuthState) => s.user?.roleName ?? null;
 export const selectIsAdmin   = (s: AuthState) => s.user?.roleName === 'ADMIN';
 export const selectIsStaff   = (s: AuthState) =>
   s.user?.roleName === 'ADMIN' || s.user?.roleName === 'STAFF';
+export const selectIsSessionExpiring = (s: AuthState) =>
+  s.loginTime ? (Date.now() - s.loginTime) > 23 * 60 * 60 * 1000 : false;

@@ -81,22 +81,20 @@ const FALLBACK_IMG = `https://picsum.photos/seed/order/120/120`
 // ─── Normalizers ──────────────────────────────────────────────────────────────
 
 function normalizeHotel(b: any): NormalizedOrder {
-  const status = (b.bookingStatus ?? 'PENDING') as OrderStatus
+  const status = (b.status ?? 'PENDING') as OrderStatus
   return {
     id: b.id,
     type: 'HOTEL',
-    serviceName:     b.hotel?.name ?? 'Khách sạn',
-    serviceImage:    b.hotel?.photo,
-    serviceLocation: [b.hotel?.address, b.hotel?.city].filter(Boolean).join(', '),
+    serviceName:     b.hotelName ?? 'Khách sạn',
+    serviceImage:    undefined,
+    serviceLocation: undefined,
     status,
     dateStart: b.checkInDate,
     dateEnd:   b.checkOutDate,
     guests:    b.totalNumOfGuests,
-    totalPrice: b.room?.roomPrice
-      ? b.room.roomPrice * Math.max(dayjs(b.checkOutDate).diff(dayjs(b.checkInDate), 'day'), 1)
-      : undefined,
+    totalPrice: undefined,
     bookingCode: b.bookingConfirmationCode,
-    serviceId:   b.hotel?.id,
+    serviceId:   b.hotelId,
     canCancel:   status === 'PENDING' || status === 'CONFIRMED',
     canReview:   status === 'COMPLETED',
     raw: b,
@@ -108,16 +106,16 @@ function normalizeTour(b: any): NormalizedOrder {
   return {
     id: b.id,
     type: 'TOUR',
-    serviceName:     b.tour?.name ?? 'Tour',
-    serviceImage:    b.tour?.imageUrl ?? b.tour?.images?.[0]?.url,
-    serviceLocation: b.departure?.destination ?? b.tour?.destination,
+    serviceName:     b.tourName ?? 'Tour',
+    serviceImage:    undefined,
+    serviceLocation: b.tourDestination,
     status,
-    dateStart: b.departure?.startDate ?? b.createdAt,
-    dateEnd:   b.departure?.endDate,
-    guests:    (b.adults ?? 0) + (b.children ?? 0),
-    totalPrice: b.totalPrice,
-    bookingCode: b.bookingCode,
-    serviceId:   b.tour?.id,
+    dateStart: b.departureDate ?? b.createdAt,
+    dateEnd:   undefined,
+    guests:    (b.numAdults ?? 0) + (b.numChildren ?? 0),
+    totalPrice: b.finalPrice,
+    bookingCode: String(b.id),
+    serviceId:   b.tourId,
     canCancel:   status === 'PENDING' || status === 'CONFIRMED',
     canReview:   status === 'COMPLETED',
     raw: b,
@@ -129,16 +127,16 @@ function normalizeRestaurant(b: any): NormalizedOrder {
   return {
     id: b.id,
     type: 'RESTAURANT',
-    serviceName:     b.restaurant?.name ?? 'Nhà hàng',
-    serviceImage:    b.restaurant?.photo,
-    serviceLocation: b.restaurant?.city,
+    serviceName:     b.restaurantName ?? 'Nhà hàng',
+    serviceImage:    undefined,
+    serviceLocation: b.restaurantCity,
     status,
     dateStart: b.bookingDate,
     time:      b.bookingTime,
     guests:    b.guestCount,
     totalPrice: undefined,
-    bookingCode: String(b.id),
-    serviceId:   b.restaurant?.id,
+    bookingCode: b.confirmationCode,
+    serviceId:   b.restaurantId,
     canCancel:   status === 'PENDING' || status === 'CONFIRMED',
     canReview:   status === 'COMPLETED',
     raw: b,
@@ -191,11 +189,13 @@ function ReviewModal({ order, open, onClose }: {
           ? `/hotels/${order.serviceId}/reviews`
           : `/restaurants/${order.serviceId}/reviews`
 
-      return api.post(endpoint, {
-        rating,
-        comment,
-        bookingId: order.id,
-      }).then(r => r.data)
+      const body = order.type === 'HOTEL'
+        ? { rating, comment, confirmationCode: order.raw.bookingConfirmationCode }
+        : order.type === 'RESTAURANT'
+          ? { rating, comment, confirmationCode: order.raw.confirmationCode }
+          : { rating, comment, bookingId: order.id }
+
+      return api.post(endpoint, body).then(r => r.data)
     },
     onSuccess: () => {
       toast.success('Gửi đánh giá thành công! Cảm ơn bạn đã chia sẻ.')
@@ -230,7 +230,7 @@ function ReviewModal({ order, open, onClose }: {
         </DialogHeader>
 
         {/* Service info */}
-        <div className="flex items-center gap-3 bg-muted/50 rounded-xl p-3">
+        <div className="flex items-center gap-3 bg-muted/50 rounded p-3">
           <div className="size-14 rounded-lg overflow-hidden shrink-0 bg-muted">
             <img
               src={resolveBase64Image(order.serviceImage ?? null, FALLBACK_IMG)}
@@ -278,7 +278,7 @@ function ReviewModal({ order, open, onClose }: {
             onDragLeave={() => setDragging(false)}
             onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files) }}
             className={cn(
-              'border-2 border-dashed rounded-xl p-4 text-center text-sm text-muted-foreground transition-colors cursor-pointer',
+              'border-2 border-dashed rounded p-4 text-center text-sm text-muted-foreground transition-colors cursor-pointer',
               dragging ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/40',
             )}
             onClick={() => {
@@ -348,7 +348,7 @@ function DetailModal({ order, open, onClose }: {
             Trạng thái đơn hàng
           </p>
           {isCancelled ? (
-            <div className="flex items-center gap-3 bg-red-50 border border-red-100 rounded-xl p-4">
+            <div className="flex items-center gap-3 bg-red-50 border border-red-100 rounded p-4">
               <XCircle size={20} className="text-red-500 shrink-0" />
               <div>
                 <p className="font-semibold text-red-700 text-sm">Đơn hàng đã bị hủy</p>
@@ -472,7 +472,7 @@ function DetailModal({ order, open, onClose }: {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 Chi phí
               </p>
-              <div className="bg-muted/50 rounded-xl p-4 space-y-2 text-sm">
+              <div className="bg-muted/50 rounded p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Giá dịch vụ</span>
                   <span>{formatCurrency(order.totalPrice)}</span>
@@ -493,7 +493,7 @@ function DetailModal({ order, open, onClose }: {
             <Separator />
             <div className="text-center">
               <p className="text-xs text-muted-foreground mb-3">Mã QR đặt chỗ</p>
-              <div className="inline-block border-2 border-dashed border-border rounded-xl p-4">
+              <div className="inline-block border-2 border-dashed border-border rounded p-4">
                 <div className="size-24 bg-muted flex items-center justify-center rounded-lg mx-auto mb-2">
                   <span className="font-mono text-xs font-bold text-center break-all leading-tight text-primary p-1">
                     {order.bookingCode}
@@ -530,7 +530,7 @@ function OrderCard({
   return (
     <>
       <div className={cn(
-        'bg-white rounded-xl border border-border shadow-sm p-4 flex gap-4 transition-shadow hover:shadow-md',
+        'bg-white rounded border border-border shadow-sm p-4 flex gap-4 transition-shadow hover:shadow-md',
         order.status === 'CANCELLED' && 'opacity-70',
       )}>
         {/* Image */}
@@ -729,7 +729,7 @@ export default function MyOrdersPage() {
     if (isLoading) return (
       <div className="space-y-3">
         {[1,2,3].map(i => (
-          <div key={i} className="bg-white rounded-xl border border-border p-4 flex gap-4">
+          <div key={i} className="bg-white rounded border border-border p-4 flex gap-4">
             <Skeleton className="size-28 rounded-lg shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-5 w-48" />
@@ -761,63 +761,87 @@ export default function MyOrdersPage() {
     )
   }
 
+  const TYPE_TABS = [
+    { key: 'all',         label: 'Tất Cả',    count: all.length    },
+    { key: 'tours',       label: 'Tour',       count: tours.length  },
+    { key: 'hotels',      label: 'Khách Sạn',  count: hotels.length },
+    { key: 'restaurants', label: 'Nhà Hàng',   count: rests.length  },
+  ]
+
+  const listMap: Record<string, NormalizedOrder[]> = {
+    all, tours, hotels, restaurants: rests,
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Montserrat, sans-serif' }}>
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-4 pt-24 pb-16 animate-in fade-in slide-in-from-bottom-2 duration-400">
+      <div className="max-w-4xl mx-auto px-4 pt-10 pb-16">
 
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Đơn hàng của tôi</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Tổng cộng <span className="font-semibold text-foreground">{all.length}</span> đơn hàng
+        {/* ── Page header ── */}
+        <div className="mb-8">
+          <p className="uppercase tracking-widest text-[10px] font-bold mb-2" style={{ color: '#c9a84c', letterSpacing: '0.28em' }}>
+            Tài Khoản
+          </p>
+          <h1 style={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 500, fontSize: '2rem', color: '#0a1628', letterSpacing: '0.02em' }}>
+            Đơn Hàng Của Tôi
+          </h1>
+          <div className="h-px mt-3 mb-1 w-12" style={{ background: '#c9a84c' }} />
+          <p className="text-sm text-gray-400 mt-2">
+            Tổng cộng <span className="font-semibold" style={{ color: '#0a1628' }}>{all.length}</span> đơn hàng
           </p>
         </div>
 
-        {/* Status filter chips */}
-        <div className="flex flex-wrap gap-2 mb-5">
-          {STATUS_CHIPS.map(chip => (
-            <button
-              key={chip.key}
-              onClick={() => setStatusFilter(chip.key)}
-              className={cn(
-                'px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all',
-                statusFilter === chip.key
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-white border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
-              )}
-            >
-              {chip.label}
-              <span className="ml-1.5 opacity-60">
-                ({countByStatus(all, chip.key)})
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* Tabs */}
+        {/* ── Unified filter bar: type tabs left + status dropdown right ── */}
         <Tabs defaultValue="all">
-          <TabsList className="mb-5 bg-white border border-border w-full sm:w-auto h-auto flex-wrap">
-            {[
-              { key: 'all',        label: 'Tất cả',    count: all.length },
-              { key: 'tours',      label: 'Tour',      count: tours.length },
-              { key: 'hotels',     label: 'Khách sạn', count: hotels.length },
-              { key: 'restaurants',label: 'Nhà hàng',  count: rests.length },
-            ].map(tab => (
-              <TabsTrigger key={tab.key} value={tab.key} className="text-sm gap-1.5">
-                {tab.label}
-                <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full font-normal">
-                  {tab.count}
-                </span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="flex items-center justify-between gap-3 mb-6 flex-wrap"
+            style={{ borderBottom: '1px solid rgba(201,168,76,0.25)', paddingBottom: 0 }}>
 
-          <TabsContent value="all">       {renderList(all)}     </TabsContent>
-          <TabsContent value="tours">     {renderList(tours)}   </TabsContent>
-          <TabsContent value="hotels">    {renderList(hotels)}  </TabsContent>
-          <TabsContent value="restaurants">{renderList(rests)}  </TabsContent>
+            {/* Type tabs */}
+            <TabsList className="h-auto bg-transparent border-0 p-0 gap-0 flex-wrap">
+              {TYPE_TABS.map(tab => (
+                <TabsTrigger
+                  key={tab.key}
+                  value={tab.key}
+                  className={cn(
+                    'text-[11px] font-semibold tracking-widest uppercase px-5 py-3.5 border-0 rounded-none bg-transparent transition-all gap-1.5',
+                    'data-[state=active]:bg-transparent data-[state=active]:shadow-none',
+                    'data-[state=active]:text-[#0a1628] data-[state=active]:border-b-[#c9a84c]',
+                    'data-[state=inactive]:text-gray-400 hover:data-[state=inactive]:text-gray-700',
+                  )}
+                  style={{ borderBottom: '2px solid transparent' }}
+                >
+                  {tab.label}
+                  <span className="text-[10px] font-normal" style={{ color: '#bbb' }}>
+                    {tab.count}
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {/* Status dropdown */}
+            <div className="flex items-center gap-2 pb-1">
+              <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#bbb' }}>Trạng thái:</span>
+              <select
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value as OrderStatus | 'ALL')}
+                className="text-[11px] font-semibold tracking-wide focus:outline-none appearance-none cursor-pointer bg-transparent pr-1"
+                style={{ color: '#0a1628', border: 'none' }}
+              >
+                {STATUS_CHIPS.map(c => (
+                  <option key={c.key} value={c.key}>
+                    {c.label} ({countByStatus(all, c.key)})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {TYPE_TABS.map(tab => (
+            <TabsContent key={tab.key} value={tab.key}>
+              {renderList(listMap[tab.key])}
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
 

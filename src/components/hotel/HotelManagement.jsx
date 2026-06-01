@@ -201,7 +201,7 @@ const HotelManagement = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                     {/* Room list */}
                     <div className="lg:col-span-3">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden">
                             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                                 <h3 className="font-bold text-gray-900">
                                     Danh sách phòng
@@ -226,7 +226,7 @@ const HotelManagement = () => {
                             ) : (
                                 <div className="divide-y divide-gray-50">
                                     {hotelRooms.map(room => (
-                                        <div key={room.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50">
+                                        <div key={room.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#f8f5ee]">
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <span className="font-semibold text-gray-900 text-sm">{room.roomType}</span>
@@ -265,7 +265,7 @@ const HotelManagement = () => {
 
                     {/* Add room form */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sticky top-24">
+                        <div className="bg-white rounded shadow-sm border border-gray-100 p-5 sticky top-24">
                             <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
                                 <i className="bi bi-plus-circle text-sky-500" /> Thêm phòng mới
                             </h3>
@@ -277,7 +277,7 @@ const HotelManagement = () => {
                                         value={roomForm.roomType}
                                         onChange={e => setRoomForm(f => ({ ...f, roomType: e.target.value }))}
                                         placeholder="Phòng đôi, Suite..."
-                                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                     />
                                     <datalist id="room-type-list">
                                         {ROOM_TYPES.map(t => <option key={t} value={t} />)}
@@ -290,7 +290,7 @@ const HotelManagement = () => {
                                             value={roomForm.roomNumber}
                                             onChange={e => setRoomForm(f => ({ ...f, roomNumber: e.target.value }))}
                                             placeholder="101, A01..."
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                            className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                     <div>
@@ -301,7 +301,7 @@ const HotelManagement = () => {
                                             value={roomForm.roomPrice}
                                             onChange={e => setRoomForm(f => ({ ...f, roomPrice: e.target.value }))}
                                             placeholder="500000"
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                            className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                 </div>
@@ -313,7 +313,7 @@ const HotelManagement = () => {
                                             min="1"
                                             value={roomForm.maxGuests}
                                             onChange={e => setRoomForm(f => ({ ...f, maxGuests: e.target.value }))}
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                            className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                     <div>
@@ -323,7 +323,7 @@ const HotelManagement = () => {
                                             min="1"
                                             value={roomForm.numBeds}
                                             onChange={e => setRoomForm(f => ({ ...f, numBeds: e.target.value }))}
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                            className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                     <div>
@@ -334,7 +334,7 @@ const HotelManagement = () => {
                                             value={roomForm.area}
                                             onChange={e => setRoomForm(f => ({ ...f, area: e.target.value }))}
                                             placeholder="25"
-                                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                            className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                                         />
                                     </div>
                                 </div>
@@ -345,12 +345,12 @@ const HotelManagement = () => {
                                         onChange={e => setRoomForm(f => ({ ...f, description: e.target.value }))}
                                         rows={2}
                                         placeholder="Phòng view biển, có ban công..."
-                                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
+                                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 mb-1">Ảnh phòng</label>
-                                    <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 rounded-xl p-3 cursor-pointer hover:border-sky-400 hover:bg-sky-50/20 transition-all">
+                                    <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 rounded p-3 cursor-pointer hover:border-sky-400 hover:bg-sky-50/20 transition-all">
                                         {roomPhotoPreview ? (
                                             <img src={roomPhotoPreview} alt="" className="w-16 h-12 object-cover rounded-lg shrink-0" />
                                         ) : (
@@ -380,7 +380,7 @@ const HotelManagement = () => {
                                 <button
                                     type="submit"
                                     disabled={addingRoom}
-                                    className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                                    className="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white font-bold py-2.5 rounded transition-colors flex items-center justify-center gap-2 text-sm"
                                 >
                                     {addingRoom
                                         ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang thêm...</>
@@ -415,12 +415,12 @@ const HotelManagement = () => {
                         placeholder="Tìm khách sạn..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
                 </div>
                 <button
                     onClick={() => setView("add")}
-                    className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm shrink-0"
+                    className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold px-5 py-2.5 rounded transition-colors text-sm shrink-0"
                 >
                     <i className="bi bi-plus-circle" /> Thêm khách sạn
                 </button>
@@ -433,7 +433,7 @@ const HotelManagement = () => {
                     { label: "Hoạt động", value: hotels.filter(h => h.active !== false).length, icon: "bi-check-circle", color: "text-emerald-600 bg-emerald-50" },
                     { label: "Tạm đóng", value: hotels.filter(h => h.active === false).length, icon: "bi-pause-circle", color: "text-amber-600 bg-amber-50" },
                 ].map(s => (
-                    <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 flex items-center gap-3">
+                    <div key={s.label} className="bg-white rounded border border-gray-100 p-3 flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.color}`}>
                             <i className={`bi ${s.icon}`} />
                         </div>
@@ -451,15 +451,15 @@ const HotelManagement = () => {
                     <span className="w-8 h-8 border-2 border-sky-600/30 border-t-sky-600 rounded-full animate-spin" />
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+                <div className="text-center py-16 bg-white rounded border border-gray-100">
                     <i className="bi bi-building-x text-4xl text-gray-300 block mb-2" />
                     <p className="text-gray-500">Không tìm thấy khách sạn</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            <thead className="bg-[#f8f5ee] text-xs font-bold text-gray-500 uppercase tracking-wider">
                                 <tr>
                                     <th className="px-5 py-3 text-left">Khách sạn</th>
                                     <th className="px-5 py-3 text-left">Loại / Sao</th>
@@ -471,7 +471,7 @@ const HotelManagement = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filtered.map(hotel => (
-                                    <tr key={hotel.id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={hotel.id} className="hover:bg-[#f8f5ee] transition-colors">
                                         <td className="px-5 py-4">
                                             <p className="font-semibold text-gray-900 text-sm">{hotel.name}</p>
                                             {hotel.address && <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{hotel.address}</p>}

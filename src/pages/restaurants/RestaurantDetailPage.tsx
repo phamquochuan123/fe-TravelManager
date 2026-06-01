@@ -11,6 +11,7 @@ import {
   ArrowLeft, MapPin, Clock, Users, Star,
   ChevronLeft, ChevronRight, X, ImageIcon, Phone,
   CalendarDays, MessageSquare, UtensilsCrossed, Flame, Sparkles,
+  Loader2, CheckCircle2, CalendarX,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/api/axiosInstance'
@@ -132,7 +133,7 @@ function RestaurantGallery({ images, name }: { images: string[]; name: string })
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-2 h-64 sm:h-80 rounded-xl overflow-hidden mb-6">
+      <div className="grid grid-cols-3 gap-2 h-64 sm:h-80 rounded overflow-hidden mb-6">
         <div className="col-span-2 relative overflow-hidden group">
           <img
             src={images[main]}
@@ -231,7 +232,7 @@ function MenuItemCard({ item }: { item: MenuItem }) {
   const imgSrc = resolveBase64Image(item.photo ?? null, FALLBACK_MENU(item.id))
 
   return (
-    <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-transparent hover:border-border cursor-default">
+    <div className="flex items-start gap-3 p-3 rounded hover:bg-muted/50 transition-colors border border-transparent hover:border-border cursor-default">
       {item.photo && (
         <div className="shrink-0 size-24 rounded-lg overflow-hidden bg-muted">
           <img
@@ -284,7 +285,7 @@ function ReviewSection({ reviews }: { reviews: Review[] }) {
   return (
     <div className="space-y-6">
       {reviews.length > 0 && (
-        <div className="bg-muted/40 rounded-xl p-5">
+        <div className="bg-muted/40 rounded p-5">
           <div className="flex items-start gap-8 flex-wrap">
             <div className="text-center">
               <p className="text-5xl font-bold">{avg.toFixed(1)}</p>
@@ -313,7 +314,7 @@ function ReviewSection({ reviews }: { reviews: Review[] }) {
       ) : (
         <div className="space-y-4">
           {reviews.map(rv => (
-            <div key={rv.id} className="rounded-xl border border-border p-4">
+            <div key={rv.id} className="rounded border border-border p-4">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex items-center gap-2">
                   <div className="size-9 rounded-full bg-gradient-to-tr from-accent to-orange-400 text-white flex items-center justify-center font-bold text-sm shrink-0">
@@ -388,27 +389,37 @@ function BookingSidebar({ restaurant }: { restaurant: Restaurant }) {
   const watchGuests = form.watch('guestCount')
   const availableSlots = getAvailableSlots(watchDate)
 
+  const [submitError, setSubmitError] = useState('')
+  const [showSuccess, setShowSuccess] = useState(false)
+
   const mutation = useMutation({
     mutationFn: (data: BookingForm) =>
       api.post(`/restaurants/${restaurant.id}/bookings`, data).then(r => r.data),
     onSuccess: () => {
+      setSubmitError('')
+      setShowSuccess(true)
       toast.success('Đặt bàn thành công! Kiểm tra email xác nhận.', {
         description: `${restaurant.name} — ${dayjs(watchDate).format('DD/MM/YYYY')} lúc ${watchTime}`,
       })
-      form.reset({
-        bookingDate: today, bookingTime: '', guestCount: 2, specialRequests: '',
-        contactName: user?.name ?? '', contactPhone: user?.phone ?? '', contactEmail: user?.email ?? '',
-      })
-      setPickedDate(new Date())
+      setTimeout(() => {
+        setShowSuccess(false)
+        form.reset({
+          bookingDate: today, bookingTime: '', guestCount: 2, specialRequests: '',
+          contactName: user?.name ?? '', contactPhone: user?.phone ?? '', contactEmail: user?.email ?? '',
+        })
+        setPickedDate(new Date())
+      }, 2500)
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message ?? 'Không thể đặt bàn. Vui lòng thử lại.')
+      const msg = err?.response?.data?.message ?? 'Không thể đặt bàn. Vui lòng thử lại.'
+      setSubmitError(msg)
+      toast.error(msg)
     },
   })
 
   if (!user) {
     return (
-      <div className="bg-white rounded-xl shadow-md border border-border p-6 sticky top-24 space-y-4">
+      <div className="bg-white rounded shadow-md border border-border p-6 sticky top-24 space-y-4">
         <h3 className="font-bold text-xl">Đặt bàn</h3>
         <Separator />
         <p className="text-sm text-muted-foreground text-center py-4">
@@ -421,13 +432,27 @@ function BookingSidebar({ restaurant }: { restaurant: Restaurant }) {
     )
   }
 
+  if (showSuccess) {
+    return (
+      <div className="bg-white rounded shadow-md border border-border p-6 sticky top-24">
+        <div className="flex flex-col items-center py-8 gap-3 animate-in fade-in zoom-in-90 duration-300">
+          <div className="size-16 rounded-full bg-emerald-100 flex items-center justify-center">
+            <CheckCircle2 size={32} className="text-emerald-500" />
+          </div>
+          <p className="font-bold text-lg text-foreground">Đặt bàn thành công!</p>
+          <p className="text-sm text-muted-foreground text-center">Kiểm tra email để nhận xác nhận đặt bàn.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="bg-white rounded-xl shadow-md border border-border p-6 sticky top-24">
+    <div className="bg-white rounded shadow-md border border-border p-6 sticky top-24">
       <h3 className="font-bold text-xl mb-4">Đặt bàn</h3>
       <Separator className="mb-4" />
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(d => mutation.mutate(d))} className="space-y-4">
+        <form onSubmit={form.handleSubmit(d => { setSubmitError(''); mutation.mutate(d) })} className="space-y-4">
 
           {/* Date */}
           <FormField control={form.control} name="bookingDate" render={({ field }) => (
@@ -459,29 +484,39 @@ function BookingSidebar({ restaurant }: { restaurant: Restaurant }) {
               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Khung giờ
               </FormLabel>
-              <div className="grid grid-cols-4 gap-1.5">
-                {ALL_TIME_SLOTS.map(slot => {
-                  const disabled = !availableSlots.includes(slot)
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => !disabled && field.onChange(slot)}
-                      className={cn(
-                        'py-1.5 rounded-lg text-xs font-medium border transition-all',
-                        disabled
-                          ? 'border-border text-muted-foreground/40 line-through cursor-not-allowed bg-muted/30'
-                          : field.value === slot
-                            ? 'bg-accent text-white border-accent font-semibold'
-                            : 'border-border hover:border-accent hover:text-accent',
-                      )}
-                    >
-                      {slot}
-                    </button>
-                  )
-                })}
-              </div>
+              {availableSlots.length === 0 ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-2.5">
+                  <CalendarX size={15} className="text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-700">Không còn khung giờ hôm nay</p>
+                    <p className="text-xs text-amber-600 mt-0.5">Vui lòng chọn ngày khác để đặt bàn.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 gap-1.5">
+                  {ALL_TIME_SLOTS.map(slot => {
+                    const disabled = !availableSlots.includes(slot)
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => !disabled && field.onChange(slot)}
+                        className={cn(
+                          'py-1.5 rounded-lg text-xs font-medium border transition-colors duration-150',
+                          disabled
+                            ? 'border-border text-muted-foreground/40 line-through cursor-not-allowed bg-muted/30'
+                            : field.value === slot
+                              ? 'bg-accent text-white border-accent font-semibold'
+                              : 'border-border hover:border-accent hover:text-accent',
+                        )}
+                      >
+                        {slot}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
               <FormMessage />
             </FormItem>
           )} />
@@ -518,18 +553,18 @@ function BookingSidebar({ restaurant }: { restaurant: Restaurant }) {
             </FormItem>
           )} />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField control={form.control} name="contactPhone" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">SĐT</FormLabel>
-                <FormControl><Input {...field} className="text-sm" placeholder="0912..." /></FormControl>
+                <FormControl><Input {...field} className="text-sm transition-colors duration-150" placeholder="0912..." /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="contactEmail" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</FormLabel>
-                <FormControl><Input {...field} type="email" className="text-sm" placeholder="you@..." /></FormControl>
+                <FormControl><Input {...field} type="email" className="text-sm transition-colors duration-150" placeholder="you@..." /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -552,7 +587,7 @@ function BookingSidebar({ restaurant }: { restaurant: Restaurant }) {
 
           {/* Summary */}
           {watchTime && (
-            <div className="bg-muted/50 rounded-xl p-3 text-sm space-y-1.5">
+            <div className="bg-muted/50 rounded p-3 text-sm space-y-1.5">
               <p className="font-semibold text-foreground text-xs uppercase tracking-wide mb-2">Tóm tắt đặt bàn</p>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <CalendarDays size={13} />
@@ -572,10 +607,19 @@ function BookingSidebar({ restaurant }: { restaurant: Restaurant }) {
           <Button
             type="submit"
             disabled={mutation.isPending || restaurant.active === false}
-            className="w-full bg-accent hover:bg-accent/90 text-white font-semibold active:scale-[0.98]"
+            className="w-full bg-accent hover:bg-accent/90 text-white font-semibold active:scale-[0.98] transition-all"
           >
-            {mutation.isPending ? 'Đang gửi...' : 'Xác nhận đặt bàn'}
+            {mutation.isPending
+              ? <><Loader2 size={15} className="animate-spin mr-1.5" />Đang gửi...</>
+              : 'Xác nhận đặt bàn'
+            }
           </Button>
+
+          {submitError && (
+            <p className="text-xs text-destructive text-center -mt-1 animate-in fade-in duration-200">
+              {submitError}
+            </p>
+          )}
 
           {restaurant.active === false && (
             <p className="text-xs text-destructive text-center">Nhà hàng tạm đóng cửa</p>
@@ -614,14 +658,14 @@ export default function RestaurantDetailPage() {
     <div className="min-h-screen">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 pt-24 pb-16 space-y-6">
-        <Skeleton className="h-80 w-full rounded-xl" />
+        <Skeleton className="h-80 w-full rounded" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             <Skeleton className="h-10 w-72" />
             <Skeleton className="h-5 w-48" />
-            <Skeleton className="h-40 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded" />
           </div>
-          <Skeleton className="h-96 w-full rounded-xl" />
+          <Skeleton className="h-96 w-full rounded" />
         </div>
       </div>
       <Footer />
@@ -641,7 +685,7 @@ export default function RestaurantDetailPage() {
   }, {})
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f8f5ee]">
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 pt-24 pb-16 animate-in fade-in slide-in-from-bottom-2 duration-400">
@@ -722,7 +766,7 @@ export default function RestaurantDetailPage() {
 
                 {/* Description + Amenities */}
                 {restaurant.description && (
-                  <section className="bg-white rounded-xl border border-border p-5">
+                  <section className="bg-white rounded border border-border p-5">
                     <p className="text-sm text-muted-foreground leading-relaxed">{restaurant.description}</p>
                     {amenities.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-border">
@@ -735,7 +779,7 @@ export default function RestaurantDetailPage() {
                 )}
 
                 {/* Menu sub-tabs */}
-                <div className="bg-white rounded-xl border border-border overflow-hidden">
+                <div className="bg-white rounded border border-border overflow-hidden">
                   <Tabs defaultValue={MENU_TABS[0].key}>
                     <div className="border-b border-border px-4 pt-4">
                       <TabsList className="h-auto gap-1 bg-transparent p-0">
@@ -775,7 +819,7 @@ export default function RestaurantDetailPage() {
 
               {/* Tab: Đánh giá */}
               <TabsContent value="reviews">
-                <div className="bg-white rounded-xl border border-border p-6">
+                <div className="bg-white rounded border border-border p-6">
                   <ReviewSection reviews={reviews} />
                 </div>
               </TabsContent>

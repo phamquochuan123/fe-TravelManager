@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import 'dayjs/locale/vi'
@@ -29,7 +29,7 @@ interface Schedule {
   staffId?: number
   staffName?: string
   staffAvatar?: string
-  status: 'SCHEDULED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED'
+  status: string
 }
 interface PagedSchedules { content: Schedule[]; totalPages: number; totalElements: number }
 
@@ -42,12 +42,16 @@ interface SchedForm {
 
 const INIT_FORM: SchedForm = { departureDate: '', maxSlots: '20', staffId: '', status: 'SCHEDULED' }
 
-const STATUS_CFG = {
-  SCHEDULED:  { label: 'Sắp khởi hành', cls: 'bg-blue-100 text-blue-700' },
-  ONGOING:    { label: 'Đang diễn ra',  cls: 'bg-amber-100 text-amber-700' },
-  COMPLETED:  { label: 'Hoàn thành',    cls: 'bg-green-100 text-green-700' },
-  CANCELLED:  { label: 'Đã hủy',        cls: 'bg-red-100 text-red-600' },
-} as const
+const STATUS_CFG: Record<string, { label: string; cls: string }> = {
+  SCHEDULED:   { label: 'Sắp khởi hành', cls: 'bg-blue-100 text-blue-700'   },
+  UPCOMING:    { label: 'Sắp tới',        cls: 'bg-blue-100 text-blue-700'   },
+  CONFIRMED:   { label: 'Đã xác nhận',   cls: 'bg-blue-100 text-blue-700'   },
+  ONGOING:     { label: 'Đang diễn ra',  cls: 'bg-amber-100 text-amber-700' },
+  IN_PROGRESS: { label: 'Đang diễn ra',  cls: 'bg-amber-100 text-amber-700' },
+  COMPLETED:   { label: 'Hoàn thành',    cls: 'bg-green-100 text-green-700' },
+  CANCELLED:   { label: 'Đã hủy',        cls: 'bg-red-100 text-red-600'     },
+}
+const DEFAULT_SC = { label: 'Không rõ', cls: 'bg-gray-100 text-gray-600' }
 
 // ─── TourCombobox ─────────────────────────────────────────────────────────────
 
@@ -57,32 +61,32 @@ function TourCombobox({ selected, onSelect }: {
 }) {
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
-  const [results, setResults] = useState<TourOption[]>([])
-  const [busy, setBusy] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+
+  // Endpoint nhẹ chỉ trả id + name, không load ảnh
+  const { data, isFetching } = useQuery<TourOption[]>({
+    queryKey: ['admin', 'tours-all'],
+    queryFn: async () => {
+      const res = await api.get('/admin/tours/names')
+      return Array.isArray(res.data) ? res.data : []
+    },
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+  })
+  const allTours = data ?? []
 
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
     document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  useEffect(() => {
-    if (!q.trim()) { setResults([]); return }
-    const id = setTimeout(async () => {
-      setBusy(true)
-      try {
-        const res = await api.get(`/tours?search=${encodeURIComponent(q)}&size=20`)
-        const raw: TourOption[] = res.data?.content ?? res.data ?? []
-        setResults(Array.isArray(raw) ? raw.slice(0, 20) : []); setOpen(true)
-      } catch { setResults([]) } finally { setBusy(false) }
-    }, 300)
-    return () => clearTimeout(id)
-  }, [q])
+  const filtered = q.trim()
+    ? allTours.filter(t => t.name.toLowerCase().includes(q.toLowerCase()))
+    : allTours
 
   if (selected) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-xl text-sm font-medium"
-        style={{ color: '#1a5276' }}>
+      <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-primary max-w-sm">
         <CalendarDays size={15} />
         <span className="flex-1 truncate">{selected.name}</span>
         <button type="button" onClick={() => onSelect(null)} className="hover:opacity-70">
@@ -96,20 +100,32 @@ function TourCombobox({ selected, onSelect }: {
     <div ref={ref} className="relative max-w-sm">
       <div className="relative">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm và chọn tour..."
-          className="pl-9 text-sm" />
-        {busy && <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />}
+        <Input
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          onFocus={() => setOpen(true)}
+          placeholder="Tìm và chọn tour..."
+          className="pl-9 text-sm"
+        />
+        {isFetching && <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />}
       </div>
-      {open && results.length > 0 && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-          <ScrollArea className="max-h-60">
-            {results.map(t => (
-              <button key={t.id} type="button" onClick={() => { onSelect(t); setQ(''); setOpen(false) }}
-                className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors">
-                {t.name}
-              </button>
-            ))}
-          </ScrollArea>
+      {open && (
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
+          {filtered.length === 0 ? (
+            <p className="px-3 py-3 text-sm text-gray-400 text-center">
+              {isFetching ? 'Đang tải...' : 'Không có tour nào'}
+            </p>
+          ) : (
+            <ScrollArea className="max-h-60">
+              {filtered.map(t => (
+                <button key={t.id} type="button"
+                  onClick={() => { onSelect(t); setQ(''); setOpen(false) }}
+                  className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-gray-50 last:border-0">
+                  {t.name}
+                </button>
+              ))}
+            </ScrollArea>
+          )}
         </div>
       )}
     </div>
@@ -132,22 +148,28 @@ function StaffCombobox({ value, onSelect }: {
     document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h)
   }, [])
 
+  const fetchStaff = async (search: string) => {
+    try {
+      const res = await api.get(`/admin/staff?search=${encodeURIComponent(search)}&size=20`)
+      const raw: { id: number; name?: string; fullName?: string; avatar?: string; avatarUrl?: string }[] =
+        res.data?.content ?? res.data ?? []
+      const mapped: StaffOption[] = Array.isArray(raw)
+        ? raw.map(s => ({ id: s.id, name: s.name ?? s.fullName ?? '', avatar: s.avatar ?? s.avatarUrl }))
+        : []
+      setResults(mapped)
+      setOpen(true)
+    } catch { setResults([]) }
+  }
+
   useEffect(() => {
-    if (!q.trim()) { setResults([]); return }
-    const id = setTimeout(async () => {
-      try {
-        const res = await api.get(`/admin/staff?search=${encodeURIComponent(q)}&size=10`)
-        const raw: StaffOption[] = res.data?.content ?? res.data ?? []
-        setResults(Array.isArray(raw) ? raw : []); setOpen(true)
-      } catch { setResults([]) }
-    }, 300)
+    const id = setTimeout(() => fetchStaff(q), q.trim() ? 300 : 0)
     return () => clearTimeout(id)
   }, [q])
 
   return (
     <div ref={ref} className="relative">
       {value ? (
-        <div className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl">
+        <div className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded">
           <Avatar className="w-6 h-6">
             <AvatarImage src={value.avatar} />
             <AvatarFallback className="text-xs">{value.name[0]}</AvatarFallback>
@@ -159,11 +181,12 @@ function StaffCombobox({ value, onSelect }: {
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <Input value={q} onChange={e => setQ(e.target.value)}
+            onFocus={() => fetchStaff(q)}
             placeholder="Tìm nhân viên..." className="pl-9 text-sm" />
         </div>
       )}
       {open && results.length > 0 && !value && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
           <ScrollArea className="max-h-48">
             {results.map(s => (
               <button key={s.id} type="button" onClick={() => { onSelect(s); setQ(''); setOpen(false) }}
@@ -232,7 +255,7 @@ function ScheduleDialog({ open, onOpenChange, schedule, tourId, onSuccess }: {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" style={{ fontFamily: 'Poppins, sans-serif' }}>
+      <DialogContent className="max-w-md" >
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Sửa lịch khởi hành' : 'Thêm lịch khởi hành'}</DialogTitle>
         </DialogHeader>
@@ -256,7 +279,7 @@ function ScheduleDialog({ open, onOpenChange, schedule, tourId, onSuccess }: {
               <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="SCHEDULED">Sắp khởi hành</SelectItem>
-                <SelectItem value="ONGOING">Đang diễn ra</SelectItem>
+                <SelectItem value="IN_PROGRESS">Đang diễn ra</SelectItem>
                 <SelectItem value="COMPLETED">Hoàn thành</SelectItem>
                 <SelectItem value="CANCELLED">Đã hủy</SelectItem>
               </SelectContent>
@@ -265,7 +288,7 @@ function ScheduleDialog({ open, onOpenChange, schedule, tourId, onSuccess }: {
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Hủy</Button>
-          <Button onClick={submit} disabled={busy} className="text-white" style={{ backgroundColor: '#1a5276' }}>
+          <Button onClick={submit} disabled={busy} className="text-white bg-primary">
             {busy && <Loader2 size={14} className="mr-1.5 animate-spin" />}
             {isEdit ? 'Cập nhật' : 'Thêm lịch'}
           </Button>
@@ -279,7 +302,12 @@ function ScheduleDialog({ open, onOpenChange, schedule, tourId, onSuccess }: {
 
 export default function AdminSchedulesPage() {
   const qc = useQueryClient()
-  const [selectedTour, setSelectedTour] = useState<TourOption | null>(null)
+  const [selectedTour, setSelectedTour] = useState<TourOption | null>(() => {
+    try {
+      const stored = sessionStorage.getItem('admin-selected-tour')
+      return stored ? JSON.parse(stored) : null
+    } catch { return null }
+  })
   const [page, setPage] = useState(0)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null)
@@ -311,7 +339,7 @@ export default function AdminSchedulesPage() {
 
   return (
     <TooltipProvider>
-      <div className="p-6 space-y-5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+      <div className="p-6 space-y-5" >
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-black text-gray-900">Lịch khởi hành</h1>
@@ -319,23 +347,27 @@ export default function AdminSchedulesPage() {
           </div>
           <Button onClick={() => { setEditSchedule(null); setDialogOpen(true) }}
             disabled={!selectedTour}
-            className="text-white rounded-xl font-semibold gap-2" style={{ backgroundColor: '#1a5276' }}>
+            className="text-white rounded font-semibold gap-2 bg-primary">
             <Plus size={16} /> Thêm lịch
           </Button>
         </div>
 
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Chọn tour</Label>
-          <TourCombobox selected={selectedTour} onSelect={t => { setSelectedTour(t); setPage(0) }} />
+          <TourCombobox selected={selectedTour} onSelect={t => {
+            if (t) sessionStorage.setItem('admin-selected-tour', JSON.stringify(t))
+            else sessionStorage.removeItem('admin-selected-tour')
+            setSelectedTour(t); setPage(0)
+          }} />
         </div>
 
         {!selectedTour ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-20 flex flex-col items-center gap-3">
+          <div className="bg-white rounded border border-gray-100 shadow-sm py-20 flex flex-col items-center gap-3">
             <CalendarDays size={48} className="text-gray-200" />
             <p className="text-gray-400 font-medium text-sm">Chọn một tour để xem lịch khởi hành</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <p className="text-sm font-semibold text-gray-900">{selectedTour.name}</p>
               <span className="text-xs text-gray-400">{totalElements} lịch</span>
@@ -343,7 +375,7 @@ export default function AdminSchedulesPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/70">
+                  <tr className="border-b border-gray-100 bg-[#f8f5ee]/70">
                     {['Ngày khởi hành', 'Số chỗ tối đa', 'Đã đặt', 'Nhân viên', 'Trạng thái', 'Thao tác'].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">{h}</th>
                     ))}
@@ -368,10 +400,10 @@ export default function AdminSchedulesPage() {
                     : schedules.map(s => {
                         const pct = s.maxSlots > 0 ? (s.bookedSlots / s.maxSlots) * 100 : 0
                         const overloaded = pct > 80
-                        const sc = STATUS_CFG[s.status]
+                        const sc = STATUS_CFG[s.status] ?? DEFAULT_SC
                         const hasBookings = s.bookedSlots > 0
                         return (
-                          <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                          <tr key={s.id} className="border-b border-gray-50 hover:bg-[#f8f5ee]/50 transition-colors">
                             <td className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">
                               {dayjs(s.departureDate).format('DD/MM/YYYY')}
                             </td>
@@ -395,7 +427,7 @@ export default function AdminSchedulesPage() {
                                 <div className="flex items-center gap-2">
                                   <Avatar className="w-7 h-7">
                                     <AvatarImage src={s.staffAvatar} />
-                                    <AvatarFallback className="text-xs" style={{ background: 'linear-gradient(135deg,#1a5276,#2980b9)', color: '#fff' }}>
+                                    <AvatarFallback className="text-xs bg-primary text-white">
                                       {s.staffName[0]}
                                     </AvatarFallback>
                                   </Avatar>
@@ -443,9 +475,9 @@ export default function AdminSchedulesPage() {
                 <p className="text-xs text-gray-400">Trang {page + 1}/{totalPages}</p>
                 <div className="flex items-center gap-1">
                   <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-                    className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40">← Trước</button>
+                    className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40">← Trước</button>
                   <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-                    className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40">Tiếp →</button>
+                    className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40">Tiếp →</button>
                 </div>
               </div>
             )}

@@ -88,7 +88,7 @@ const EmailVerify = () => {
 
             {/* Logo */}
             <Link to="/" className="absolute top-8 left-8 flex items-center gap-3 no-underline group">
-                <div className="bg-white/20 backdrop-blur-md p-2.5 rounded-xl group-hover:scale-110 transition-transform border border-white/30">
+                <div className="bg-white/20 backdrop-blur-md p-2.5 rounded group-hover:scale-110 transition-transform border border-white/30">
                     <img src={assets.logo_home} alt="logo" className="w-7 h-7 invert" />
                 </div>
                 <span className="text-xl font-black text-white tracking-tighter">
@@ -97,11 +97,11 @@ const EmailVerify = () => {
             </Link>
 
             {/* Main Card */}
-            <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 w-full max-w-md border border-gray-100 animate-in fade-in zoom-in duration-500 relative z-10">
+            <div className="bg-white rounded-sm shadow-2xl p-8 md:p-12 w-full max-w-md border border-gray-100 animate-in fade-in zoom-in duration-500 relative z-10">
 
                 {/* Header */}
                 <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-sky-100 to-blue-100 text-sky-600 rounded-2xl mb-4 shadow-sm">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-sky-100 to-blue-100 text-sky-600 rounded mb-4 shadow-sm">
                         <i className="bi bi-shield-lock-fill text-3xl"></i>
                     </div>
                     <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Xác thực Email</h2>
@@ -123,7 +123,7 @@ const EmailVerify = () => {
                             ref={(el) => (inputRef.current[i] = el)}
                             onChange={(e) => handleChange(e, i)}
                             onKeyDown={(e) => handleKeyDown(e, i)}
-                            className="w-12 h-16 md:w-14 md:h-20 text-center text-2xl font-bold bg-gray-50 border-2 border-transparent rounded-2xl focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-500/10 transition-all outline-none text-gray-800 shadow-sm"
+                            className="w-12 h-16 md:w-14 md:h-20 text-center text-2xl font-bold bg-[#f8f5ee] border-2 border-transparent rounded focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-500/10 transition-all outline-none text-gray-800 shadow-sm"
                         />
                     ))}
                 </div>
@@ -132,7 +132,7 @@ const EmailVerify = () => {
                 <button
                     onClick={handleVerify}
                     disabled={loading}
-                    className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2
+                    className={`w-full py-4 rounded font-bold text-white shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2
                         ${loading
                             ? 'bg-sky-400 cursor-not-allowed'
                             : 'bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-sky-200 hover:-translate-y-0.5'

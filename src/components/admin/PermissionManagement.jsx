@@ -99,14 +99,14 @@ const PermissionManagement = () => {
                     <p className="text-sm text-gray-500 mt-0.5">{permissions.length} quyền hạn trong hệ thống</p>
                 </div>
                 <button onClick={openCreate}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded text-sm font-semibold transition-colors">
                     <i className="bi bi-plus-lg" /> Tạo quyền hạn
                 </button>
             </div>
 
             {/* Form */}
             {showForm && (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6">
+                <div className="bg-indigo-50 border border-indigo-200 rounded p-6">
                     <h3 className="font-bold text-gray-900 mb-4">
                         {editId ? "Chỉnh sửa quyền hạn" : "Tạo quyền hạn mới"}
                     </h3>
@@ -115,34 +115,34 @@ const PermissionManagement = () => {
                             <label className="text-sm font-semibold text-gray-700 block mb-1">Tên quyền *</label>
                             <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                                 placeholder="VD: Xem danh sách tour"
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <label className="text-sm font-semibold text-gray-700 block mb-1">Module *</label>
                             <input value={form.module} onChange={e => setForm(f => ({ ...f, module: e.target.value }))}
                                 placeholder="VD: TOUR, HOTEL, USER"
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <label className="text-sm font-semibold text-gray-700 block mb-1">API Path *</label>
                             <input value={form.apiPath} onChange={e => setForm(f => ({ ...f, apiPath: e.target.value }))}
                                 placeholder="VD: /tours"
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <label className="text-sm font-semibold text-gray-700 block mb-1">Method *</label>
                             <select value={form.method} onChange={e => setForm(f => ({ ...f, method: e.target.value }))}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 {METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                         </div>
                         <div className="md:col-span-2 flex gap-3">
                             <button type="submit" disabled={saving}
-                                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-5 py-2.5 rounded text-sm font-semibold transition-colors">
                                 {saving ? "Đang lưu..." : editId ? "Lưu thay đổi" : "Tạo quyền hạn"}
                             </button>
                             <button type="button" onClick={closeForm}
-                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded text-sm font-semibold transition-colors">
                                 Hủy
                             </button>
                         </div>
@@ -155,14 +155,14 @@ const PermissionManagement = () => {
                 <i className="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input value={search} onChange={e => setSearch(e.target.value)}
                     placeholder="Tìm theo tên, API path, hoặc module..."
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
 
             {/* Danh sách */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        <thead className="bg-[#f8f5ee] text-xs font-bold text-gray-500 uppercase tracking-wider">
                             <tr>
                                 <th className="px-6 py-3 text-left">Tên quyền</th>
                                 <th className="px-6 py-3 text-left">Module</th>
@@ -173,7 +173,7 @@ const PermissionManagement = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {filtered.map(p => (
-                                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                                <tr key={p.id} className="hover:bg-[#f8f5ee] transition-colors">
                                     <td className="px-6 py-4 text-sm font-semibold text-gray-900">{p.name}</td>
                                     <td className="px-6 py-4">
                                         <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">{p.module}</span>

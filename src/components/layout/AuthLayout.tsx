@@ -1,11 +1,17 @@
 import { Link } from 'react-router-dom'
-import { MdFlight } from 'react-icons/md'
+import { MdFlight, MdFlashOn, MdSecurity, MdHeadsetMic, MdThumbUp } from 'react-icons/md'
 
 const PERKS = [
-  { icon: 'bi-building',   text: '500+ Khách sạn & Resort hàng đầu' },
-  { icon: 'bi-map',        text: '200+ Tour khám phá khắp Việt Nam' },
-  { icon: 'bi-cup-hot',    text: '300+ Nhà hàng ẩm thực đặc sắc' },
-  { icon: 'bi-headset',    text: 'Hỗ trợ 24/7 tận tâm, chu đáo' },
+  { icon: MdFlashOn,    text: '200+ Tour khám phá khắp Việt Nam' },
+  { icon: MdSecurity,   text: 'Thanh toán bảo mật với SSL 256-bit' },
+  { icon: MdThumbUp,    text: 'Hủy linh hoạt, hoàn tiền 100%' },
+  { icon: MdHeadsetMic, text: 'Hỗ trợ 24/7 tận tâm, chu đáo' },
+]
+
+const QUOTES = [
+  'Mỗi hành trình bắt đầu bằng một bước đầu tiên nhỏ bé.',
+  'Khám phá thế giới — một điểm đến mỗi lần.',
+  'Đi để trải nghiệm, về để nhớ mãi.',
 ]
 
 interface Props {
@@ -15,74 +21,85 @@ interface Props {
 }
 
 const AuthLayout = ({ imageSeed, quote, children }: Props) => (
-  <div className="min-h-screen flex" style={{ fontFamily: 'Poppins, sans-serif' }}>
+  <div className="min-h-screen flex" style={{ fontFamily: 'Montserrat, sans-serif' }}>
 
-    {/* ── Left: image panel (desktop only) ─────────────────────────────── */}
-    <div className="hidden lg:block lg:w-5/12 xl:w-1/2 relative overflow-hidden">
+    {/* Left panel */}
+    <div className="hidden lg:flex lg:w-5/12 xl:w-[45%] relative overflow-hidden flex-col">
       <img
         src={`https://picsum.photos/seed/${imageSeed}/900/1200`}
-        alt="TravelVN background"
+        alt="TravelVN"
         className="absolute inset-0 w-full h-full object-cover"
       />
-      {/* Gradient overlay */}
-      <div
-        className="absolute inset-0"
-        style={{ background: 'linear-gradient(160deg, rgba(26,82,118,0.90) 0%, rgba(26,82,118,0.70) 100%)' }}
-      />
+      <div className="absolute inset-0"
+        style={{ background: 'linear-gradient(160deg, rgba(6,16,30,0.97) 0%, rgba(10,22,40,0.92) 50%, rgba(6,16,30,0.88) 100%)' }} />
 
-      <div className="absolute inset-0 flex flex-col justify-between p-10 xl:p-14 z-10">
+      {/* Gold top line */}
+      <div className="absolute top-0 left-0 right-0 h-px"
+        style={{ background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)' }} />
+
+      {/* Subtle gold glow */}
+      <div className="absolute bottom-0 left-0 right-0 h-64 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, rgba(201,168,76,0.06), transparent)' }} />
+
+      <div className="relative z-10 flex flex-col justify-between h-full p-10 xl:p-14">
+
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group w-fit">
-          <div
-            className="p-2.5 rounded-2xl backdrop-blur transition-transform group-hover:rotate-12"
-            style={{ backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}
-          >
-            <MdFlight className="text-white" size={22} />
+          <div className="w-10 h-10 flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
+            style={{ border: '1px solid rgba(201,168,76,0.35)', background: 'rgba(201,168,76,0.08)' }}>
+            <MdFlight style={{ color: '#c9a84c' }} size={20} />
           </div>
-          <span className="font-black text-2xl text-white tracking-tight">
-            Travel<span style={{ color: '#e67e22' }}>VN</span>
+          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600, fontSize: '1.4rem', color: '#fff', letterSpacing: '0.18em' }}>
+            Travel<span style={{ color: '#c9a84c' }}>VN</span>
           </span>
         </Link>
 
-        {/* Quote + perks */}
+        {/* Center content */}
         <div>
-          {quote && (
-            <blockquote className="text-white/75 text-base italic mb-8 leading-relaxed max-w-xs">
-              "{quote}"
+          {/* Quote */}
+          <div className="mb-10">
+            <div className="mb-4 leading-none" style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '5rem', color: 'rgba(201,168,76,0.25)', lineHeight: 1 }}>"</div>
+            <blockquote style={{ color: 'rgba(255,255,255,0.55)', fontSize: 15, fontStyle: 'italic', lineHeight: 1.8, maxWidth: 300 }}>
+              {quote ?? QUOTES[0]}
             </blockquote>
-          )}
+            <div className="mt-5 flex items-center gap-3">
+              <div className="h-px w-8" style={{ background: '#c9a84c' }} />
+              <span className="uppercase tracking-widest" style={{ color: 'rgba(201,168,76,0.5)', fontSize: 9 }}>TravelVN</span>
+            </div>
+          </div>
+
+          {/* Perks */}
           <div className="space-y-4">
-            {PERKS.map(p => (
-              <div key={p.text} className="flex items-center gap-3.5">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: 'rgba(230,126,34,0.22)', border: '1px solid rgba(230,126,34,0.3)' }}
-                >
-                  <i className={`bi ${p.icon} text-[#e67e22] text-sm`} />
+            {PERKS.map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-4">
+                <div className="w-9 h-9 flex items-center justify-center shrink-0"
+                  style={{ border: '1px solid rgba(201,168,76,0.2)', background: 'rgba(201,168,76,0.06)' }}>
+                  <Icon size={16} style={{ color: '#c9a84c' }} />
                 </div>
-                <span className="text-white/75 text-sm">{p.text}</span>
+                <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>{text}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-white/25 text-xs">© {new Date().getFullYear()} TravelVN. All rights reserved.</p>
+        <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: 11, letterSpacing: '0.08em' }}>
+          © {new Date().getFullYear()} TravelVN. All rights reserved.
+        </p>
       </div>
     </div>
 
-    {/* ── Right: form area ──────────────────────────────────────────────── */}
-    <div className="flex-1 flex items-center justify-center px-6 py-12 bg-gray-50 overflow-y-auto">
+    {/* Right: form area */}
+    <div className="flex-1 flex items-center justify-center px-6 py-12 overflow-y-auto"
+      style={{ background: '#f8f5ee' }}>
       <div className="w-full max-w-md">
+
         {/* Mobile logo */}
         <Link to="/" className="flex items-center gap-2.5 mb-8 lg:hidden w-fit">
-          <div
-            className="p-2 rounded-xl"
-            style={{ background: 'linear-gradient(135deg, #1a5276, #2980b9)' }}
-          >
-            <MdFlight className="text-white" size={18} />
+          <div className="w-8 h-8 flex items-center justify-center" style={{ background: '#0a1628' }}>
+            <MdFlight style={{ color: '#c9a84c' }} size={16} />
           </div>
-          <span className="font-black text-xl text-gray-900">
-            Travel<span style={{ color: '#1a5276' }}>VN</span>
+          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600, fontSize: '1.2rem', color: '#0a1628', letterSpacing: '0.15em' }}>
+            Travel<span style={{ color: '#c9a84c' }}>VN</span>
           </span>
         </Link>
 

@@ -43,12 +43,12 @@ type FormData = z.infer<typeof schema>
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const inputCls = (hasError?: boolean, withRight = false) =>
-  `block w-full pl-11 ${withRight ? 'pr-12' : 'pr-4'} py-3.5 bg-gray-50 border-2 rounded-2xl
+  `block w-full pl-11 ${withRight ? 'pr-12' : 'pr-4'} py-3.5 bg-[#f8f5ee] border-2 rounded
    text-sm font-medium text-gray-700 placeholder-gray-400
    focus:bg-white focus:outline-none focus:ring-4 transition-all
    ${hasError
      ? 'border-red-400 focus:border-red-500 focus:ring-red-50'
-     : 'border-transparent focus:border-[#1a5276] focus:ring-[#1a5276]/10'}`
+     : 'border-transparent focus:border-primary focus:ring-primary/10'}`
 
 const FieldError = ({ msg }: { msg?: string }) =>
   msg ? (
@@ -113,7 +113,7 @@ const RegisterPage = () => {
       imageSeed="vietnam-rice-terraces"
       quote="Mỗi hành trình bắt đầu bằng một bước đầu tiên nhỏ bé."
     >
-      <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-10">
+      <div className="bg-white rounded-sm border border-gray-100 p-8 md:p-10" style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
 
         <div className="mb-7">
           <h2 className="text-3xl font-black text-gray-900 tracking-tight">Tạo tài khoản</h2>
@@ -129,7 +129,7 @@ const RegisterPage = () => {
               <MdPerson
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                           text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                           text-gray-400 group-focus-within:text-primary transition-colors"
               />
               <input
                 type="text"
@@ -149,7 +149,7 @@ const RegisterPage = () => {
               <MdEmail
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                           text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                           text-gray-400 group-focus-within:text-primary transition-colors"
               />
               <input
                 type="email"
@@ -169,7 +169,7 @@ const RegisterPage = () => {
               <MdPhone
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                           text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                           text-gray-400 group-focus-within:text-primary transition-colors"
               />
               <input
                 type="tel"
@@ -189,7 +189,7 @@ const RegisterPage = () => {
               <MdLock
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                           text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                           text-gray-400 group-focus-within:text-primary transition-colors"
               />
               <input
                 type={showPw ? 'text' : 'password'}
@@ -202,7 +202,7 @@ const RegisterPage = () => {
                 type="button" tabIndex={-1}
                 onClick={() => setShowPw(p => !p)}
                 className="absolute right-4 top-1/2 -translate-y-1/2
-                           text-gray-400 hover:text-[#1a5276] transition-colors"
+                           text-gray-400 hover:text-primary transition-colors"
               >
                 {showPw ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
               </button>
@@ -243,7 +243,7 @@ const RegisterPage = () => {
               <MdLock
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none
-                           text-gray-400 group-focus-within:text-[#1a5276] transition-colors"
+                           text-gray-400 group-focus-within:text-primary transition-colors"
               />
               <input
                 type={showConfirm ? 'text' : 'password'}
@@ -263,7 +263,7 @@ const RegisterPage = () => {
                 type="button" tabIndex={-1}
                 onClick={() => setShowConfirm(p => !p)}
                 className="absolute right-4 top-1/2 -translate-y-1/2
-                           text-gray-400 hover:text-[#1a5276] transition-colors"
+                           text-gray-400 hover:text-primary transition-colors"
               >
                 {showConfirm ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
               </button>
@@ -275,13 +275,10 @@ const RegisterPage = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 text-white font-bold
-                       py-3.5 rounded-2xl transition-all active:scale-95 hover:opacity-90
+            className="w-full flex items-center justify-center gap-2 text-white font-black
+                       py-4 rounded transition-all active:scale-95 hover:opacity-90
                        disabled:opacity-60 disabled:cursor-not-allowed group mt-2"
-            style={{
-              background: 'linear-gradient(135deg, #1a5276, #2980b9)',
-              boxShadow: '0 8px 24px rgba(26,82,118,0.30)',
-            }}
+            style={{ background: 'linear-gradient(135deg, #0a1628, #1a3a5c)', boxShadow: '0 6px 20px rgba(10,22,40,0.35)' }}
           >
             {isSubmitting ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -302,7 +299,7 @@ const RegisterPage = () => {
 
         <p className="text-center text-sm text-gray-500">
           Đã có tài khoản?{' '}
-          <Link to="/login" className="font-black text-[#1a5276] hover:underline">
+          <Link to="/login" className="font-black text-primary hover:underline">
             Đăng nhập
           </Link>
         </p>

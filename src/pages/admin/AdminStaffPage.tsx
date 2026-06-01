@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import {
   Search, Plus, Edit, RefreshCw, Eye, EyeOff,
-  UserCheck, UserX, Camera, Shuffle
+  UserCheck, UserX, Camera, Shuffle, AlertCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -146,7 +146,7 @@ function StaffSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full max-w-md p-0 flex flex-col">
         <SheetHeader className="px-6 pt-6 pb-4 border-b">
-          <SheetTitle style={{ color: '#1a5276' }}>
+          <SheetTitle className="text-primary">
             {isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên mới'}
           </SheetTitle>
         </SheetHeader>
@@ -166,7 +166,7 @@ function StaffSheet({
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
                   className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-white shadow"
-                  style={{ background: '#1a5276' }}
+                  className="bg-primary"
                 >
                   <Camera className="w-3.5 h-3.5" />
                 </button>
@@ -272,7 +272,7 @@ function StaffSheet({
           <Button
             onClick={handleSave}
             disabled={saving}
-            style={{ background: '#1a5276' }}
+            className="bg-primary"
             className="text-white"
           >
             {saving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />}
@@ -304,7 +304,7 @@ export default function AdminStaffPage() {
     return () => clearTimeout(t)
   }, [search])
 
-  const { data, isLoading, isFetching } = useQuery<Page<Staff>>({
+  const { data, isLoading, isFetching, isError, refetch } = useQuery<Page<Staff>>({
     queryKey: ['admin-staff', debouncedSearch, statusFilter, page],
     queryFn: async () => {
       const params: Record<string, string | number> = { page, size: PAGE_SIZE }
@@ -339,12 +339,12 @@ export default function AdminStaffPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#1a5276' }}>Quản lý nhân viên</h1>
+          <h1 className="text-2xl font-bold" className="text-primary">Quản lý nhân viên</h1>
           <p className="text-sm text-gray-500 mt-0.5">Danh sách tài khoản nhân viên</p>
         </div>
         <Button
           onClick={() => { setEditTarget(null); setSheetOpen(true) }}
-          style={{ background: '#1a5276' }}
+          className="bg-primary"
           className="text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -385,13 +385,28 @@ export default function AdminStaffPage() {
         </Button>
       </div>
 
+      {/* Error banner */}
+      {isError && (
+        <div className="flex items-center justify-between px-4 py-3 rounded border border-red-200 bg-red-50">
+          <div className="flex items-center gap-2 text-sm text-red-700">
+            <AlertCircle size={14} /> Không tải được danh sách nhân viên
+          </div>
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-800 transition-colors"
+          >
+            <RefreshCw size={13} /> Tải lại
+          </button>
+        </div>
+      )}
+
       {/* Table */}
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-white rounded border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-[#f8f5ee] border-b">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Nhân viên</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-600 sticky left-0 z-10 bg-[#f8f5ee]">Nhân viên</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Liên hệ</th>
                 <th className="px-4 py-3 text-center font-medium text-gray-600">Tours phụ trách</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Ngày tạo</th>
@@ -418,8 +433,8 @@ export default function AdminStaffPage() {
                   </td>
                 </tr>
               ) : staff.map(s => (
-                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3">
+                <tr key={s.id} className="group hover:bg-[#f8f5ee] transition-colors">
+                  <td className="px-4 py-3 sticky left-0 z-10 bg-white group-hover:bg-[#f8f5ee] transition-colors">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-9 h-9">
                         <AvatarImage src={s.avatarUrl} />
@@ -496,7 +511,7 @@ export default function AdminStaffPage() {
                     key={pg}
                     variant={pg === page ? 'default' : 'outline'}
                     size="sm"
-                    style={pg === page ? { background: '#1a5276' } : undefined}
+                    style={pg === page ? { background: '#0a1628' } : undefined}
                     onClick={() => setPage(pg)}
                   >
                     {pg + 1}

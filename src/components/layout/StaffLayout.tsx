@@ -43,10 +43,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
-    <span
-      className="w-8 h-8 border-2 rounded-full animate-spin"
-      style={{ borderColor: 'rgba(26,82,118,0.15)', borderTopColor: '#1a5276' }}
-    />
+    <span className="w-8 h-8 border-2 border-primary/15 border-t-primary rounded-full animate-spin" />
   </div>
 )
 
@@ -74,7 +71,7 @@ const StaffLayout = () => {
   const closeMobile = () => setMobileSidebarOpen(false)
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="flex h-screen bg-[#f8f5ee] overflow-hidden" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
 
       {/* ── Mobile backdrop ─────────────────────────────────── */}
       {mobileSidebarOpen && (
@@ -98,22 +95,15 @@ const StaffLayout = () => {
         <div className="h-16 flex items-center gap-3 px-5 shrink-0">
           <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 select-none"
-            style={{ background: 'linear-gradient(135deg, #1a5276, #2980b9)' }}
+            className="w-9 h-9 rounded flex items-center justify-center text-white font-black text-sm shrink-0 select-none bg-primary"
           >
             VN
           </div>
           <div>
-            <span
-              className="font-black text-base block leading-tight"
-              style={{ color: '#1a5276', fontFamily: 'Poppins, sans-serif' }}
-            >
+            <span className="font-black text-base block leading-tight text-primary">
               TravelVN
             </span>
-            <span
-              className="text-[11px] font-bold px-1.5 py-0.5 rounded-md"
-              style={{ backgroundColor: '#fef5ec', color: '#e67e22' }}
-            >
+            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-accent/10 text-accent">
               Staff Portal
             </span>
           </div>
@@ -126,10 +116,7 @@ const StaffLayout = () => {
         <div className="px-4 py-4 flex items-center gap-3 shrink-0">
           <Avatar className="w-12 h-12 shrink-0 ring-2 ring-blue-50">
             <AvatarImage src={user?.avatar} />
-            <AvatarFallback
-              className="text-white font-bold text-sm"
-              style={{ background: 'linear-gradient(135deg, #1a5276, #2980b9)' }}
-            >
+            <AvatarFallback className="text-white font-bold text-sm bg-primary">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -137,10 +124,7 @@ const StaffLayout = () => {
             <p className="font-bold text-gray-900 text-sm truncate leading-snug">
               {user?.name ?? 'Nhân viên'}
             </p>
-            <span
-              className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
-              style={{ backgroundColor: '#eaf4fb', color: '#1a5276' }}
-            >
+            <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
               {user?.roleName ?? 'STAFF'}
             </span>
           </div>
@@ -157,14 +141,14 @@ const StaffLayout = () => {
               end={end}
               onClick={closeMobile}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all
+                `flex items-center gap-3 px-3 py-2.5 rounded text-sm transition-all
                  ${isActive
                    ? 'font-semibold'
-                   : 'font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                   : 'font-medium text-gray-500 hover:text-gray-800 hover:bg-[#f8f5ee]'
                  }`
               }
               style={({ isActive }) =>
-                isActive ? { backgroundColor: '#eaf4fb', color: '#1a5276' } : undefined
+                isActive ? { backgroundColor: 'oklch(0.355 0.093 233 / 0.08)', color: 'oklch(0.355 0.093 233)' } : undefined
               }
             >
               <Icon size={18} />
@@ -179,7 +163,7 @@ const StaffLayout = () => {
         <div className="p-3 shrink-0">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
           >
             <LogOut size={18} />
             Đăng xuất
@@ -196,7 +180,7 @@ const StaffLayout = () => {
           {/* Hamburger (mobile) */}
           <button
             onClick={() => setMobileSidebarOpen(p => !p)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 transition-colors lg:hidden shrink-0"
+            className="w-9 h-9 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 transition-colors lg:hidden shrink-0"
           >
             {mobileSidebarOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -220,13 +204,12 @@ const StaffLayout = () => {
           {/* Bell + avatar dropdown */}
           <div className="flex items-center gap-2 shrink-0">
             <button
-              className="relative w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 transition-colors"
+              className="relative w-9 h-9 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 transition-colors"
               title="Thông báo"
             >
               <Bell size={18} />
               <span
-                className="absolute top-1 right-1 w-4 h-4 rounded-full text-white text-[9px] font-bold flex items-center justify-center"
-                style={{ backgroundColor: '#e67e22' }}
+                className="absolute top-1 right-1 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center"
               >
                 3
               </span>
@@ -234,13 +217,10 @@ const StaffLayout = () => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-gray-200 hover:ring-[#1a5276] transition-all">
+                <button className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-gray-200 hover:ring-primary transition-all">
                   <Avatar className="w-9 h-9">
                     <AvatarImage src={user?.avatar} />
-                    <AvatarFallback
-                      className="text-white text-xs font-bold"
-                      style={{ background: 'linear-gradient(135deg, #1a5276, #2980b9)' }}
-                    >
+                    <AvatarFallback className="text-white text-xs font-bold bg-primary">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
@@ -269,7 +249,9 @@ const StaffLayout = () => {
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
           <Suspense fallback={<PageLoader />}>
-            <Outlet />
+            <div key={location.pathname} className="animate-fade-in-up">
+              <Outlet />
+            </div>
           </Suspense>
         </main>
       </div>

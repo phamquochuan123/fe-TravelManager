@@ -53,18 +53,18 @@ const AddRoom = () => {
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 max-w-xl">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6 max-w-xl">
             <h2 className="text-lg font-bold text-gray-900 mb-6">
                 <i className="bi bi-plus-circle mr-2 text-indigo-600"></i>Thêm phòng mới
             </h2>
 
             {successMessage && (
-                <div className="mb-4 px-4 py-3 rounded-xl bg-green-50 text-green-700 text-sm font-medium flex items-center gap-2">
+                <div className="mb-4 px-4 py-3 rounded bg-green-50 text-green-700 text-sm font-medium flex items-center gap-2">
                     <i className="bi bi-check-circle"></i>{successMessage}
                 </div>
             )}
             {errorMessage && (
-                <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm font-medium flex items-center gap-2">
+                <div className="mb-4 px-4 py-3 rounded bg-red-50 text-red-700 text-sm font-medium flex items-center gap-2">
                     <i className="bi bi-exclamation-circle"></i>{errorMessage}
                 </div>
             )}
@@ -87,7 +87,7 @@ const AddRoom = () => {
                         placeholder="Nhập giá phòng"
                         value={newRoom.roomPrice}
                         onChange={handleRoomInputChange}
-                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2.5 rounded border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                 </div>
 
@@ -104,7 +104,7 @@ const AddRoom = () => {
                         <img
                             src={imagePreview}
                             alt="Preview"
-                            className="mt-3 rounded-xl object-cover w-full max-h-52"
+                            className="mt-3 rounded object-cover w-full max-h-52"
                         />
                     )}
                 </div>
@@ -112,7 +112,7 @@ const AddRoom = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <span className="flex items-center justify-center gap-2">

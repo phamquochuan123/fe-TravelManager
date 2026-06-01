@@ -1,13 +1,15 @@
 /* ─── 1. Imports ─────────────────────────────────────────────────────────── */
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Great+Vibes&display=swap');
 
 /* ─── 2. Plugins ─────────────────────────────────────────────────────────── */
 @plugin "tailwindcss-animate";
 
-/* ─── 3. Theme mapping (CSS vars → Tailwind utilities) ───────────────────── */
+/* ─── 3. Theme mapping ────────────────────────────────────────────────────── */
 @theme inline {
-  --font-sans: "Be Vietnam Pro", sans-serif;
+  --font-sans:    "Montserrat", sans-serif;
+  --font-display: "Cormorant Garamond", serif;
+  --font-script:  "Great Vibes", cursive;
 
   --color-background:              var(--background);
   --color-foreground:              var(--foreground);
@@ -47,21 +49,27 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* ─── 4. Design tokens ───────────────────────────────────────────────────── */
+/* ─── 4. Design tokens ────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --radius: 0.5rem;
+    /* Luxury palette */
+    --lux-navy:  #0a1628;
+    --lux-gold:  #c9a84c;
+    --lux-cream: #f8f5ee;
+    --lux-dark:  #06101e;
 
-    /* Neutrals */
-    --background:         oklch(1 0.004 233);
-    --foreground:         oklch(0.145 0.005 240);
-    --card:               oklch(1 0.004 233);
-    --card-foreground:    oklch(0.145 0.005 240);
-    --popover:            oklch(1 0.004 233);
-    --popover-foreground: oklch(0.145 0.005 240);
+    --radius: 0.25rem;
 
-    /* Primary: #1a5276 (TravelVN navy blue) */
-    --primary:            oklch(0.355 0.093 233);
+    /* Neutrals — warm off-white */
+    --background:         oklch(0.978 0.006 80);
+    --foreground:         oklch(0.12 0.02 240);
+    --card:               oklch(1 0 0);
+    --card-foreground:    oklch(0.12 0.02 240);
+    --popover:            oklch(1 0 0);
+    --popover-foreground: oklch(0.12 0.02 240);
+
+    /* Primary: #0a1628 luxury navy */
+    --primary:            oklch(0.13 0.035 240);
     --primary-foreground: oklch(0.985 0 0);
 
     /* Secondary */
@@ -72,8 +80,8 @@
     --muted:            oklch(0.97 0 0);
     --muted-foreground: oklch(0.556 0 0);
 
-    /* Accent: #e67e22 (TravelVN orange) */
-    --accent:            oklch(0.70 0.178 54);
+    /* Accent: #c9a84c champagne gold */
+    --accent:            oklch(0.72 0.12 82);
     --accent-foreground: oklch(0.985 0 0);
 
     /* Destructive */
@@ -82,7 +90,7 @@
     /* Border / Input / Ring */
     --border: oklch(0.922 0 0);
     --input:  oklch(0.922 0 0);
-    --ring:   oklch(0.355 0.093 233);
+    --ring:   oklch(0.72 0.12 82);
 
     /* Charts */
     --chart-1: oklch(0.646 0.222 41.116);
@@ -93,13 +101,13 @@
 
     /* Sidebar */
     --sidebar:                      oklch(0.985 0 0);
-    --sidebar-foreground:           oklch(0.145 0.005 240);
-    --sidebar-primary:              oklch(0.355 0.093 233);
+    --sidebar-foreground:           oklch(0.12 0.02 240);
+    --sidebar-primary:              oklch(0.13 0.035 240);
     --sidebar-primary-foreground:   oklch(0.985 0 0);
     --sidebar-accent:               oklch(0.97 0 0);
     --sidebar-accent-foreground:    oklch(0.205 0 0);
     --sidebar-border:               oklch(0.922 0 0);
-    --sidebar-ring:                 oklch(0.355 0.093 233);
+    --sidebar-ring:                 oklch(0.72 0.12 82);
   }
 
   .dark {
@@ -109,18 +117,18 @@
     --card-foreground:    oklch(0.985 0 0);
     --popover:            oklch(0.205 0 0);
     --popover-foreground: oklch(0.985 0 0);
-    --primary:            oklch(0.6   0.12  233);
+    --primary:            oklch(0.72 0.12 82);
     --primary-foreground: oklch(0.145 0 0);
     --secondary:          oklch(0.269 0 0);
     --secondary-foreground: oklch(0.985 0 0);
     --muted:              oklch(0.269 0 0);
     --muted-foreground:   oklch(0.708 0 0);
-    --accent:             oklch(0.70 0.178 54);
+    --accent:             oklch(0.72 0.12 82);
     --accent-foreground:  oklch(0.985 0 0);
     --destructive:        oklch(0.704 0.191 22.216);
     --border:             oklch(1 0 0 / 10%);
     --input:              oklch(1 0 0 / 15%);
-    --ring:               oklch(0.6 0.12 233);
+    --ring:               oklch(0.72 0.12 82);
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17  162.48);
     --chart-3: oklch(0.769 0.188 70.08);
@@ -128,12 +136,12 @@
     --chart-5: oklch(0.645 0.246 16.439);
     --sidebar:                    oklch(0.205 0 0);
     --sidebar-foreground:         oklch(0.985 0 0);
-    --sidebar-primary:            oklch(0.6 0.12 233);
+    --sidebar-primary:            oklch(0.72 0.12 82);
     --sidebar-primary-foreground: oklch(0.985 0 0);
     --sidebar-accent:             oklch(0.269 0 0);
     --sidebar-accent-foreground:  oklch(0.985 0 0);
     --sidebar-border:             oklch(1 0 0 / 10%);
-    --sidebar-ring:               oklch(0.6 0.12 233);
+    --sidebar-ring:               oklch(0.72 0.12 82);
   }
 
   html, body {
@@ -141,7 +149,14 @@
     padding: 0;
     width: 100%;
     overflow-x: hidden;
-    font-family: "Be Vietnam Pro", sans-serif;
+    font-family: "Montserrat", sans-serif;
+    background-color: #f8f5ee;
+  }
+
+  /* Cormorant Garamond for all headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Cormorant Garamond", serif;
+    letter-spacing: 0.01em;
   }
 
   * {
@@ -149,12 +164,35 @@
   }
 
   body {
-    background-color: var(--background);
     color: var(--foreground);
+  }
+
+  /* Luxury link hover */
+  a { transition: color 0.2s ease; }
+
+  /* Uppercase small labels utility */
+  .lux-label {
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+
+  /* Gold divider utility */
+  .lux-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #c9a84c, transparent);
+  }
+
+  /* Accessible focus ring for all interactive elements */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 }
 
-/* ─── 5. Dual-range slider (used in filter sidebars) ─────────────────────── */
+/* ─── 5. Dual-range slider ────────────────────────────────────────────────── */
 input[type="range"].dual-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -171,7 +209,7 @@ input[type="range"].dual-thumb::-webkit-slider-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--primary);
+  background: #0a1628;
   cursor: pointer;
   pointer-events: all;
   border: 2px solid white;
@@ -182,22 +220,37 @@ input[type="range"].dual-thumb::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--primary);
+  background: #0a1628;
   cursor: pointer;
   pointer-events: all;
   box-shadow: 0 1px 4px rgba(0,0,0,0.25);
   border: none;
 }
 
-/* ─── 6. React-datepicker theme overrides ─────────────────────────────────── */
+/* ─── 6. React-datepicker overrides ──────────────────────────────────────── */
 .react-datepicker-wrapper { width: 100%; }
 .react-datepicker__input-container input { width: 100%; }
 .react-datepicker__day--selected,
 .react-datepicker__day--in-range,
 .react-datepicker__day--keyboard-selected {
-  background-color: var(--primary) !important;
+  background-color: #0a1628 !important;
   color: white !important;
 }
 .react-datepicker__day--in-selecting-range {
-  background-color: oklch(0.5 0.093 233 / 0.3) !important;
+  background-color: rgba(10,22,40,0.25) !important;
+}
+
+/* ─── 7. Scrollbar ────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f8f5ee; }
+::-webkit-scrollbar-thumb { background: #c9a84c; }
+::-webkit-scrollbar-thumb:hover { background: #0a1628; }
+
+/* ─── 8. Page mount animation ─────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 300ms ease both;
 }

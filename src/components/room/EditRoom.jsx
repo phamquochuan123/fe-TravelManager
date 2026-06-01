@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { resolveBase64Image } from '../../lib/utils'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getRoomById, updateRoom, getRoomTypes } from '../../api/roomApi'
 import { toast } from 'react-toastify'
@@ -18,7 +19,7 @@ const EditRoom = () => {
         Promise.all([getRoomById(roomId), getRoomTypes()])
             .then(([room, types]) => {
                 setRoomData({ roomType: room.roomType, roomPrice: room.roomPrice, photo: null })
-                if (room.photo) setPhotoPreview(`data:image/jpeg;base64,${room.photo}`)
+                if (room.photo) setPhotoPreview(resolveBase64Image(room.photo, ''))
                 setRoomTypes(types)
             })
             .catch(e => toast.error(e.message))
@@ -53,14 +54,14 @@ const EditRoom = () => {
     }
 
     if (isLoading) return (
-        <div className="min-h-screen bg-gray-50 font-['Be_Vietnam_Pro'] flex items-center justify-center">
+        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro'] flex items-center justify-center">
             <MenuBar />
             <span className="w-10 h-10 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
         </div>
     )
 
     return (
-        <div className="min-h-screen bg-gray-50 font-['Be_Vietnam_Pro']">
+        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro']">
             <MenuBar />
             <div className="pt-24 pb-12 px-6 max-w-xl mx-auto">
                 <button
@@ -70,7 +71,7 @@ const EditRoom = () => {
                     <i className="bi bi-arrow-left" /> Quay lại
                 </button>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                         <i className="bi bi-pencil-square text-indigo-500" /> Chỉnh sửa phòng
                     </h2>
@@ -83,7 +84,7 @@ const EditRoom = () => {
                                 value={roomData.roomType}
                                 onChange={handleChange}
                                 required
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
                                 <option value="">-- Chọn loại phòng --</option>
                                 {roomTypes.map(t => <option key={t} value={t}>{t}</option>)}
@@ -99,7 +100,7 @@ const EditRoom = () => {
                                 onChange={handleChange}
                                 min={0}
                                 required
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
 
@@ -109,7 +110,7 @@ const EditRoom = () => {
                                 <img
                                     src={photoPreview}
                                     alt="Preview"
-                                    className="mb-3 rounded-xl object-cover w-full max-h-52"
+                                    className="mb-3 rounded object-cover w-full max-h-52"
                                 />
                             )}
                             <input
@@ -124,7 +125,7 @@ const EditRoom = () => {
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2"
+                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold py-2.5 rounded transition-colors flex items-center justify-center gap-2"
                             >
                                 {saving
                                     ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang lưu...</>
@@ -134,7 +135,7 @@ const EditRoom = () => {
                             <button
                                 type="button"
                                 onClick={() => navigate(-1)}
-                                className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
+                                className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded transition-colors"
                             >
                                 Huỷ
                             </button>

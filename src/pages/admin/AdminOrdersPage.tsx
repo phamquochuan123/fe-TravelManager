@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/vi'
 import { toast } from 'sonner'
-import { Eye, RefreshCw, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
+import { Eye, RefreshCw, ChevronDown, ChevronUp, Loader2, ShoppingCart } from 'lucide-react'
 import api from '../../api/axiosInstance'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
@@ -104,7 +104,7 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col p-0 gap-0">
         <SheetHeader className="px-6 py-5 border-b shrink-0">
-          <SheetTitle style={{ fontFamily: 'Poppins, sans-serif' }}>
+          <SheetTitle >
             Chi tiết đơn #{String(order.id).slice(-6).toUpperCase()}
           </SheetTitle>
         </SheetHeader>
@@ -139,11 +139,10 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
             {/* Customer info */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-3">Thông tin khách hàng</h4>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <div className="flex items-center gap-3 p-3 bg-[#f8f5ee] rounded">
                 <Avatar className="w-12 h-12">
                   <AvatarImage src={order.customerAvatar} />
-                  <AvatarFallback className="text-sm font-bold text-white"
-                    style={{ background: 'linear-gradient(135deg,#1a5276,#2980b9)' }}>{initials}</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-sm font-bold text-white">{initials}</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-semibold text-gray-900 text-sm">{order.customerName}</p>
@@ -156,10 +155,10 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
             {/* Service info */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-3">Thông tin dịch vụ</h4>
-              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+              <div className="flex items-start gap-3 p-3 bg-[#f8f5ee] rounded">
                 {order.serviceImage && (
                   <img src={order.serviceImage} alt={order.serviceName}
-                    className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                    className="w-16 h-16 rounded object-cover shrink-0" />
                 )}
                 <div>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${SERVICE_CFG[order.serviceType]?.cls}`}>
@@ -177,7 +176,7 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
             {order.breakdown && order.breakdown.length > 0 && (
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-3">Chi phí</h4>
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="border border-gray-200 rounded overflow-hidden">
                   <table className="w-full text-sm">
                     <tbody>
                       {order.breakdown.map((b, i) => (
@@ -188,9 +187,9 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
                       ))}
                     </tbody>
                     <tfoot>
-                      <tr className="bg-gray-50">
+                      <tr className="bg-[#f8f5ee]">
                         <td className="px-4 py-2.5 font-bold text-gray-900">Tổng cộng</td>
-                        <td className="px-4 py-2.5 text-right font-black text-base" style={{ color: '#e67e22' }}>
+                        <td className="px-4 py-2.5 text-right font-black text-base text-accent">
                           {fmtVND(total)}
                         </td>
                       </tr>
@@ -220,8 +219,7 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
                 <Textarea value={note} onChange={e => setNote(e.target.value)}
                   placeholder="Nhập ghi chú hoặc lý do..." className="h-24 text-sm resize-none" />
               </div>
-              <Button onClick={submit} disabled={busy || newStatus === order.status} className="w-full text-white"
-                style={{ backgroundColor: '#1a5276' }}>
+              <Button onClick={submit} disabled={busy || newStatus === order.status} className="w-full bg-primary text-white">
                 {busy && <Loader2 size={14} className="mr-1.5 animate-spin" />}
                 Lưu thay đổi
               </Button>
@@ -235,14 +233,14 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function AdminOrdersPage() {
+export default function AdminOrdersPage({ defaultServiceType }: { defaultServiceType?: string }) {
   const qc = useQueryClient()
   const [activeTab, setActiveTab] = useState('all')
   const [page, setPage] = useState(0)
   const [filterOpen, setFilterOpen] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
-  const [serviceType, setServiceType] = useState('all')
+  const [serviceType, setServiceType] = useState(defaultServiceType ?? 'all')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [detailOrder, setDetailOrder] = useState<Order | null>(null)
@@ -273,10 +271,11 @@ export default function AdminOrdersPage() {
     ...(toDate ? { to: toDate } : {}),
   }).toString()
 
-  const { data: paged, isLoading } = useQuery<PagedOrders>({
+  const { data: paged, isLoading, isError, refetch } = useQuery<PagedOrders>({
     queryKey: ['admin', 'orders', params],
     queryFn: async () => (await api.get(`/admin/orders?${params}`)).data,
     placeholderData: prev => prev,
+    retry: false,
   })
 
   const orders = paged?.content ?? []
@@ -295,7 +294,7 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="p-6 space-y-5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="p-6 space-y-5" >
       <div>
         <h1 className="text-2xl font-black text-gray-900">Quản lý đơn hàng</h1>
         <p className="text-sm text-gray-400 mt-0.5">Theo dõi và xử lý tất cả đơn hàng</p>
@@ -322,11 +321,11 @@ export default function AdminOrdersPage() {
       </Tabs>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+      <div className="bg-white rounded border border-gray-100 shadow-sm">
         <button
           type="button"
           onClick={() => setFilterOpen(p => !p)}
-          className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors rounded-2xl"
+          className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-gray-700 hover:bg-[#f8f5ee] transition-colors rounded"
         >
           <span>Bộ lọc nâng cao</span>
           {filterOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -338,18 +337,20 @@ export default function AdminOrdersPage() {
               <Input value={searchInput} onChange={e => setSearchInput(e.target.value)}
                 placeholder="Tên KH hoặc mã đơn..." className="text-sm" />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-gray-600">Loại dịch vụ</Label>
-              <Select value={serviceType} onValueChange={setServiceType}>
-                <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
-                  <SelectItem value="TOUR">Tour</SelectItem>
-                  <SelectItem value="HOTEL">Khách sạn</SelectItem>
-                  <SelectItem value="RESTAURANT">Nhà hàng</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {!defaultServiceType && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-600">Loại dịch vụ</Label>
+                <Select value={serviceType} onValueChange={setServiceType}>
+                  <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả</SelectItem>
+                    <SelectItem value="TOUR">Tour</SelectItem>
+                    <SelectItem value="HOTEL">Khách sạn</SelectItem>
+                    <SelectItem value="RESTAURANT">Nhà hàng</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-gray-600">Từ ngày</Label>
               <Input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="text-sm" />
@@ -362,20 +363,34 @@ export default function AdminOrdersPage() {
         )}
       </div>
 
+      {/* Error banner */}
+      {isError && (
+        <div className="flex items-center justify-between px-4 py-3 rounded border border-red-200 bg-red-50">
+          <span className="text-sm text-red-700">Không tải được dữ liệu đơn hàng</span>
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-800 transition-colors"
+          >
+            <RefreshCw size={13} /> Tải lại
+          </button>
+        </div>
+      )}
+
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/70">
-                {['Mã đơn', 'Khách hàng', 'Dịch vụ', 'Ngày sử dụng', 'Tổng tiền', 'Trạng thái', 'Thao tác'].map(h => (
+              <tr className="border-b border-gray-100 bg-[#f8f5ee]/70">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap sticky left-0 z-10 bg-[#f8f5ee]">Mã đơn</th>
+                {['Khách hàng', 'Dịch vụ', 'Ngày sử dụng', 'Tổng tiền', 'Trạng thái', 'Thao tác'].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {isLoading
-                ? Array.from({ length: 6 }).map((_, i) => (
+                ? Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b border-gray-50">
                       {Array.from({ length: 7 }).map((__, j) => (
                         <td key={j} className="px-4 py-3"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>
@@ -384,8 +399,11 @@ export default function AdminOrdersPage() {
                   ))
                 : orders.length === 0
                 ? (
-                  <tr><td colSpan={7} className="py-16 text-center text-gray-400 text-sm">
-                    Không có đơn hàng nào
+                  <tr><td colSpan={7} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <ShoppingCart size={40} className="text-gray-200" />
+                      <p className="text-sm text-gray-400 font-medium">Chưa có đơn hàng nào</p>
+                    </div>
                   </td></tr>
                 )
                 : orders.map(o => {
@@ -393,8 +411,8 @@ export default function AdminOrdersPage() {
                     const svc = SERVICE_CFG[o.serviceType]
                     const initials = o.customerName.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase()
                     return (
-                      <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                        <td className="px-4 py-3">
+                      <tr key={o.id} className="group border-b border-gray-50 hover:bg-[#f8f5ee]/50 transition-colors">
+                        <td className="px-4 py-3 sticky left-0 z-10 bg-white group-hover:bg-[#f8f5ee]/50 transition-colors">
                           <span className="font-mono text-xs text-gray-400">
                             #{String(o.id).slice(-6).toUpperCase()}
                           </span>
@@ -404,7 +422,7 @@ export default function AdminOrdersPage() {
                             <Avatar className="w-8 h-8 shrink-0">
                               <AvatarImage src={o.customerAvatar} />
                               <AvatarFallback className="text-xs font-bold text-white"
-                                style={{ background: 'linear-gradient(135deg,#1a5276,#2980b9)' }}>{initials}</AvatarFallback>
+                                className="bg-primary">{initials}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
                               <p className="font-medium text-gray-900 truncate max-w-[120px]">{o.customerName}</p>
@@ -419,11 +437,11 @@ export default function AdminOrdersPage() {
                         <td className="px-4 py-3 whitespace-nowrap text-gray-600 text-xs">
                           {dayjs(o.useDate).format('DD/MM/YYYY')}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap font-bold" style={{ color: '#e67e22' }}>
+                        <td className="px-4 py-3 whitespace-nowrap font-bold" className="text-accent">
                           {fmtVND(o.totalAmount)}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap ${sc.cls}`}>{sc.label}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors duration-300 ${sc.cls}`}>{sc.label}</span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1.5">
@@ -449,9 +467,9 @@ export default function AdminOrdersPage() {
             <p className="text-xs text-gray-400">Trang {page + 1}/{totalPages} — {totalElements.toLocaleString('vi-VN')} đơn</p>
             <div className="flex items-center gap-1">
               <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-                className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40">← Trước</button>
+                className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40">← Trước</button>
               <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-                className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40">Tiếp →</button>
+                className="px-3 py-1 text-xs rounded-lg border border-gray-200 hover:bg-[#f8f5ee] disabled:opacity-40">Tiếp →</button>
             </div>
           </div>
         )}

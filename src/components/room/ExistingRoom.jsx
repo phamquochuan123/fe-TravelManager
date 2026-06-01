@@ -70,7 +70,7 @@ const ExistingRoom = () => {
                 <select
                     value={typeFilter}
                     onChange={e => setTypeFilter(e.target.value)}
-                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[180px]"
+                    className="border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[180px]"
                 >
                     <option value="">Tất cả loại phòng</option>
                     {roomTypes.map(t => <option key={t} value={t}>{t}</option>)}
@@ -78,7 +78,7 @@ const ExistingRoom = () => {
                 {typeFilter && (
                     <button
                         onClick={() => setTypeFilter("")}
-                        className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2 border border-gray-200 rounded-xl transition-colors"
+                        className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2 border border-gray-200 rounded transition-colors"
                     >
                         Xoá lọc
                     </button>
@@ -96,10 +96,10 @@ const ExistingRoom = () => {
                 </div>
             ) : (
                 <>
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+                    <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden mb-4">
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                <thead className="bg-[#f8f5ee] text-xs font-bold text-gray-500 uppercase tracking-wider">
                                     <tr>
                                         <th className="px-5 py-3 text-left">ID</th>
                                         <th className="px-5 py-3 text-left">Số phòng</th>
@@ -111,7 +111,7 @@ const ExistingRoom = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {paginatedRooms.map(room => (
-                                        <tr key={room.id} className="hover:bg-gray-50 transition-colors">
+                                        <tr key={room.id} className="hover:bg-[#f8f5ee] transition-colors">
                                             <td className="px-5 py-4 text-sm text-gray-400">#{room.id}</td>
                                             <td className="px-5 py-4 text-sm font-medium text-gray-800">{room.roomNumber || '-'}</td>
                                             <td className="px-5 py-4 text-sm text-gray-700">{room.roomType}</td>
@@ -167,7 +167,7 @@ const ExistingRoom = () => {
                                 <button
                                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
-                                    className="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                                    className="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-[#f8f5ee] disabled:opacity-40 transition-colors"
                                 >
                                     <i className="bi bi-chevron-left" />
                                 </button>
@@ -175,7 +175,7 @@ const ExistingRoom = () => {
                                     <button
                                         key={p}
                                         onClick={() => setCurrentPage(p)}
-                                        className={`px-3 py-1.5 rounded-lg border transition-colors ${currentPage === p ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                        className={`px-3 py-1.5 rounded-lg border transition-colors ${currentPage === p ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 text-gray-600 hover:bg-[#f8f5ee]'}`}
                                     >
                                         {p}
                                     </button>
@@ -183,7 +183,7 @@ const ExistingRoom = () => {
                                 <button
                                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                                    className="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-[#f8f5ee] disabled:opacity-40 transition-colors"
                                 >
                                     <i className="bi bi-chevron-right" />
                                 </button>

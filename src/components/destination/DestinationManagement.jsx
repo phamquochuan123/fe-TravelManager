@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { resolveBase64Image } from '../../lib/utils'
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 import {
@@ -66,7 +67,7 @@ const DestinationManagement = () => {
     const openPhoto = (item) => {
         setPhotoItem(item)
         setPhotoFile(null)
-        setPhotoPreview(item.photo ? `data:image/jpeg;base64,${item.photo}` : null)
+        setPhotoPreview(item.photo ? resolveBase64Image(item.photo, '') : null)
         setView("photo")
     }
 
@@ -159,9 +160,9 @@ const DestinationManagement = () => {
                     <h2 className="text-xl font-bold text-gray-900">Ảnh đại diện: {photoItem?.name}</h2>
                 </div>
                 <form onSubmit={handleUploadPhoto} className="max-w-md">
-                    <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-gray-200 rounded-2xl p-8 cursor-pointer hover:border-sky-400 hover:bg-sky-50/20 transition-all mb-4">
+                    <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-gray-200 rounded p-8 cursor-pointer hover:border-sky-400 hover:bg-sky-50/20 transition-all mb-4">
                         {photoPreview ? (
-                            <img src={photoPreview} alt="" className="w-full max-h-64 object-cover rounded-xl" />
+                            <img src={photoPreview} alt="" className="w-full max-h-64 object-cover rounded" />
                         ) : (
                             <><i className="bi bi-cloud-upload text-4xl text-gray-400" /><span className="text-sm text-gray-500">Chọn ảnh PNG/JPG</span></>
                         )}
@@ -172,10 +173,10 @@ const DestinationManagement = () => {
                     </label>
                     <div className="flex gap-3">
                         <button type="submit" disabled={uploadingPhoto || !photoFile}
-                            className="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-60 text-sm">
+                            className="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded flex items-center gap-2 disabled:opacity-60 text-sm">
                             {uploadingPhoto ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang tải...</> : <><i className="bi bi-upload" /> Lưu ảnh</>}
                         </button>
-                        <button type="button" onClick={() => setView("list")} className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm">Huỷ</button>
+                        <button type="button" onClick={() => setView("list")} className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded text-sm">Huỷ</button>
                     </div>
                 </form>
             </div>
@@ -194,34 +195,34 @@ const DestinationManagement = () => {
                         {view === "add" ? "Thêm địa điểm mới" : `Chỉnh sửa: ${editingItem?.name}`}
                     </h2>
                 </div>
-                <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 p-6 max-w-3xl space-y-4">
+                <form onSubmit={handleSubmit} className="bg-white rounded border border-gray-100 p-6 max-w-3xl space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Tên địa điểm *</label>
                             <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                                placeholder="Vịnh Hạ Long, Phố Cổ Hội An..." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                                placeholder="Vịnh Hạ Long, Phố Cổ Hội An..." className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Loại địa điểm</label>
                             <select value={form.destinationType} onChange={e => setForm(f => ({ ...f, destinationType: e.target.value }))}
-                                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
                                 {Object.entries(TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                             </select>
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Thành phố</label>
                             <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                                placeholder="Hội An, Đà Lạt..." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                                placeholder="Hội An, Đà Lạt..." className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Tỉnh / Vùng</label>
                             <input value={form.province} onChange={e => setForm(f => ({ ...f, province: e.target.value }))}
-                                placeholder="Quảng Nam, Lâm Đồng..." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                                placeholder="Quảng Nam, Lâm Đồng..." className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
                         </div>
                         <div className="md:col-span-2">
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Mô tả</label>
                             <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                                rows={4} placeholder="Khám phá vẻ đẹp thiên nhiên..." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
+                                rows={4} placeholder="Khám phá vẻ đẹp thiên nhiên..." className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
                         </div>
                         <div className="md:col-span-2 flex items-center gap-3">
                             <input type="checkbox" id="destActive" checked={form.isActive}
@@ -232,10 +233,10 @@ const DestinationManagement = () => {
                     </div>
                     <div className="flex gap-3 pt-2">
                         <button type="submit" disabled={saving}
-                            className="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-60 text-sm">
+                            className="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded flex items-center gap-2 disabled:opacity-60 text-sm">
                             {saving ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang lưu...</> : "Lưu"}
                         </button>
-                        <button type="button" onClick={() => setView("list")} className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm">Huỷ</button>
+                        <button type="button" onClick={() => setView("list")} className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded text-sm">Huỷ</button>
                     </div>
                 </form>
             </div>
@@ -249,10 +250,10 @@ const DestinationManagement = () => {
                 <div className="relative flex-1">
                     <i className="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm địa điểm..."
-                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
                 </div>
                 <button onClick={openAdd}
-                    className="flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm shrink-0">
+                    className="flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold px-5 py-2.5 rounded text-sm shrink-0">
                     <i className="bi bi-plus-circle" /> Thêm địa điểm
                 </button>
             </div>
@@ -261,9 +262,9 @@ const DestinationManagement = () => {
                 {[
                     { label: "Tổng", value: destinations.length, icon: "bi-geo-alt", color: "text-sky-600 bg-sky-50" },
                     { label: "Hiển thị", value: destinations.filter(d => d.active !== false).length, icon: "bi-eye", color: "text-emerald-600 bg-emerald-50" },
-                    { label: "Đã ẩn", value: destinations.filter(d => d.active === false).length, icon: "bi-eye-slash", color: "text-gray-500 bg-gray-50" },
+                    { label: "Đã ẩn", value: destinations.filter(d => d.active === false).length, icon: "bi-eye-slash", color: "text-gray-500 bg-[#f8f5ee]" },
                 ].map(s => (
-                    <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 flex items-center gap-3">
+                    <div key={s.label} className="bg-white rounded border border-gray-100 p-3 flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.color}`}><i className={`bi ${s.icon}`} /></div>
                         <div><p className="text-lg font-black text-gray-900">{s.value}</p><p className="text-xs text-gray-500">{s.label}</p></div>
                     </div>
@@ -273,14 +274,14 @@ const DestinationManagement = () => {
             {loading ? (
                 <div className="flex justify-center py-16"><span className="w-8 h-8 border-2 border-sky-500/30 border-t-sky-500 rounded-full animate-spin" /></div>
             ) : filtered.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+                <div className="text-center py-16 bg-white rounded border border-gray-100">
                     <i className="bi bi-geo-alt text-4xl text-gray-300 block mb-2" /><p className="text-gray-500">Không tìm thấy địa điểm</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            <thead className="bg-[#f8f5ee] text-xs font-bold text-gray-500 uppercase tracking-wider">
                                 <tr>
                                     <th className="px-5 py-3 text-left">Địa điểm</th>
                                     <th className="px-5 py-3 text-left">Loại</th>
@@ -292,11 +293,11 @@ const DestinationManagement = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filtered.map(item => (
-                                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={item.id} className="hover:bg-[#f8f5ee] transition-colors">
                                         <td className="px-5 py-4">
                                             <div className="flex items-center gap-3">
                                                 {item.photo ? (
-                                                    <img src={`data:image/jpeg;base64,${item.photo}`} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                                                    <img src={resolveBase64Image(item.photo, '')} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
                                                 ) : (
                                                     <div className="w-10 h-10 rounded-lg bg-sky-50 flex items-center justify-center shrink-0">
                                                         <i className={`bi ${TYPE_ICON[item.destinationType] || "bi-geo-alt"} text-sky-400`} />

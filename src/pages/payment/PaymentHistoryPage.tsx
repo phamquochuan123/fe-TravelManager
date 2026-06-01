@@ -34,7 +34,7 @@ const STATUS_CONFIG: Record<PaymentStatus, { label: string; icon: React.ElementT
   SUCCESS:  { label: 'Thành công', icon: CheckCircle, cls: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
   PENDING:  { label: 'Đang xử lý', icon: Clock,       cls: 'text-amber-600  bg-amber-50  border-amber-200'   },
   FAILED:   { label: 'Thất bại',   icon: XCircle,     cls: 'text-red-600    bg-red-50    border-red-200'     },
-  REFUNDED: { label: 'Hoàn tiền',  icon: RotateCcw,   cls: 'text-gray-600   bg-gray-50   border-gray-200'   },
+  REFUNDED: { label: 'Hoàn tiền',  icon: RotateCcw,   cls: 'text-gray-600   bg-[#f8f5ee]   border-gray-200'   },
 }
 
 function StatusBadge({ status }: { status: PaymentStatus }) {
@@ -76,7 +76,7 @@ export default function PaymentHistoryPage() {
   const goTo = (pg: number) => setSearchParams({ page: String(pg) })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f8f5ee]">
       <Navbar />
 
       <div className="max-w-5xl mx-auto px-4 py-10">
@@ -90,7 +90,7 @@ export default function PaymentHistoryPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+        <div className="bg-white rounded border border-border shadow-sm overflow-hidden">
           {isLoading ? (
             <div className="p-6 space-y-3">
               {Array.from({ length: 6 }).map((_, i) => (
