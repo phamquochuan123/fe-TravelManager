@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { resolveBase64Image } from '@/lib/utils'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -501,6 +501,13 @@ const ToursPage = () => {
   const [sort,     setSort]     = useState('newest')
   const [page,     setPage]     = useState(1)
   const [sideOpen, setSideOpen] = useState(false)
+  const gridRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!gridRef.current) return
+    const top = gridRef.current.getBoundingClientRect().top + window.scrollY - 80
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
+  }, [page])
 
   const { data: allTours = [], isLoading, isError, refetch } = useQuery<Tour[]>({
     queryKey: ['tours'],
@@ -588,8 +595,7 @@ const ToursPage = () => {
             className="text-white/75 text-xl font-semibold mb-12"
             style={{ textShadow: '0 1px 12px rgba(0,0,0,0.5)' }}
           >
-            <span className="text-white font-black text-2xl">{allTours.length}</span>
-            {'  '}tour hấp dẫn đang chờ bạn
+            Tour hấp dẫn đang chờ bạn
           </p>
 
           {/* Pill search — exact template pattern */}
@@ -675,6 +681,7 @@ const ToursPage = () => {
             )}
 
             {/* Grid */}
+            <div ref={gridRef} />
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {Array.from({ length: 6 }).map((_, i) => <TourCardSkeleton key={i} />)}

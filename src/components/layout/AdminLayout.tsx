@@ -137,6 +137,7 @@ const AdminLayout = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [isDesktop,         setIsDesktop]         = useState(() => window.innerWidth >= 1024)
   const [searchFocused,     setSearchFocused]     = useState(false)
+  const [notifOpen,         setNotifOpen]         = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
 
   const navigate = useNavigate()
@@ -423,7 +424,7 @@ const AdminLayout = () => {
             <div className="flex items-center gap-2 shrink-0">
 
               {/* Bell popover */}
-              <Popover>
+              <Popover open={notifOpen} onOpenChange={setNotifOpen}>
                 <PopoverTrigger asChild>
                   <button className="relative w-9 h-9 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 transition-colors">
                     <Bell size={18} />
@@ -442,7 +443,7 @@ const AdminLayout = () => {
                     <div className="space-y-2">
                       {badges.tourPending > 0 && (
                         <button
-                          onClick={() => navigate('/admin/orders/tours')}
+                          onClick={() => { setNotifOpen(false); navigate('/admin/orders/tours') }}
                           className="w-full flex items-center gap-3 p-2.5 rounded text-left bg-orange-50 hover:bg-orange-100 transition-colors"
                         >
                           <div className="w-8 h-8 rounded-lg bg-orange-200 flex items-center justify-center shrink-0">
@@ -456,7 +457,7 @@ const AdminLayout = () => {
                       )}
                       {badges.restPending > 0 && (
                         <button
-                          onClick={() => navigate('/admin/orders/restaurants')}
+                          onClick={() => { setNotifOpen(false); navigate('/admin/orders/restaurants') }}
                           className="w-full flex items-center gap-3 p-2.5 rounded text-left bg-blue-50 hover:bg-blue-100 transition-colors"
                         >
                           <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
@@ -470,7 +471,7 @@ const AdminLayout = () => {
                       )}
                       {openIncidents > 0 && (
                         <button
-                          onClick={() => navigate('/admin/incidents')}
+                          onClick={() => { setNotifOpen(false); navigate('/admin/incidents') }}
                           className="w-full flex items-center gap-3 p-2.5 rounded text-left bg-red-50 hover:bg-red-100 transition-colors"
                         >
                           <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">

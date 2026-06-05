@@ -85,3 +85,13 @@ export const deleteCoupon = (id) =>
 
 export const validateCoupon = (code, orderValue) =>
     axiosInstance.post("/tour-coupons/validate", { code, orderValue }).then(r => r.data)
+
+// Favorites
+export const toggleTourFavorite = (tourId) =>
+    axiosInstance.post(`/tours/${tourId}/favorite`).then(r => r.data)
+
+export const isTourFavorited = (tourId) =>
+    axiosInstance.get(`/tours/${tourId}/favorite`).then(r => r.data)
+
+export const getMyFavoriteTours = () =>
+    axiosInstance.get('/tours/my-favorites').then(r => r.data)

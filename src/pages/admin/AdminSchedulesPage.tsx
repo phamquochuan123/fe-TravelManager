@@ -103,7 +103,7 @@ function TourCombobox({ selected, onSelect }: {
         <Input
           value={q}
           onChange={e => setQ(e.target.value)}
-          onFocus={() => setOpen(true)}
+          onClick={() => setOpen(true)}
           placeholder="Tìm và chọn tour..."
           className="pl-9 text-sm"
         />
@@ -162,7 +162,8 @@ function StaffCombobox({ value, onSelect }: {
   }
 
   useEffect(() => {
-    const id = setTimeout(() => fetchStaff(q), q.trim() ? 300 : 0)
+    if (!q.trim()) return
+    const id = setTimeout(() => fetchStaff(q), 300)
     return () => clearTimeout(id)
   }, [q])
 
@@ -181,7 +182,7 @@ function StaffCombobox({ value, onSelect }: {
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <Input value={q} onChange={e => setQ(e.target.value)}
-            onFocus={() => fetchStaff(q)}
+            onClick={() => fetchStaff(q)}
             placeholder="Tìm nhân viên..." className="pl-9 text-sm" />
         </div>
       )}
@@ -209,11 +210,12 @@ function StaffCombobox({ value, onSelect }: {
 
 function ScheduleDialog({ open, onOpenChange, schedule, tourId, onSuccess }: {
   open: boolean; onOpenChange: (v: boolean) => void
-  schedule: Schedule | null; tourId: number; onSuccess: () => void
+  schedule: Schedule | null; tourId: number | null; onSuccess: () => void
 }) {
   const isEdit = !!schedule
   const [form, setForm] = useState<SchedForm>(INIT_FORM)
   const [staff, setStaff] = useState<StaffOption | null>(null)
+  const [dialogTour, setDialogTour] = useState<TourOption | null>(null)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -227,18 +229,21 @@ function ScheduleDialog({ open, onOpenChange, schedule, tourId, onSuccess }: {
       })
       setStaff(schedule.staffId ? { id: schedule.staffId, name: schedule.staffName ?? '', avatar: schedule.staffAvatar } : null)
     } else {
-      setForm(INIT_FORM); setStaff(null)
+      setForm(INIT_FORM); setStaff(null); setDialogTour(null)
     }
   }, [open, schedule])
 
   const set = <K extends keyof SchedForm>(k: K, v: string) => setForm(p => ({ ...p, [k]: v }))
 
+  const effectiveTourId = tourId ?? dialogTour?.id ?? null
+
   const submit = async () => {
+    if (!effectiveTourId) { toast.error('Vui lòng chọn tour'); return }
     if (!form.departureDate) { toast.error('Chọn ngày khởi hành'); return }
     setBusy(true)
     try {
       const body = {
-        tourId,
+        tourId: effectiveTourId,
         departureDate: form.departureDate,
         maxSlots: parseInt(form.maxSlots) || 1,
         staffId: staff?.id ?? null,
@@ -260,6 +265,12 @@ function ScheduleDialog({ open, onOpenChange, schedule, tourId, onSuccess }: {
           <DialogTitle>{isEdit ? 'Sửa lịch khởi hành' : 'Thêm lịch khởi hành'}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
+          {!tourId && !isEdit && (
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">Tour <span className="text-red-500">*</span></Label>
+              <TourCombobox selected={dialogTour} onSelect={setDialogTour} />
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">Ngày khởi hành <span className="text-red-500">*</span></Label>
             <Input type="date" value={form.departureDate} onChange={e => set('departureDate', e.target.value)}
@@ -346,7 +357,6 @@ export default function AdminSchedulesPage() {
             <p className="text-sm text-gray-400 mt-0.5">Quản lý lịch khởi hành theo tour</p>
           </div>
           <Button onClick={() => { setEditSchedule(null); setDialogOpen(true) }}
-            disabled={!selectedTour}
             className="text-white rounded font-semibold gap-2 bg-primary">
             <Plus size={16} /> Thêm lịch
           </Button>
@@ -484,10 +494,8 @@ export default function AdminSchedulesPage() {
           </div>
         )}
 
-        {selectedTour && (
-          <ScheduleDialog open={dialogOpen} onOpenChange={setDialogOpen}
-            schedule={editSchedule} tourId={selectedTour.id} onSuccess={inv} />
-        )}
+        <ScheduleDialog open={dialogOpen} onOpenChange={setDialogOpen}
+          schedule={editSchedule} tourId={selectedTour?.id ?? null} onSuccess={inv} />
 
         <ConfirmDialog
           open={!!deleteTarget} onOpenChange={v => { if (!v) setDeleteTarget(null) }}

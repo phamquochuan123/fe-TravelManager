@@ -19,14 +19,13 @@ import Footer from '../../components/layout/Footer'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ApiTourImage { id: number; photo: string }
 interface ApiTour {
   id: number
   name: string
   destination?: string
   durationDays?: number
   priceAdult?: number
-  images?: ApiTourImage[]
+  images?: string[]
   rating?: number
   availableSlots?: number
 }
@@ -106,8 +105,8 @@ const Stars = ({ n, max = 5 }: { n: number; max?: number }) => (
 const fmtPrice = (p: number): string => `${p.toLocaleString('vi-VN')}₫`
 
 const tourImageSrc = (tour: ApiTour): string | null => {
-  if (!tour.images?.length || !tour.images[0].photo) return null
-  return resolveBase64Image(tour.images[0].photo, '')
+  if (!tour.images?.length || !tour.images[0]) return null
+  return resolveBase64Image(tour.images[0], '')
 }
 
 const destImageSrc = (dest: ApiDestination): string | null => {

@@ -186,39 +186,141 @@ export default function AdminReportsPage() {
   })
 
   const handleExportPdf = useCallback(async () => {
+    if (!data) return
     setExportingPdf(true)
     try {
-      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-        import('jspdf'),
-        import('html2canvas')
-      ])
-      if (!reportRef.current) return
-      const canvas = await html2canvas(reportRef.current, { scale: 1.5, useCORS: true })
-      const imgData = canvas.toDataURL('image/png')
+      const jsPDFMod = await import('jspdf')
+      const jsPDF = jsPDFMod.default ?? (jsPDFMod as any).jsPDF
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const pageW = pdf.internal.pageSize.getWidth()
-      const pageH = pdf.internal.pageSize.getHeight()
-      const ratio = canvas.width / canvas.height
-      const imgW = pageW - 20
-      const imgH = imgW / ratio
-      let y = 10
-      let heightLeft = imgH
-      pdf.addImage(imgData, 'PNG', 10, y, imgW, imgH)
-      heightLeft -= pageH - 20
-      while (heightLeft > 0) {
-        y = heightLeft - imgH + 10
-        pdf.addPage()
-        pdf.addImage(imgData, 'PNG', 10, y, imgW, imgH)
-        heightLeft -= pageH - 20
+      const W = 210; const M = 14; const CW = W - M * 2
+      let y = 0
+
+      const fmtMoney = (n: number) =>
+        n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)} Tr đ` : `${n.toLocaleString('vi-VN')} đ`
+
+      // ── Header ──────────────────────────────────────────────────────
+      pdf.setFillColor(10, 22, 40)
+      pdf.rect(0, 0, W, 28, 'F')
+      pdf.setTextColor(255, 255, 255)
+      pdf.setFontSize(16); pdf.setFont('helvetica', 'bold')
+      pdf.text('BAO CAO HIEU SUAT KINH DOANH', M, 12)
+      pdf.setFontSize(9); pdf.setFont('helvetica', 'normal')
+      pdf.text(`Tu ${from}  den  ${to}`, M, 20)
+      pdf.text(`Xuat luc: ${dayjs().format('DD/MM/YYYY HH:mm')}`, W - M, 20, { align: 'right' })
+      y = 36
+
+      // ── KPI cards ───────────────────────────────────────────────────
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(10, 22, 40)
+      pdf.text('TONG QUAN', M, y); y += 5
+
+      const kpis = [
+        { label: 'Tong doanh thu', value: fmtMoney(data.kpi.totalRevenue) },
+        { label: 'Tong don dat',   value: String(data.kpi.totalOrders) },
+        { label: 'Khach hang moi', value: String(data.kpi.totalCustomers) },
+        { label: 'Gia tri TB/don', value: fmtMoney(data.kpi.avgOrderValue) },
+      ]
+      const cardW = CW / 2 - 3
+      kpis.forEach((k, i) => {
+        const x = M + (i % 2) * (cardW + 6)
+        const ky = y + Math.floor(i / 2) * 22
+        pdf.setFillColor(245, 247, 250)
+        pdf.roundedRect(x, ky, cardW, 18, 2, 2, 'F')
+        pdf.setFontSize(8); pdf.setFont('helvetica', 'normal'); pdf.setTextColor(100, 100, 100)
+        pdf.text(k.label, x + 4, ky + 6)
+        pdf.setFontSize(13); pdf.setFont('helvetica', 'bold'); pdf.setTextColor(10, 22, 40)
+        pdf.text(k.value, x + 4, ky + 14)
+      })
+      y += 48
+
+      // ── Top Tours ───────────────────────────────────────────────────
+      if (data.topTours?.length) {
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(10, 22, 40)
+        pdf.text('TOP TOUR NOI BAT', M, y); y += 6
+        pdf.setFillColor(10, 22, 40)
+        pdf.rect(M, y, CW, 7, 'F')
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(8); pdf.setFont('helvetica', 'bold')
+        pdf.text('Ten tour', M + 3, y + 5)
+        pdf.text('Don dat', M + 110, y + 5)
+        pdf.text('Doanh thu', M + 135, y + 5)
+        y += 7
+        data.topTours.slice(0, 8).forEach((t, i) => {
+          pdf.setFillColor(i % 2 === 0 ? 255 : 248, i % 2 === 0 ? 255 : 248, i % 2 === 0 ? 255 : 248)
+          pdf.rect(M, y, CW, 7, 'F')
+          pdf.setTextColor(40, 40, 40); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8)
+          const name = t.name.length > 45 ? t.name.slice(0, 44) + '…' : t.name
+          pdf.text(name, M + 3, y + 5)
+          pdf.text(String(t.bookings), M + 113, y + 5)
+          pdf.text(fmtMoney(t.revenue), M + 138, y + 5)
+          y += 7
+        })
+        y += 6
       }
+
+      // ── Top Customers ───────────────────────────────────────────────
+      if (data.topCustomers?.length) {
+        if (y > 230) { pdf.addPage(); y = 20 }
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(10, 22, 40)
+        pdf.text('TOP KHACH HANG', M, y); y += 6
+        pdf.setFillColor(10, 22, 40)
+        pdf.rect(M, y, CW, 7, 'F')
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(8); pdf.setFont('helvetica', 'bold')
+        pdf.text('Ten khach hang', M + 3, y + 5)
+        pdf.text('So don', M + 110, y + 5)
+        pdf.text('Tong chi tieu', M + 135, y + 5)
+        y += 7
+        data.topCustomers.slice(0, 8).forEach((c, i) => {
+          pdf.setFillColor(i % 2 === 0 ? 255 : 248, i % 2 === 0 ? 255 : 248, i % 2 === 0 ? 255 : 248)
+          pdf.rect(M, y, CW, 7, 'F')
+          pdf.setTextColor(40, 40, 40); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8)
+          pdf.text(c.name ?? '', M + 3, y + 5)
+          pdf.text(String(c.bookings), M + 113, y + 5)
+          pdf.text(fmtMoney(c.totalSpent), M + 138, y + 5)
+          y += 7
+        })
+        y += 6
+      }
+
+      // ── Revenue timeline summary ─────────────────────────────────────
+      if (data.revenueTimeline?.length && y < 240) {
+        if (y > 220) { pdf.addPage(); y = 20 }
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(10, 22, 40)
+        pdf.text('DOANH THU THEO NGAY (5 NGAY GAN NHAT)', M, y); y += 6
+        const recent = data.revenueTimeline.slice(-5)
+        pdf.setFillColor(10, 22, 40)
+        pdf.rect(M, y, CW, 7, 'F')
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(8); pdf.setFont('helvetica', 'bold')
+        pdf.text('Ngay', M + 3, y + 5); pdf.text('Tour', M + 55, y + 5)
+        pdf.text('Khach san', M + 95, y + 5); pdf.text('Nha hang', M + 135, y + 5)
+        y += 7
+        recent.forEach((r, i) => {
+          pdf.setFillColor(i % 2 === 0 ? 255 : 248, i % 2 === 0 ? 255 : 248, i % 2 === 0 ? 255 : 248)
+          pdf.rect(M, y, CW, 7, 'F')
+          pdf.setTextColor(40, 40, 40); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8)
+          pdf.text(r.date, M + 3, y + 5)
+          pdf.text(fmtMoney(r.tours), M + 55, y + 5)
+          pdf.text(fmtMoney(r.hotels), M + 95, y + 5)
+          pdf.text(fmtMoney(r.restaurants), M + 135, y + 5)
+          y += 7
+        })
+      }
+
+      // ── Footer ──────────────────────────────────────────────────────
+      const totalPages = (pdf as any).internal.getNumberOfPages()
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i)
+        pdf.setFontSize(7); pdf.setTextColor(150, 150, 150); pdf.setFont('helvetica', 'normal')
+        pdf.text(`TravelVN - Bao cao tu dong  |  Trang ${i}/${totalPages}`, W / 2, 292, { align: 'center' })
+      }
+
       pdf.save(`bao-cao-${from}-${to}.pdf`)
       toast.success('Đã xuất PDF')
-    } catch {
+    } catch (e) {
+      console.error('[PDF Export]', e)
       toast.error('Xuất PDF thất bại')
     } finally {
       setExportingPdf(false)
     }
-  }, [from, to])
+  }, [data, from, to])
 
   const handleExportXlsx = useCallback(async () => {
     if (!data) return

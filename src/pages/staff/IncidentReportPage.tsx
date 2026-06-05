@@ -469,8 +469,7 @@ const IncidentReportPage = () => {
             <button
               type="submit"
               disabled={submitMutation.isPending}
-              className="w-full py-3 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              className="bg-accent"
+              className="w-full py-3 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 bg-accent"
             >
               {submitMutation.isPending ? (
                 <>

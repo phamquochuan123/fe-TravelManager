@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
@@ -8,13 +8,14 @@ import DatePicker from 'react-datepicker'
 import dayjs from 'dayjs'
 import 'react-datepicker/dist/react-datepicker.css'
 import {
-  ArrowLeft, MapPin, Clock, Users, Star,
+  ArrowLeft, MapPin, Clock, Users, Star, Heart,
   ChevronLeft, ChevronRight, X, ImageIcon, Phone,
   CalendarDays, MessageSquare, UtensilsCrossed, Flame, Sparkles,
   Loader2, CheckCircle2, CalendarX,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/api/axiosInstance'
+import { toggleRestaurantFavorite, isRestaurantFavorited } from '@/api/restaurantApi'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -368,6 +369,29 @@ function BookingSidebar({ restaurant }: { restaurant: Restaurant }) {
   const navigate = useNavigate()
   const user = useAuthStore(s => s.user)
 
+  const [liked,   setLiked]   = useState(false)
+  const favLoadingRef         = useRef(false)
+
+  useEffect(() => {
+    if (!user || !restaurant?.id) return
+    isRestaurantFavorited(restaurant.id).then((res: { favorited: boolean }) => setLiked(res.favorited)).catch(() => {})
+  }, [user, restaurant?.id])
+
+  const toggleLiked = useCallback(async () => {
+    if (!user) { toast.error('Vui lòng đăng nhập để lưu yêu thích'); return }
+    if (favLoadingRef.current) return
+    favLoadingRef.current = true
+    try {
+      const res: { favorited: boolean } = await toggleRestaurantFavorite(restaurant.id)
+      setLiked(res.favorited)
+      toast.success(res.favorited ? 'Đã thêm vào yêu thích' : 'Đã bỏ yêu thích')
+    } catch {
+      toast.error('Có lỗi xảy ra, vui lòng thử lại')
+    } finally {
+      favLoadingRef.current = false
+    }
+  }, [user, restaurant.id])
+
   const [pickedDate, setPickedDate] = useState<Date | null>(new Date())
   const today = toDateStr(new Date())
 
@@ -448,7 +472,18 @@ function BookingSidebar({ restaurant }: { restaurant: Restaurant }) {
 
   return (
     <div className="bg-white rounded shadow-md border border-border p-6 sticky top-24">
-      <h3 className="font-bold text-xl mb-4">Đặt bàn</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-bold text-xl">Đặt bàn</h3>
+        <button
+          onClick={toggleLiked}
+          disabled={false}
+          title={liked ? 'Bỏ yêu thích' : 'Yêu thích'}
+          className={`w-9 h-9 flex items-center justify-center rounded-full border-2 transition-all hover:scale-110 active:scale-95 ${
+            liked ? 'border-red-400 text-red-500 bg-red-50' : 'border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400'
+          }`}>
+          <Heart size={16} className={liked ? 'fill-red-500' : ''} />
+        </button>
+      </div>
       <Separator className="mb-4" />
 
       <Form {...form}>

@@ -57,7 +57,16 @@ interface RestaurantForm {
   menuCategories: MenuCategory[]
 }
 
-const CUISINE_TYPES = ['Việt Nam', 'Châu Á', 'Châu Âu', 'Nhật Bản', 'Hàn Quốc', 'Hải sản', 'Chay', 'Buffet', 'Khác']
+const CUISINE_TYPES: Array<{ value: string; label: string }> = [
+  { value: 'VIETNAMESE', label: 'Việt Nam' },
+  { value: 'ASIAN',      label: 'Châu Á' },
+  { value: 'WESTERN',    label: 'Châu Âu / Âu Mỹ' },
+  { value: 'SEAFOOD',    label: 'Hải sản' },
+  { value: 'BBQ',        label: 'BBQ' },
+  { value: 'VEGETARIAN', label: 'Chay' },
+  { value: 'FUSION',     label: 'Fusion' },
+  { value: 'OTHER',      label: 'Khác' },
+]
 const MENU_CATS = ['Khai vị', 'Món chính', 'Tráng miệng', 'Đồ uống']
 const PLACEHOLDER = 'https://placehold.co/56x56/e2e8f0/94a3b8?text=Res'
 
@@ -110,8 +119,7 @@ function MultiImageUpload({ previews, onChange }: {
           {previews.map((src, i) => (
             <div key={i} className="relative group aspect-square rounded overflow-hidden border border-gray-100">
               <img src={src} alt="" className="w-full h-full object-cover" />
-              {i === 0 && <span className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                className="bg-accent">Chính</span>}
+              {i === 0 && <span className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white bg-accent">Chính</span>}
               <button type="button" onClick={e => { e.stopPropagation(); remove(i) }}
                 className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <X size={10} />
@@ -240,7 +248,7 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
                   <Select value={form.cuisineType} onValueChange={v => set('cuisineType', v)}>
                     <SelectTrigger><SelectValue placeholder="Chọn..." /></SelectTrigger>
                     <SelectContent>
-                      {CUISINE_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      {CUISINE_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -335,7 +343,7 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
         </Tabs>
         <div className="px-6 py-4 border-t shrink-0 flex justify-end gap-3">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Hủy</Button>
-          <Button onClick={submit} disabled={busy} className="text-white" className="bg-primary">
+          <Button onClick={submit} disabled={busy} className="text-white bg-primary">
             {busy && <Loader2 size={14} className="mr-1.5 animate-spin" />}
             {isEdit ? 'Cập nhật' : 'Thêm nhà hàng'}
           </Button>
@@ -394,7 +402,7 @@ export default function AdminRestaurantsPage() {
           <h1 className="text-2xl font-black text-gray-900">Quản lý Nhà hàng</h1>
         </div>
         <Button onClick={() => { setEditRest(null); setSheetOpen(true) }}
-          className="text-white rounded font-semibold gap-2" className="bg-primary">
+          className="text-white rounded font-semibold gap-2 bg-primary">
           <Plus size={16} /> Thêm nhà hàng
         </Button>
       </div>
@@ -409,7 +417,7 @@ export default function AdminRestaurantsPage() {
           <SelectTrigger className="w-40 text-sm"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả ẩm thực</SelectItem>
-            {CUISINE_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+            {CUISINE_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>

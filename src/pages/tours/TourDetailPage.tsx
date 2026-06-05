@@ -1,7 +1,8 @@
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import api from '../../api/axiosInstance'
 import { resolveBase64Image } from '@/lib/utils'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueries } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   MdLocationOn, MdAccessTime, MdPeople, MdStar, MdStarBorder,
@@ -10,7 +11,7 @@ import {
   MdRateReview, MdCheckCircle, MdPerson, MdChildCare,
   MdKeyboardArrowLeft, MdKeyboardArrowRight,
 } from 'react-icons/md'
-import { getTourById, getTourReviews } from '../../api/tourApi'
+import { getTourById, getTourReviews, toggleTourFavorite, isTourFavorited } from '../../api/tourApi'
 import { AppContext } from '../../context/AppContext'
 import { Skeleton } from '../../components/ui/skeleton'
 import Navbar from '../../components/layout/Navbar'
@@ -26,7 +27,7 @@ interface Itinerary {
 }
 interface TourReview {
   id: number; userName: string; rating: number
-  comment?: string; createdAt: string
+  comment?: string; adminReply?: string; createdAt: string
 }
 interface TourDetail {
   id: number
@@ -46,6 +47,24 @@ interface TourDetail {
   departures?: Departure[]
   includedServices?: string
   cancellationPolicy?: string
+  linkedHotels?: number[]
+  linkedRestaurants?: number[]
+  linkedDestinations?: number[]
+}
+
+interface LinkedDestination {
+  id: number; name: string; description?: string
+  city?: string; province?: string
+  destinationType?: string; photo?: string
+}
+
+interface LinkedHotel {
+  id: number; name: string; description?: string
+  address?: string; city?: string; starRating?: number; photo?: string
+}
+interface LinkedRestaurant {
+  id: number; name: string; description?: string
+  address?: string; city?: string; capacity?: number; cuisineType?: string; photo?: string
 }
 
 const TOUR_TYPE: Record<string, { label: string; bg: string; color: string }> = {
@@ -106,20 +125,20 @@ const ImageGallery = ({ images, name, tourId }: { images: TourImage[]; name: str
   return (
     <div className="overflow-hidden rounded-sm" style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.15)' }}>
       {/* Main image */}
-      <div className="relative overflow-hidden group" style={{ height: 'clamp(280px, 50vh, 520px)' }}>
+      <div className="relative overflow-hidden group">
         {current ? (
           <img
             src={resolveBase64Image(current.photo, '')}
             alt={name}
             key={idx}
-            className="w-full h-full object-cover transition-opacity duration-300"
+            className="w-full h-auto block transition-opacity duration-300"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+          <div className="w-full">
             <img
               src={`https://picsum.photos/seed/tour-${tourId}/1200/600`}
               alt={name}
-              className="w-full h-full object-cover"
+              className="w-full h-auto block"
             />
           </div>
         )}
@@ -169,13 +188,13 @@ const ImageGallery = ({ images, name, tourId }: { images: TourImage[]; name: str
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
-type TabKey = 'itinerary' | 'includes' | 'hotels' | 'restaurants' | 'reviews'
+type TabKey = 'itinerary' | 'includes' | 'hotels' | 'restaurants' | 'destinations' | 'reviews'
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: 'itinerary',   label: 'Lịch trình',  icon: <MdCalendarMonth size={16} /> },
-  { key: 'hotels',      label: 'Khách sạn',   icon: <MdHotel size={16} /> },
-  { key: 'restaurants', label: 'Nhà hàng',    icon: <MdRestaurant size={16} /> },
-  { key: 'reviews',     label: 'Đánh giá',    icon: <MdRateReview size={16} /> },
+  { key: 'itinerary',    label: 'Lịch trình',  icon: <MdCalendarMonth size={16} /> },
+  { key: 'hotels',       label: 'Khách sạn',   icon: <MdHotel size={16} /> },
+  { key: 'restaurants',  label: 'Nhà hàng',    icon: <MdRestaurant size={16} /> },
+  { key: 'reviews',      label: 'Đánh giá',    icon: <MdRateReview size={16} /> },
 ]
 
 const ItineraryTab = ({ itineraries }: { itineraries: Itinerary[] }) => {
@@ -204,10 +223,14 @@ const ItineraryTab = ({ itineraries }: { itineraries: Itinerary[] }) => {
               <p className="text-sm text-gray-500 leading-relaxed mb-3">{it.description}</p>
             )}
             {it.activities && (
-              <div className="flex items-start gap-2.5 px-4 py-2.5 rounded text-sm"
+              <div className="space-y-1.5 px-4 py-2.5 rounded text-sm"
                 style={{ background: 'rgba(10,22,40,0.06)', color: '#0a1628' }}>
-                <MdCheckCircle size={15} className="mt-0.5 shrink-0 text-[#0a1628]" />
-                <span>{it.activities}</span>
+                {it.activities.split('|').map((act, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5">
+                    <MdCheckCircle size={15} className="mt-0.5 shrink-0 text-[#0a1628]" />
+                    <span>{act.trim()}</span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -245,8 +268,262 @@ const ReviewCard = ({ r }: { r: TourReview }) => (
       <Stars n={r.rating} size={14} />
     </div>
     {r.comment && <p className="text-sm text-gray-500 leading-relaxed">{r.comment}</p>}
+    {r.adminReply && (
+      <div className="mt-3 rounded-lg px-4 py-3 border border-[#c9a84c]/20"
+        style={{ background: 'rgba(201,168,76,0.06)' }}>
+        <p className="text-xs font-bold mb-1" style={{ color: '#c9a84c' }}>
+          Phản hồi từ TravelVN
+        </p>
+        <p className="text-sm text-gray-600 leading-relaxed">{r.adminReply}</p>
+      </div>
+    )}
   </div>
 )
+
+// ─── LinkedHotelsTab / LinkedRestaurantsTab ───────────────────────────────────
+
+function resolvePhoto(photo: string | undefined, fallback: string): string {
+  if (!photo) return fallback
+  if (photo.startsWith('data:') || photo.startsWith('http')) return photo
+  return `data:image/jpeg;base64,${photo}`
+}
+
+function StarRow({ n }: { n: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <MdStar key={i} size={13} className={i < n ? 'text-[#c9a84c]' : 'text-gray-200'} />
+      ))}
+    </div>
+  )
+}
+
+function HotelCard({ h }: { h: LinkedHotel }) {
+  return (
+    <div className="rounded border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col">
+      <div className="relative h-36 overflow-hidden bg-gray-100 shrink-0">
+        <img
+          src={resolvePhoto(h.photo, `https://picsum.photos/seed/hotel-${h.id}/400/200`)}
+          alt={h.name}
+          className="w-full h-full object-cover"
+          onError={e => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/hotel-${h.id}/400/200` }}
+        />
+        {(h.starRating ?? 0) > 0 && (
+          <span className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white"
+            style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}>
+            <MdStar size={11} className="text-[#c9a84c]" /> {h.starRating} sao
+          </span>
+        )}
+      </div>
+      <div className="p-4 flex flex-col flex-1">
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <h4 className="font-bold text-gray-900 text-sm leading-snug">{h.name}</h4>
+          {(h.starRating ?? 0) > 0 && <StarRow n={h.starRating!} />}
+        </div>
+        {(h.city || h.address) && (
+          <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+            <MdLocationOn size={12} className="text-[#c9a84c]" />
+            {[h.city, h.address].filter(Boolean).join(' · ')}
+          </p>
+        )}
+        {h.description && (
+          <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-3">{h.description}</p>
+        )}
+        <div className="mt-auto pt-3 border-t border-gray-100">
+          <Link
+            to={`/hotels/${h.id}`}
+            className="flex items-center justify-center gap-1.5 w-full py-2 rounded text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #0a1628, #1a3a5c)' }}
+          >
+            <MdHotel size={15} /> Xem phòng &amp; Đặt ngay
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RestaurantCard({ r }: { r: LinkedRestaurant }) {
+  return (
+    <div className="rounded border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col">
+      <div className="relative h-36 overflow-hidden bg-gray-100 shrink-0">
+        <img
+          src={resolvePhoto(r.photo, `https://picsum.photos/seed/restaurant-${r.id}/400/200`)}
+          alt={r.name}
+          className="w-full h-full object-cover"
+          onError={e => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/restaurant-${r.id}/400/200` }}
+        />
+        {r.cuisineType && (
+          <span className="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold text-white"
+            style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}>
+            {r.cuisineType}
+          </span>
+        )}
+      </div>
+      <div className="p-4 flex flex-col flex-1">
+        <h4 className="font-bold text-gray-900 text-sm leading-snug mb-1.5">{r.name}</h4>
+        {(r.city || r.address) && (
+          <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+            <MdLocationOn size={12} className="text-[#c9a84c]" />
+            {[r.city, r.address].filter(Boolean).join(' · ')}
+          </p>
+        )}
+        {r.capacity && (
+          <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+            <MdPeople size={12} /> Sức chứa: {r.capacity} người
+          </p>
+        )}
+        {r.description && (
+          <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-3">{r.description}</p>
+        )}
+        <div className="mt-auto pt-3 border-t border-gray-100">
+          <Link
+            to={`/restaurants/${r.id}`}
+            className="flex items-center justify-center gap-1.5 w-full py-2 rounded text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #c9a84c, #b8960e)' }}
+          >
+            <MdRestaurant size={15} /> Xem menu &amp; Đặt bàn
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const CardSkeleton = () => (
+  <div className="rounded border border-gray-100 overflow-hidden animate-pulse">
+    <div className="h-36 bg-gray-100" />
+    <div className="p-4 space-y-2">
+      <div className="h-4 bg-gray-100 rounded w-3/4" />
+      <div className="h-3 bg-gray-100 rounded w-1/2" />
+      <div className="h-3 bg-gray-100 rounded w-full" />
+    </div>
+  </div>
+)
+
+function LinkedHotelsTab({ destination }: { destination: string }) {
+  const { data: hotels = [], isLoading } = useQuery({
+    queryKey: ['hotels-by-dest', destination],
+    queryFn: async (): Promise<LinkedHotel[]> =>
+      (await api.get('/hotels', { params: { destination } })).data,
+    staleTime: 5 * 60_000,
+  })
+
+  if (isLoading) return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {[1, 2].map(i => <CardSkeleton key={i} />)}
+    </div>
+  )
+  if (hotels.length === 0)
+    return <EmptyTab icon={<MdHotel size={32} />} text="Chưa có khách sạn tại điểm đến này" />
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-gray-400">{hotels.length} khách sạn trong hành trình này</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {hotels.map(h => <HotelCard key={h.id} h={h} />)}
+      </div>
+    </div>
+  )
+}
+
+function LinkedRestaurantsTab({ destination }: { destination: string }) {
+  const { data: restaurants = [], isLoading } = useQuery({
+    queryKey: ['restaurants-by-dest', destination],
+    queryFn: async (): Promise<LinkedRestaurant[]> =>
+      (await api.get('/restaurants', { params: { destination } })).data,
+    staleTime: 5 * 60_000,
+  })
+
+  if (isLoading) return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {[1, 2].map(i => <CardSkeleton key={i} />)}
+    </div>
+  )
+  if (restaurants.length === 0)
+    return <EmptyTab icon={<MdRestaurant size={32} />} text="Chưa có nhà hàng tại điểm đến này" />
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-gray-400">{restaurants.length} nhà hàng trong hành trình này</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {restaurants.map(r => <RestaurantCard key={r.id} r={r} />)}
+      </div>
+    </div>
+  )
+}
+
+function DestinationCard({ d }: { d: LinkedDestination }) {
+  return (
+    <div className="rounded border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col">
+      <div className="relative h-36 overflow-hidden bg-gray-100 shrink-0">
+        <img
+          src={resolvePhoto(d.photo, `https://picsum.photos/seed/dest-${d.id}/400/200`)}
+          alt={d.name}
+          className="w-full h-full object-cover"
+          onError={e => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/dest-${d.id}/400/200` }}
+        />
+        {d.destinationType && (
+          <span className="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold text-white"
+            style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}>
+            {d.destinationType}
+          </span>
+        )}
+      </div>
+      <div className="p-4 flex flex-col flex-1">
+        <h4 className="font-bold text-gray-900 text-sm leading-snug mb-1.5">{d.name}</h4>
+        {(d.city || d.province) && (
+          <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+            <MdLocationOn size={12} className="text-[#c9a84c]" />
+            {[d.city, d.province].filter(Boolean).join(', ')}
+          </p>
+        )}
+        {d.description && (
+          <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-3">{d.description}</p>
+        )}
+        <div className="mt-auto pt-3 border-t border-gray-100">
+          <Link
+            to={`/destinations/${d.id}`}
+            className="flex items-center justify-center gap-1.5 w-full py-2 rounded text-sm font-bold transition-all hover:opacity-90 active:scale-95"
+            style={{ background: 'rgba(10,22,40,0.07)', color: '#0a1628' }}
+          >
+            <MdLocationOn size={15} /> Khám phá địa điểm
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function LinkedDestinationsTab({ ids }: { ids: number[] }) {
+  const results = useQueries({
+    queries: ids.map(id => ({
+      queryKey: ['destination', id],
+      queryFn: async (): Promise<LinkedDestination> => (await api.get(`/destinations/${id}`)).data,
+      staleTime: 5 * 60_000,
+    })),
+  })
+
+  if (ids.length === 0)
+    return <EmptyTab icon={<MdLocationOn size={32} />} text="Chưa có địa điểm liên kết cho tour này" />
+
+  const loading = results.some(r => r.isLoading)
+  if (loading) return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {ids.map(id => <CardSkeleton key={id} />)}
+    </div>
+  )
+
+  const destinations = results.map(r => r.data).filter(Boolean) as LinkedDestination[]
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-gray-400">{destinations.length} địa điểm tham quan trong hành trình</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {destinations.map(d => <DestinationCard key={d.id} d={d} />)}
+      </div>
+    </div>
+  )
+}
 
 // ─── Booking Sidebar ──────────────────────────────────────────────────────────
 
@@ -257,20 +534,31 @@ const BookingSidebar = ({ tour }: BookingProps) => {
   const [selectedDep, setSelectedDep] = useState<number | ''>('')
   const [adults,   setAdults]   = useState(2)
   const [children, setChildren] = useState(0)
-  const [favorite, setFavorite] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('favTours') || '[]').includes(tour.id) } catch { return false }
-  })
+  const [favorite, setFavorite] = useState(false)
+  const favLoadingRef = useRef(false)
 
   const activeDeps = (tour.departures ?? []).filter(d => d.availableSlots > 0)
   const total      = adults * tour.priceAdult + children * (tour.priceChild ?? 0)
 
-  const toggleFavorite = () => {
-    const favs: number[] = JSON.parse(localStorage.getItem('favTours') || '[]')
-    const next = favorite ? favs.filter(id => id !== tour.id) : [...favs, tour.id]
-    localStorage.setItem('favTours', JSON.stringify(next))
-    setFavorite(!favorite)
-    toast.success(favorite ? 'Đã bỏ yêu thích' : 'Đã thêm vào yêu thích')
-  }
+  useEffect(() => {
+    if (!userData || !tour?.id) return
+    isTourFavorited(tour.id).then((res: { favorited: boolean }) => setFavorite(res.favorited)).catch(() => {})
+  }, [userData, tour?.id])
+
+  const toggleFavorite = useCallback(async () => {
+    if (!userData) { toast.error('Vui lòng đăng nhập để lưu yêu thích'); return }
+    if (favLoadingRef.current) return
+    favLoadingRef.current = true
+    try {
+      const res: { favorited: boolean } = await toggleTourFavorite(tour.id)
+      setFavorite(res.favorited)
+      toast.success(res.favorited ? 'Đã thêm vào yêu thích' : 'Đã bỏ yêu thích')
+    } catch {
+      toast.error('Có lỗi xảy ra, vui lòng thử lại')
+    } finally {
+      favLoadingRef.current = false
+    }
+  }, [userData, tour.id])
 
   const handleBook = () => {
     if (!userData) { toast.error('Vui lòng đăng nhập để đặt tour'); navigate('/login'); return }
@@ -419,6 +707,18 @@ const TourDetailPage = () => {
   const navigate    = useNavigate()
   const [activeTab, setActiveTab] = useState<TabKey>('itinerary')
   const tabsRef = useRef<HTMLDivElement>(null)
+  const isFirstRender = useRef(true)
+
+  const handleTabChange = (key: TabKey) => {
+    setActiveTab(key)
+  }
+
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return }
+    if (!tabsRef.current) return
+    const top = tabsRef.current.getBoundingClientRect().top + window.scrollY - 80
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
+  }, [activeTab])
 
   const { data: tour, isLoading, isError } = useQuery<TourDetail>({
     queryKey: ['tour', tourId],
@@ -618,7 +918,7 @@ const TourDetailPage = () => {
             </div>
 
             {/* Tabs section */}
-            <div className="rounded-sm bg-white border border-gray-100 overflow-hidden"
+            <div className="rounded-sm bg-white border border-gray-100"
               style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }} ref={tabsRef}>
 
               {/* Sticky tab header */}
@@ -626,7 +926,7 @@ const TourDetailPage = () => {
                 {tabsWithCount.map(t => (
                   <button
                     key={t.key}
-                    onClick={() => setActiveTab(t.key)}
+                    onClick={() => handleTabChange(t.key)}
                     className={`flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 whitespace-nowrap shrink-0 transition-all ${
                       activeTab === t.key
                         ? 'border-[#c9a84c] text-[#0a1628]'
@@ -640,10 +940,13 @@ const TourDetailPage = () => {
               <div className="p-7">
                 {activeTab === 'itinerary' && <ItineraryTab itineraries={tour.itineraries ?? []} />}
                 {activeTab === 'hotels' && (
-                  <EmptyTab icon={<MdHotel size={32} />} text="Thông tin khách sạn đang được cập nhật" />
+                  <LinkedHotelsTab destination={tour.destination ?? ''} />
                 )}
                 {activeTab === 'restaurants' && (
-                  <EmptyTab icon={<MdRestaurant size={32} />} text="Thông tin nhà hàng đang được cập nhật" />
+                  <LinkedRestaurantsTab destination={tour.destination ?? ''} />
+                )}
+                {activeTab === 'destinations' && (
+                  <LinkedDestinationsTab ids={tour.linkedDestinations ?? []} />
                 )}
                 {activeTab === 'reviews' && (
                   reviews.length === 0 ? (

@@ -6,7 +6,7 @@ import {
   Calendar, Users, MapPin, Star, X, ChevronRight,
   Building2, Map, UtensilsCrossed, Clock, BadgeCheck,
   AlertCircle, CheckCircle2, CircleDashed, XCircle, Loader2,
-  ImagePlus, FileText, RotateCcw,
+  FileText, RotateCcw, Phone,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/api/axiosInstance'
@@ -95,7 +95,7 @@ function normalizeHotel(b: any): NormalizedOrder {
     totalPrice: undefined,
     bookingCode: b.bookingConfirmationCode,
     serviceId:   b.hotelId,
-    canCancel:   status === 'PENDING' || status === 'CONFIRMED',
+    canCancel:   status === 'PENDING',
     canReview:   status === 'COMPLETED',
     raw: b,
   }
@@ -113,10 +113,10 @@ function normalizeTour(b: any): NormalizedOrder {
     dateStart: b.departureDate ?? b.createdAt,
     dateEnd:   undefined,
     guests:    (b.numAdults ?? 0) + (b.numChildren ?? 0),
-    totalPrice: b.finalPrice,
+    totalPrice: b.finalPrice ?? (b.originalPrice ?? 0) + (b.packageHotelPrice ?? 0) - (b.discountAmount ?? 0),
     bookingCode: String(b.id),
     serviceId:   b.tourId,
-    canCancel:   status === 'PENDING' || status === 'CONFIRMED',
+    canCancel:   status === 'PENDING',
     canReview:   status === 'COMPLETED',
     raw: b,
   }
@@ -137,7 +137,7 @@ function normalizeRestaurant(b: any): NormalizedOrder {
     totalPrice: undefined,
     bookingCode: b.confirmationCode,
     serviceId:   b.restaurantId,
-    canCancel:   status === 'PENDING' || status === 'CONFIRMED',
+    canCancel:   status === 'PENDING',
     canReview:   status === 'COMPLETED',
     raw: b,
   }
@@ -172,15 +172,12 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
 
 // ─── ReviewModal ──────────────────────────────────────────────────────────────
 
-function ReviewModal({ order, open, onClose }: {
+function ReviewModal({ order, open, onClose, onReviewed }: {
   order: NormalizedOrder; open: boolean; onClose: () => void
+  onReviewed: (o: NormalizedOrder) => void
 }) {
   const [rating,  setRating]  = useState(5)
   const [comment, setComment] = useState('')
-  const [photos,  setPhotos]  = useState<File[]>([])
-  const [previews,setPreviews]= useState<string[]>([])
-  const [dragging,setDragging]= useState(false)
-
   const mutation = useMutation({
     mutationFn: async () => {
       const endpoint = order.type === 'TOUR'
@@ -199,26 +196,13 @@ function ReviewModal({ order, open, onClose }: {
     },
     onSuccess: () => {
       toast.success('Gửi đánh giá thành công! Cảm ơn bạn đã chia sẻ.')
+      onReviewed(order)
       onClose()
     },
     onError: (err: any) => {
       toast.error(err?.response?.data?.message ?? 'Không thể gửi đánh giá')
     },
   })
-
-  const addFiles = (files: FileList | null) => {
-    if (!files) return
-    const arr = Array.from(files).slice(0, 5 - photos.length)
-    const newPhotos = [...photos, ...arr].slice(0, 5)
-    const newPreviews = newPhotos.map(f => URL.createObjectURL(f))
-    setPhotos(newPhotos)
-    setPreviews(newPreviews)
-  }
-
-  const removePhoto = (i: number) => {
-    setPhotos(p => p.filter((_, j) => j !== i))
-    setPreviews(p => p.filter((_, j) => j !== i))
-  }
 
   const STAR_LABELS = ['', 'Tệ', 'Không tốt', 'Bình thường', 'Tốt', 'Tuyệt vời']
 
@@ -268,45 +252,6 @@ function ReviewModal({ order, open, onClose }: {
             placeholder="Chia sẻ trải nghiệm của bạn..."
             className="resize-none"
           />
-        </div>
-
-        {/* Image upload */}
-        <div>
-          <p className="text-sm font-medium mb-2">Thêm ảnh ({photos.length}/5)</p>
-          <div
-            onDragOver={e => { e.preventDefault(); setDragging(true) }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files) }}
-            className={cn(
-              'border-2 border-dashed rounded p-4 text-center text-sm text-muted-foreground transition-colors cursor-pointer',
-              dragging ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/40',
-            )}
-            onClick={() => {
-              const input = document.createElement('input')
-              input.type = 'file'; input.accept = 'image/*'; input.multiple = true
-              input.onchange = e => addFiles((e.target as HTMLInputElement).files)
-              input.click()
-            }}
-          >
-            <ImagePlus size={20} className="mx-auto mb-1 opacity-50" />
-            Kéo thả hoặc click để chọn ảnh
-          </div>
-
-          {previews.length > 0 && (
-            <div className="grid grid-cols-5 gap-2 mt-2">
-              {previews.map((src, i) => (
-                <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-muted group">
-                  <img src={src} alt="" className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => removePhoto(i)}
-                    className="absolute top-1 right-1 size-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X size={10} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="flex gap-2">
@@ -464,6 +409,45 @@ function DetailModal({ order, open, onClose }: {
           </div>
         </div>
 
+        {/* Tour package — Hotel & Restaurant addon */}
+        {order.type === 'TOUR' && (order.raw.hotelName || order.raw.restaurantName) && (
+          <>
+            <Separator />
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Dịch vụ đi kèm
+              </p>
+              {order.raw.hotelName && (
+                <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm space-y-1">
+                  <p className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-1">🏨 Khách sạn</p>
+                  <p className="font-semibold text-gray-900">{order.raw.hotelName}</p>
+                  {order.raw.roomType && <p className="text-gray-500">Loại phòng: {order.raw.roomType}</p>}
+                  {order.raw.checkInDate && order.raw.checkOutDate && (
+                    <p className="text-gray-500">
+                      {dayjs(order.raw.checkInDate).format('DD/MM/YYYY')} → {dayjs(order.raw.checkOutDate).format('DD/MM/YYYY')}
+                    </p>
+                  )}
+                  {order.raw.packageHotelPrice > 0 && (
+                    <p className="text-blue-700 font-semibold">{formatCurrency(order.raw.packageHotelPrice)}</p>
+                  )}
+                </div>
+              )}
+              {order.raw.restaurantName && (
+                <div className="bg-orange-50 border border-orange-100 rounded-lg p-3 text-sm space-y-1">
+                  <p className="text-xs font-bold text-orange-600 uppercase tracking-wide mb-1">🍽️ Nhà hàng</p>
+                  <p className="font-semibold text-gray-900">{order.raw.restaurantName}</p>
+                  {order.raw.restaurantBookingDate && (
+                    <p className="text-gray-500">Ngày đặt bàn: {dayjs(order.raw.restaurantBookingDate).format('DD/MM/YYYY')}</p>
+                  )}
+                  {order.raw.packageRestaurantPrice > 0 && (
+                    <p className="text-orange-700 font-semibold">{formatCurrency(order.raw.packageRestaurantPrice)}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
         {/* Cost */}
         {order.totalPrice != null && (
           <>
@@ -473,10 +457,36 @@ function DetailModal({ order, open, onClose }: {
                 Chi phí
               </p>
               <div className="bg-muted/50 rounded p-4 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Giá dịch vụ</span>
-                  <span>{formatCurrency(order.totalPrice)}</span>
-                </div>
+                {order.type === 'TOUR' && order.raw.originalPrice > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Giá tour</span>
+                    <span>{formatCurrency(order.raw.originalPrice)}</span>
+                  </div>
+                )}
+                {order.type === 'TOUR' && order.raw.packageHotelPrice > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Khách sạn</span>
+                    <span>{formatCurrency(order.raw.packageHotelPrice)}</span>
+                  </div>
+                )}
+                {order.type === 'TOUR' && order.raw.packageRestaurantPrice > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Nhà hàng</span>
+                    <span className="text-xs text-amber-600">Thanh toán tại chỗ</span>
+                  </div>
+                )}
+                {order.type === 'TOUR' && order.raw.discountAmount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Giảm giá</span>
+                    <span>-{formatCurrency(order.raw.discountAmount)}</span>
+                  </div>
+                )}
+                {order.type !== 'TOUR' && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Giá dịch vụ</span>
+                    <span>{formatCurrency(order.totalPrice)}</span>
+                  </div>
+                )}
                 <Separator />
                 <div className="flex justify-between font-bold text-base">
                   <span>Tổng cộng</span>
@@ -514,11 +524,13 @@ function DetailModal({ order, open, onClose }: {
 // ─── OrderCard ────────────────────────────────────────────────────────────────
 
 function OrderCard({
-  order, onCancel, cancelling,
+  order, onCancel, cancelling, isReviewed, onReviewed,
 }: {
   order: NormalizedOrder
   onCancel: (o: NormalizedOrder) => void
   cancelling: boolean
+  isReviewed: boolean
+  onReviewed: (o: NormalizedOrder) => void
 }) {
   const [detailOpen, setDetailOpen] = useState(false)
   const [reviewOpen, setReviewOpen] = useState(false)
@@ -608,14 +620,27 @@ function OrderCard({
               </Button>
             )}
 
+            {order.status === 'CONFIRMED' && (
+              <span className="text-xs text-gray-400 flex items-center gap-1">
+                <Phone size={11} />
+                Liên hệ <strong className="text-gray-600">1900 1234</strong> để hủy
+              </span>
+            )}
+
             {order.canReview && (
-              <Button
-                size="sm"
-                className="text-xs h-7 bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={() => setReviewOpen(true)}
-              >
-                <Star size={12} className="mr-1" /> Đánh giá
-              </Button>
+              isReviewed ? (
+                <span className="flex items-center gap-1 text-xs text-emerald-600 font-semibold px-2 py-1 bg-emerald-50 rounded border border-emerald-200">
+                  <BadgeCheck size={12} /> Đã đánh giá
+                </span>
+              ) : (
+                <Button
+                  size="sm"
+                  className="text-xs h-7 bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={() => setReviewOpen(true)}
+                >
+                  <Star size={12} className="mr-1" /> Đánh giá
+                </Button>
+              )
             )}
 
             {order.status === 'PENDING' && order.type === 'TOUR' && (
@@ -632,12 +657,18 @@ function OrderCard({
       </div>
 
       <DetailModal order={order} open={detailOpen} onClose={() => setDetailOpen(false)} />
-      <ReviewModal order={order} open={reviewOpen} onClose={() => setReviewOpen(false)} />
+      <ReviewModal order={order} open={reviewOpen} onClose={() => setReviewOpen(false)} onReviewed={onReviewed} />
     </>
   )
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
+const REVIEWED_KEY = 'reviewed_orders'
+function loadReviewed(): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem(REVIEWED_KEY) || '[]')) }
+  catch { return new Set() }
+}
 
 export default function MyOrdersPage() {
   const user       = useAuthStore(s => s.user)
@@ -645,6 +676,17 @@ export default function MyOrdersPage() {
 
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL')
   const [cancellingId, setCancellingId] = useState<number | null>(null)
+  const [reviewedIds,  setReviewedIds]  = useState<Set<string>>(loadReviewed)
+
+  const markReviewed = (order: NormalizedOrder) => {
+    const key = `${order.type}-${order.id}`
+    setReviewedIds(prev => {
+      const next = new Set(prev)
+      next.add(key)
+      localStorage.setItem(REVIEWED_KEY, JSON.stringify([...next]))
+      return next
+    })
+  }
 
   // ── Fetch ──
   const { data: hotelBookings = [], isLoading: lh } = useQuery<any[]>({
@@ -755,6 +797,8 @@ export default function MyOrdersPage() {
             order={o}
             onCancel={handleCancel}
             cancelling={cancellingId === o.id}
+            isReviewed={reviewedIds.has(`${o.type}-${o.id}`)}
+            onReviewed={markReviewed}
           />
         ))}
       </div>

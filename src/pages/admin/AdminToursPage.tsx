@@ -23,6 +23,8 @@ import ConfirmDialog from '../../components/admin/ConfirmDialog'
 
 interface ItineraryDay { title: string; description: string }
 
+interface TourImageItem { id: number; url: string }
+
 interface Tour {
   id: number
   name: string
@@ -35,6 +37,7 @@ interface Tour {
   status: 'ACTIVE' | 'INACTIVE' | 'FULL'
   imageUrl?: string
   imageUrls?: string[]
+  imageList?: TourImageItem[]
   description?: string
   hotels?: number[]
   restaurants?: number[]
@@ -42,7 +45,7 @@ interface Tour {
 }
 
 interface Destination { id: number; name: string }
-interface LinkedItem { id: number; name: string }
+interface LinkedItem { id: number; name: string; city?: string }
 interface PagedResponse { content: Tour[]; totalPages: number; totalElements: number }
 
 interface FormState {
@@ -54,14 +57,13 @@ interface FormState {
   priceChild: string
   description: string
   itinerary: ItineraryDay[]
-  hotels: LinkedItem[]
-  restaurants: LinkedItem[]
+  destinations: LinkedItem[]
 }
 
 const INIT: FormState = {
   name: '', destination: '', durationDays: 1, durationNights: 0,
   priceAdult: '', priceChild: '', description: '',
-  itinerary: [{ title: '', description: '' }], hotels: [], restaurants: [],
+  itinerary: [{ title: '', description: '' }], destinations: [],
 }
 
 const STATUS_CFG = {
@@ -75,7 +77,7 @@ const parseNum = (s: string) => parseInt(s.replace(/\D/g, ''), 10) || 0
 const PLACEHOLDER = 'https://placehold.co/56x56/e2e8f0/94a3b8?text=Tour'
 
 interface SeasonalPrice {
-  id: number; name: string
+  id: number; seasonName: string
   startDate: string; endDate: string
   priceAdult: number; priceChild: number
   isActive: boolean
@@ -90,9 +92,13 @@ const SEASONAL_INIT: SeasonalPriceForm = { name: '', startDate: '', endDate: '',
 
 // ─── ImageUploadZone ──────────────────────────────────────────────────────────
 
-function ImageUploadZone({ files, previews, onChange }: {
-  files: File[]; previews: string[]
-  onChange: (f: File[], p: string[]) => void
+function ImageUploadZone({ files, existingImages, newPreviews, onAddFiles, onRemoveExisting, onRemoveNew }: {
+  files: File[]
+  existingImages: TourImageItem[]
+  newPreviews: string[]
+  onAddFiles: (f: File[], blobUrls: string[]) => void
+  onRemoveExisting: (imgId: number) => void
+  onRemoveNew: (fileIdx: number) => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [drag, setDrag] = useState(false)
@@ -100,33 +106,12 @@ function ImageUploadZone({ files, previews, onChange }: {
   const add = useCallback((incoming: FileList | null) => {
     if (!incoming) return
     const valid = Array.from(incoming).filter(f => f.type.startsWith('image/'))
-    // Số ảnh hiện có (data URLs không có File tương ứng)
-    const existingCount = previews.length - files.length
-    const maxNew = Math.max(0, 10 - existingCount - files.length)
+    const maxNew = Math.max(0, 10 - existingImages.length - files.length)
     const newValid = valid.slice(0, maxNew)
-    const combined = [...files, ...newValid]
-    const existingPreviews = previews.slice(0, existingCount)
-    const filePreviews = previews.slice(existingCount)
-    const newPreviews = [
-      ...existingPreviews,
-      ...filePreviews,
-      ...newValid.map(f => URL.createObjectURL(f)),
-    ]
-    onChange(combined, newPreviews)
-  }, [files, previews, onChange])
+    onAddFiles(newValid, newValid.map(f => URL.createObjectURL(f)))
+  }, [files, existingImages, onAddFiles])
 
-  const remove = (idx: number) => {
-    const existingCount = previews.length - files.length
-    if (idx < existingCount) {
-      // Xóa ảnh hiện có (data URL)
-      onChange(files, previews.filter((_, i) => i !== idx))
-    } else {
-      // Xóa file mới
-      const fileIdx = idx - existingCount
-      URL.revokeObjectURL(previews[idx])
-      onChange(files.filter((_, i) => i !== fileIdx), previews.filter((_, i) => i !== idx))
-    }
-  }
+  const totalCount = existingImages.length + files.length
 
   return (
     <div className="space-y-3">
@@ -140,20 +125,33 @@ function ImageUploadZone({ files, previews, onChange }: {
       >
         <ImagePlus size={28} className="text-gray-400" />
         <p className="text-sm text-gray-500">Kéo thả ảnh hoặc click để chọn</p>
-        <p className="text-xs text-gray-400">Tối đa 10 ảnh · JPG, PNG, WEBP</p>
+        <p className="text-xs text-gray-400">Tối đa 10 ảnh · JPG, PNG, WEBP ({totalCount}/10)</p>
         <input ref={inputRef} type="file" accept="image/*" multiple className="hidden"
           onChange={e => add(e.target.files)} />
       </div>
-      {previews.length > 0 && (
+      {totalCount > 0 && (
         <div className="grid grid-cols-4 gap-2">
-          {previews.map((src, i) => (
-            <div key={i} className="relative group aspect-square rounded overflow-hidden border border-gray-100">
-              <img src={src} alt="" className="w-full h-full object-cover" />
-              {i === 0 && (
+          {existingImages.map((img, i) => (
+            <div key={`ex-${img.id}`} className="relative group aspect-square rounded overflow-hidden border border-gray-100">
+              <img src={img.url} alt="" className="w-full h-full object-cover" />
+              {i === 0 && files.length === 0 && (
                 <span className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white bg-accent">Chính</span>
               )}
-              <button type="button" onClick={e => { e.stopPropagation(); remove(i) }}
-                className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button type="button" onClick={e => { e.stopPropagation(); onRemoveExisting(img.id) }}
+                className="absolute top-1 right-1 w-5 h-5 bg-red-600/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <X size={10} />
+              </button>
+            </div>
+          ))}
+          {newPreviews.map((src, i) => (
+            <div key={`new-${i}`} className="relative group aspect-square rounded overflow-hidden border border-blue-200">
+              <img src={src} alt="" className="w-full h-full object-cover" />
+              {existingImages.length === 0 && i === 0 && (
+                <span className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white bg-accent">Chính</span>
+              )}
+              <span className="absolute bottom-1 left-1 text-[9px] font-bold px-1 py-0.5 rounded bg-blue-600/80 text-white">Mới</span>
+              <button type="button" onClick={e => { e.stopPropagation(); onRemoveNew(i) }}
+                className="absolute top-1 right-1 w-5 h-5 bg-red-600/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <X size={10} />
               </button>
             </div>
@@ -166,9 +164,10 @@ function ImageUploadZone({ files, previews, onChange }: {
 
 // ─── LinkedItemCombobox ───────────────────────────────────────────────────────
 
-function LinkedItemCombobox({ label, endpoint, selected, onAdd, onRemove }: {
+function LinkedItemCombobox({ label, endpoint, selected, suggestion, onAdd, onRemove }: {
   label: string; endpoint: string
   selected: LinkedItem[]
+  suggestion?: string
   onAdd: (item: LinkedItem) => void
   onRemove: (id: number) => void
 }) {
@@ -184,14 +183,25 @@ function LinkedItemCombobox({ label, endpoint, selected, onAdd, onRemove }: {
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
+  const cityMismatch = (city?: string) => {
+    if (!suggestion || !city) return false
+    const dest = suggestion.toLowerCase()
+    const c = city.toLowerCase()
+    return !dest.includes(c) && !c.includes(dest.split(/[\s–-]/)[0].trim())
+  }
+
   useEffect(() => {
     if (!q.trim()) { setResults([]); setOpen(false); return }
     const id = setTimeout(async () => {
       setBusy(true)
       try {
-        const res = await api.get(`${endpoint}?search=${encodeURIComponent(q)}&size=10`)
-        const raw: LinkedItem[] = res.data?.content ?? res.data ?? []
-        setResults(Array.isArray(raw) ? raw : [])
+        const res = await api.get(`${endpoint}?search=${encodeURIComponent(q)}&size=20`)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const raw: any[] = res.data?.content ?? res.data ?? []
+        const items: LinkedItem[] = Array.isArray(raw)
+          ? raw.map(r => ({ id: r.id, name: r.name, city: r.city ?? r.address ?? '' }))
+          : []
+        setResults(items)
         setOpen(true)
       } catch { setResults([]) } finally { setBusy(false) }
     }, 300)
@@ -203,13 +213,25 @@ function LinkedItemCombobox({ label, endpoint, selected, onAdd, onRemove }: {
       <Label className="text-sm font-medium text-gray-700">{label}</Label>
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {selected.map(it => (
-            <span key={it.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-primary">
-              {it.name}
-              <button type="button" onClick={() => onRemove(it.id)} className="hover:opacity-75"><X size={10} /></button>
-            </span>
-          ))}
+          {selected.map(it => {
+            const warn = cityMismatch(it.city)
+            return (
+              <span key={it.id}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white ${warn ? 'bg-amber-500' : 'bg-primary'}`}
+                title={warn ? `⚠ ${it.city} không khớp với điểm đến "${suggestion}"` : ''}>
+                {warn && <span>⚠</span>}
+                {it.name}
+                {it.city && <span className="opacity-75">({it.city})</span>}
+                <button type="button" onClick={() => onRemove(it.id)} className="hover:opacity-75"><X size={10} /></button>
+              </span>
+            )
+          })}
         </div>
+      )}
+      {suggestion && selected.some(it => cityMismatch(it.city)) && (
+        <p className="text-xs text-amber-600 flex items-center gap-1">
+          ⚠ Một số mục có thể không thuộc điểm đến <strong>{suggestion}</strong> — kiểm tra lại.
+        </p>
       )}
       <div ref={ref} className="relative">
         <div className="relative">
@@ -223,13 +245,17 @@ function LinkedItemCombobox({ label, endpoint, selected, onAdd, onRemove }: {
             <ScrollArea className="max-h-48">
               {results.map(it => {
                 const sel = !!selected.find(s => s.id === it.id)
+                const warn = cityMismatch(it.city)
                 return (
                   <button key={it.id} type="button" onClick={() => { if (!sel) { onAdd(it); setQ(''); setOpen(false) } }}
                     disabled={sel}
-                    className={`w-full text-left px-3 py-2 text-sm flex justify-between transition-colors
-                      ${sel ? 'text-gray-400 bg-[#f8f5ee] cursor-not-allowed' : 'hover:bg-blue-50 hover:text-blue-700'}`}>
-                    <span>{it.name}</span>
-                    {sel && <span className="text-xs">Đã chọn</span>}
+                    className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-2 transition-colors
+                      ${sel ? 'text-gray-400 bg-[#f8f5ee] cursor-not-allowed' : warn ? 'hover:bg-amber-50' : 'hover:bg-blue-50 hover:text-blue-700'}`}>
+                    <span className="flex-1 truncate">{it.name}</span>
+                    <span className={`text-xs shrink-0 ${warn ? 'text-amber-500 font-semibold' : 'text-gray-400'}`}>
+                      {it.city ? (warn ? `⚠ ${it.city}` : it.city) : ''}
+                    </span>
+                    {sel && <span className="text-xs text-gray-400 shrink-0">Đã chọn</span>}
                   </button>
                 )
               })}
@@ -254,7 +280,7 @@ function SeasonalPriceDialog({ open, onOpenChange, tourId, price, onSuccess }: {
   useEffect(() => {
     if (!open) return
     if (price) {
-      setForm({ name: price.name, startDate: price.startDate, endDate: price.endDate,
+      setForm({ name: price.seasonName, startDate: price.startDate, endDate: price.endDate,
         priceAdult: String(price.priceAdult), priceChild: String(price.priceChild) })
     } else { setForm(SEASONAL_INIT) }
   }, [open, price])
@@ -272,7 +298,7 @@ function SeasonalPriceDialog({ open, onOpenChange, tourId, price, onSuccess }: {
     if (pa < 0 || pc < 0) { toast.error('Giá không được âm'); return }
     setBusy(true)
     try {
-      const body = { name: form.name, startDate: form.startDate, endDate: form.endDate, priceAdult: pa, priceChild: pc }
+      const body = { seasonName: form.name, startDate: form.startDate, endDate: form.endDate, priceAdult: pa, priceChild: pc }
       if (isEdit) await api.put(`/tours/${tourId}/seasonal-prices/${price!.id}`, body)
       else await api.post(`/tours/${tourId}/seasonal-prices`, body)
       toast.success(isEdit ? 'Cập nhật giá theo mùa thành công' : 'Thêm giá theo mùa thành công')
@@ -384,7 +410,7 @@ function SeasonalPricesTab({ tourId, isTabActive }: { tourId: number; isTabActiv
             <tbody>
               {prices.map(p => (
                 <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-[#f8f5ee]/50 transition-colors">
-                  <td className="px-3 py-2.5 font-medium text-gray-800">{p.name}</td>
+                  <td className="px-3 py-2.5 font-medium text-gray-800">{p.seasonName}</td>
                   <td className="px-3 py-2.5 text-gray-600 whitespace-nowrap text-xs">
                     {p.startDate} → {p.endDate}
                   </td>
@@ -425,7 +451,7 @@ function SeasonalPricesTab({ tourId, isTabActive }: { tourId: number; isTabActiv
       <ConfirmDialog
         open={!!deleteTarget} onOpenChange={v => { if (!v) setDeleteTarget(null) }}
         title="Xóa giá theo mùa"
-        description={`Bạn có chắc muốn xóa giá "${deleteTarget?.name}"? Hành động này không thể hoàn tác.`}
+        description={`Bạn có chắc muốn xóa giá "${deleteTarget?.seasonName}"? Hành động này không thể hoàn tác.`}
         variant="danger"
         onConfirm={() => deleteTarget && delMutation.mutate(deleteTarget.id)}
         loading={delMutation.isPending}
@@ -442,8 +468,10 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
 }) {
   const isEdit = !!tour
   const [form, setForm] = useState<FormState>(INIT)
-  const [images, setImages] = useState<File[]>([])
-  const [previews, setPreviews] = useState<string[]>([])
+  const [existingImages, setExistingImages] = useState<TourImageItem[]>([])
+  const [newFiles, setNewFiles] = useState<File[]>([])
+  const [newPreviews, setNewPreviews] = useState<string[]>([])
+  const [removedImageIds, setRemovedImageIds] = useState<number[]>([])
   const [tab, setTab] = useState('info')
   const [busy, setBusy] = useState(false)
 
@@ -456,13 +484,13 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
         priceAdult: String(tour.priceAdult), priceChild: String(tour.priceChild),
         description: tour.description ?? '',
         itinerary: tour.itinerary?.length ? tour.itinerary : [{ title: '', description: '' }],
-        hotels: (tour.hotels ?? []).map(id => ({ id, name: `Hotel #${id}` })),
-        restaurants: (tour.restaurants ?? []).map(id => ({ id, name: `Restaurant #${id}` })),
       })
-      setImages([])
-      setPreviews(tour.imageUrls?.length ? tour.imageUrls : tour.imageUrl ? [tour.imageUrl] : [])
+      setExistingImages(tour.imageList ?? (tour.imageUrls?.map((url, i) => ({ id: i, url })) ?? []))
+      setNewFiles([])
+      setNewPreviews([])
+      setRemovedImageIds([])
     } else {
-      setForm(INIT); setImages([]); setPreviews([])
+      setForm(INIT); setExistingImages([]); setNewFiles([]); setNewPreviews([]); setRemovedImageIds([])
     }
     setTab('info')
   }, [open, tour])
@@ -485,21 +513,41 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
     if (!form.destination) { toast.error('Vui lòng chọn điểm đến'); setTab('info'); return }
     setBusy(true)
     try {
-      const fd = new FormData()
-      fd.append('name', form.name)
-      fd.append('destination', form.destination)
-      fd.append('durationDays', String(form.durationDays))
-      fd.append('durationNights', String(form.durationNights))
-      fd.append('priceAdult', String(parseNum(form.priceAdult)))
-      fd.append('priceChild', String(parseNum(form.priceChild)))
-      fd.append('description', form.description)
-      fd.append('itinerary', JSON.stringify(form.itinerary))
-      fd.append('hotels', JSON.stringify(form.hotels.map(h => h.id)))
-      fd.append('restaurants', JSON.stringify(form.restaurants.map(r => r.id)))
-      images.forEach(f => fd.append('images', f))
-      const opts = { headers: { 'Content-Type': 'multipart/form-data' } }
-      if (isEdit) await api.put(`/admin/tours/${tour!.id}`, fd, opts)
-      else await api.post('/admin/tours', fd, opts)
+      if (isEdit) {
+        // 1. Cập nhật metadata qua JSON
+        await api.put(`/admin/tours/${tour!.id}`, {
+          name: form.name,
+          destination: form.destination,
+          durationDays: form.durationDays,
+          durationNights: form.durationNights,
+          priceAdult: parseNum(form.priceAdult),
+          priceChild: parseNum(form.priceChild),
+          description: form.description,
+          itinerary: JSON.stringify(form.itinerary.filter(d => d.title.trim() || d.description.trim())),
+        })
+        // 2. Xóa ảnh bị remove
+        await Promise.all(
+          removedImageIds.map(imgId => api.delete(`/admin/tours/${tour!.id}/images/${imgId}`))
+        )
+        // 3. Upload ảnh mới (nếu có)
+        if (newFiles.length > 0) {
+          const fd = new FormData()
+          newFiles.forEach(f => fd.append('images', f))
+          await api.post(`/admin/tours/${tour!.id}/images/replace`, fd)
+        }
+      } else {
+        const fd = new FormData()
+        fd.append('name', form.name)
+        fd.append('destination', form.destination)
+        fd.append('durationDays', String(form.durationDays))
+        fd.append('durationNights', String(form.durationNights))
+        fd.append('priceAdult', String(parseNum(form.priceAdult)))
+        fd.append('priceChild', String(parseNum(form.priceChild)))
+        fd.append('description', form.description)
+        fd.append('itinerary', JSON.stringify(form.itinerary.filter(d => d.title.trim() || d.description.trim())))
+        newFiles.forEach(f => fd.append('images', f))
+        await api.post('/admin/tours', fd)
+      }
       toast.success(isEdit ? 'Cập nhật tour thành công' : 'Thêm tour thành công')
       onSuccess(); onOpenChange(false)
     } catch (e: unknown) {
@@ -521,7 +569,6 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
             <TabsList className={`w-full grid ${isEdit ? 'grid-cols-4' : 'grid-cols-3'}`}>
               <TabsTrigger value="info">Thông tin cơ bản</TabsTrigger>
               <TabsTrigger value="itinerary">Lịch trình</TabsTrigger>
-              <TabsTrigger value="links">Liên kết</TabsTrigger>
               {isEdit && <TabsTrigger value="seasonal">Giá theo mùa</TabsTrigger>}
             </TabsList>
           </div>
@@ -569,8 +616,21 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">Hình ảnh</Label>
-                <ImageUploadZone files={images} previews={previews}
-                  onChange={(f, p) => { setImages(f); setPreviews(p) }} />
+                <ImageUploadZone
+                  files={newFiles}
+                  existingImages={existingImages}
+                  newPreviews={newPreviews}
+                  onAddFiles={(f, urls) => { setNewFiles(p => [...p, ...f]); setNewPreviews(p => [...p, ...urls]) }}
+                  onRemoveExisting={id => {
+                    setExistingImages(p => p.filter(img => img.id !== id))
+                    setRemovedImageIds(p => [...p, id])
+                  }}
+                  onRemoveNew={idx => {
+                    URL.revokeObjectURL(newPreviews[idx])
+                    setNewFiles(p => p.filter((_, i) => i !== idx))
+                    setNewPreviews(p => p.filter((_, i) => i !== idx))
+                  }}
+                />
               </div>
             </TabsContent>
 
@@ -605,18 +665,6 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
                 className="w-full py-2.5 border-2 border-dashed border-gray-300 rounded text-sm font-medium text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
                 <Plus size={15} /> Thêm ngày
               </button>
-            </TabsContent>
-
-            <TabsContent value="links" className="mt-4 space-y-6">
-              <LinkedItemCombobox label="Khách sạn liên kết" endpoint="/hotels"
-                selected={form.hotels}
-                onAdd={it => set('hotels', [...form.hotels, it])}
-                onRemove={id => set('hotels', form.hotels.filter(h => h.id !== id))} />
-              <Separator />
-              <LinkedItemCombobox label="Nhà hàng liên kết" endpoint="/restaurants"
-                selected={form.restaurants}
-                onAdd={it => set('restaurants', [...form.restaurants, it])}
-                onRemove={id => set('restaurants', form.restaurants.filter(r => r.id !== id))} />
             </TabsContent>
 
             {isEdit && tour && (

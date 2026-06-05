@@ -45,3 +45,13 @@ export const updateRestaurantBookingStatus = (bookingId, status) =>
 
 export const cancelRestaurantBooking = (bookingId) =>
     axiosInstance.patch(`/restaurants/bookings/${bookingId}/cancel`).then(r => r.data)
+
+// Favorites
+export const toggleRestaurantFavorite = (restaurantId) =>
+    axiosInstance.post(`/restaurants/${restaurantId}/favorite`).then(r => r.data)
+
+export const isRestaurantFavorited = (restaurantId) =>
+    axiosInstance.get(`/restaurants/${restaurantId}/favorite`).then(r => r.data)
+
+export const getMyFavoriteRestaurants = () =>
+    axiosInstance.get('/restaurants/my-favorites').then(r => r.data)

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import DatePicker from 'react-datepicker'
@@ -11,6 +11,9 @@ import {
   Loader2, CalendarOff,
 } from 'lucide-react'
 import api from '@/api/axiosInstance'
+import { toggleHotelFavorite, isHotelFavorited } from '@/api/hotelApi'
+import { useAuthStore } from '@/stores/authStore'
+import { toast } from 'sonner'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -431,14 +434,36 @@ function BookingSidebar({ hotel, rooms, hotelId, loadingRooms }: {
   const [adults,   setAdults]   = useState(1)
   const [children, setChildren] = useState(0)
   const [liked,    setLiked]    = useState(false)
+  const favLoadingRef           = useRef(false)
   const [submitting, setSubmitting] = useState(false)
   const [bookError,  setBookError]  = useState('')
+  const { user: authUser } = useAuthStore()
 
   const availableRooms = rooms.filter(r => !r.status || r.status === 'AVAILABLE')
   const selectedRoom   = rooms.find(r => r.id === Number(roomId))
   const nights = checkIn && checkOut ? dayjs(checkOut).diff(dayjs(checkIn), 'day') : 0
   const total  = (selectedRoom?.roomPrice ?? 0) * Math.max(nights, 1)
   const basePrice = availableRooms.length > 0 ? Math.min(...availableRooms.map(r => r.roomPrice)) : 0
+
+  useEffect(() => {
+    if (!authUser || !hotel?.id) return
+    isHotelFavorited(hotel.id).then((res: { favorited: boolean }) => setLiked(res.favorited)).catch(() => {})
+  }, [authUser, hotel?.id])
+
+  const toggleLiked = useCallback(async () => {
+    if (!authUser) { toast.error('Vui lòng đăng nhập để lưu yêu thích'); return }
+    if (favLoadingRef.current) return
+    favLoadingRef.current = true
+    try {
+      const res: { favorited: boolean } = await toggleHotelFavorite(hotel.id)
+      setLiked(res.favorited)
+      toast.success(res.favorited ? 'Đã thêm vào yêu thích' : 'Đã bỏ yêu thích')
+    } catch {
+      toast.error('Có lỗi xảy ra, vui lòng thử lại')
+    } finally {
+      favLoadingRef.current = false
+    }
+  }, [authUser, hotel.id])
 
   const handleBook = () => {
     if (!roomId) { setBookError('Vui lòng chọn loại phòng'); return }
@@ -576,7 +601,8 @@ function BookingSidebar({ hotel, rooms, hotelId, loadingRooms }: {
       <Button
         variant="outline"
         className={cn('w-full gap-2', liked && 'border-red-400 text-red-500')}
-        onClick={() => setLiked(l => !l)}
+        onClick={toggleLiked}
+        disabled={false}
       >
         <Heart size={16} className={liked ? 'fill-red-500 text-red-500' : ''} />
         {liked ? 'Đã yêu thích' : 'Yêu thích'}

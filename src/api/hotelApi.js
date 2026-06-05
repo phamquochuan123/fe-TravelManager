@@ -41,3 +41,13 @@ export async function uploadHotelPhoto(hotelId, file) {
     const response = await api.patch(`/hotels/${hotelId}/photo`, formData)
     return response.data
 }
+
+// Favorites
+export const toggleHotelFavorite = (hotelId) =>
+    api.post(`/hotels/${hotelId}/favorite`).then(r => r.data)
+
+export const isHotelFavorited = (hotelId) =>
+    api.get(`/hotels/${hotelId}/favorite`).then(r => r.data)
+
+export const getMyFavoriteHotels = () =>
+    api.get('/hotels/my-favorites').then(r => r.data)

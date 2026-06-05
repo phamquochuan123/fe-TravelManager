@@ -40,6 +40,16 @@ interface Order {
   createdAt: string
   statusHistory?: StatusHistory[]
   breakdown?: BreakdownItem[]
+  // Tour package
+  hotelName?: string
+  roomType?: string
+  checkInDate?: string
+  checkOutDate?: string
+  packageHotelPrice?: number
+  restaurantName?: string
+  restaurantBookingDate?: string
+  packageRestaurantPrice?: number
+  packageDiscountPercent?: number
 }
 
 interface OrderCounts { PENDING: number; CONFIRMED: number; COMPLETED: number; CANCELLED: number; total: number }
@@ -51,7 +61,12 @@ const STATUS_CFG: Record<string, { label: string; cls: string; dot: string }> = 
   IN_PROGRESS: { label: 'Đang diễn ra',  cls: 'bg-purple-100 text-purple-700', dot: '#8b5cf6' },
   COMPLETED:   { label: 'Hoàn thành',    cls: 'bg-green-100 text-green-700',   dot: '#10b981' },
   CANCELLED:   { label: 'Đã hủy',        cls: 'bg-red-100 text-red-600',       dot: '#ef4444' },
-  PAID:        { label: 'Đã thanh toán', cls: 'bg-teal-100 text-teal-700',     dot: '#14b8a6' },
+}
+
+const STATUS_BY_TYPE: Record<string, string[]> = {
+  HOTEL:      ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'],
+  TOUR:       ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+  RESTAURANT: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
 }
 
 const SERVICE_CFG: Record<string, { label: string; cls: string }> = {
@@ -199,6 +214,41 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
               </div>
             )}
 
+            {/* Tour package — hotel & restaurant info */}
+            {order.serviceType === 'TOUR' && (order.hotelName || order.restaurantName) && (
+              <div className="space-y-3">
+                {order.hotelName && (
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">🏨 Khách sạn đi kèm</h4>
+                    <div className="bg-blue-50 border border-blue-100 rounded p-3 text-sm space-y-1">
+                      <p className="font-semibold text-gray-900">{order.hotelName}</p>
+                      {order.roomType && <p className="text-gray-500">Loại phòng: {order.roomType}</p>}
+                      {order.checkInDate && order.checkOutDate && (
+                        <p className="text-gray-500">Check-in: {order.checkInDate} → {order.checkOutDate}</p>
+                      )}
+                      {order.packageHotelPrice != null && order.packageHotelPrice > 0 && (
+                        <p className="text-blue-700 font-medium">{fmtVND(order.packageHotelPrice)}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {order.restaurantName && (
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">🍽️ Nhà hàng đi kèm</h4>
+                    <div className="bg-orange-50 border border-orange-100 rounded p-3 text-sm space-y-1">
+                      <p className="font-semibold text-gray-900">{order.restaurantName}</p>
+                      {order.restaurantBookingDate && (
+                        <p className="text-gray-500">Ngày đặt bàn: {order.restaurantBookingDate}</p>
+                      )}
+                      {order.packageRestaurantPrice != null && order.packageRestaurantPrice > 0 && (
+                        <p className="text-orange-700 font-medium">{fmtVND(order.packageRestaurantPrice)}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <Separator />
 
             {/* Change status */}
@@ -207,9 +257,11 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
               <Select value={newStatus} onValueChange={setNewStatus}>
                 <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(STATUS_CFG).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                  ))}
+                  {Object.entries(STATUS_CFG)
+                    .filter(([k]) => (STATUS_BY_TYPE[order?.serviceType ?? ''] ?? Object.keys(STATUS_CFG)).includes(k))
+                    .map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               <div className="space-y-1.5">
@@ -254,10 +306,12 @@ export default function AdminOrdersPage({ defaultServiceType }: { defaultService
   useEffect(() => { setPage(0) }, [activeTab, serviceType, fromDate, toDate])
 
   const { data: counts } = useQuery<OrderCounts>({
-    queryKey: ['admin', 'orders-counts'],
+    queryKey: ['admin', 'orders-counts', defaultServiceType],
     queryFn: async () => {
-      try { return (await api.get('/admin/orders/counts')).data }
-      catch { return { PENDING: 0, CONFIRMED: 0, COMPLETED: 0, CANCELLED: 0, total: 0 } }
+      try {
+        const qs = defaultServiceType ? `?serviceType=${defaultServiceType}` : ''
+        return (await api.get(`/admin/orders/counts${qs}`)).data
+      } catch { return { PENDING: 0, CONFIRMED: 0, COMPLETED: 0, CANCELLED: 0, total: 0 } }
     },
     refetchInterval: 30_000,
   })
