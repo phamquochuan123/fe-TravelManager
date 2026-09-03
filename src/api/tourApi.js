@@ -51,8 +51,9 @@ export const bookTour = (tourId, data) =>
 export const getMyTourBookings = () =>
     axiosInstance.get("/tour-bookings/my").then(r => r.data)
 
-export const getAllTourBookings = () =>
-    axiosInstance.get("/tour-bookings/all").then(r => r.data)
+// Backend trả Page<T>: { content, totalElements, totalPages, number, size }
+export const getAllTourBookings = (page = 0, size = 20) =>
+    axiosInstance.get("/tour-bookings/all", { params: { page, size } }).then(r => r.data)
 
 export const updateTourBookingStatus = (bookingId, status) =>
     axiosInstance.patch(`/tour-bookings/${bookingId}/status?status=${status}`).then(r => r.data)

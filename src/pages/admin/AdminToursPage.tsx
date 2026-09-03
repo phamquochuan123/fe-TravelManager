@@ -12,12 +12,12 @@ import { Textarea } from '../../components/ui/textarea'
 import { Label } from '../../components/ui/label'
 import { Checkbox } from '../../components/ui/checkbox'
 import { ScrollArea } from '../../components/ui/scroll-area'
-import { Separator } from '../../components/ui/separator'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/ui/sheet'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog'
 import ConfirmDialog from '../../components/admin/ConfirmDialog'
+import GooglePlacePicker from '../../components/admin/GooglePlacePicker'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -74,7 +74,6 @@ const STATUS_CFG = {
 
 const fmtVND = (n: number) => n.toLocaleString('vi-VN') + '₫'
 const parseNum = (s: string) => parseInt(s.replace(/\D/g, ''), 10) || 0
-const PLACEHOLDER = 'https://placehold.co/56x56/e2e8f0/94a3b8?text=Tour'
 
 interface SeasonalPrice {
   id: number; seasonName: string
@@ -484,6 +483,7 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
         priceAdult: String(tour.priceAdult), priceChild: String(tour.priceChild),
         description: tour.description ?? '',
         itinerary: tour.itinerary?.length ? tour.itinerary : [{ title: '', description: '' }],
+        destinations: [],
       })
       setExistingImages(tour.imageList ?? (tour.imageUrls?.map((url, i) => ({ id: i, url })) ?? []))
       setNewFiles([])
@@ -616,6 +616,14 @@ function TourSheet({ open, onOpenChange, tour, destinations, onSuccess }: {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">Hình ảnh</Label>
+                <GooglePlacePicker
+                  defaultQuery={form.destination || form.name}
+                  mode="photosOnly"
+                  onPhotoSelected={file => {
+                    setNewFiles(p => [...p, file])
+                    setNewPreviews(p => [...p, URL.createObjectURL(file)])
+                  }}
+                />
                 <ImageUploadZone
                   files={newFiles}
                   existingImages={existingImages}
@@ -756,6 +764,18 @@ export default function AdminToursPage() {
     onError: (e: Error) => toast.error(e.message),
   })
 
+  const backfillMutation = useMutation({
+    mutationFn: async () => (await api.post('/admin/places/backfill/tours')).data as {
+      total: number; updated: number; skipped: number; notFound: number; failed: number
+    },
+    onSuccess: r => {
+      toast.success(`Đã cập nhật ${r.updated}/${r.total} tour từ Google Places` +
+        (r.failed > 0 ? ` (${r.failed} lỗi)` : ''))
+      inv()
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
   const allChecked = tours.length > 0 && tours.every(t => selectedIds.has(t.id))
   const someChecked = tours.some(t => selectedIds.has(t.id)) && !allChecked
 
@@ -774,10 +794,18 @@ export default function AdminToursPage() {
         <div>
           <h1 className="text-2xl font-black text-gray-900">Quản lý Tour</h1>
         </div>
+        <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={() => backfillMutation.mutate()}
+          disabled={backfillMutation.isPending}
+          className="rounded font-semibold gap-2">
+          <Loader2 size={16} className={backfillMutation.isPending ? 'animate-spin' : 'hidden'} />
+          Làm giàu dữ liệu từ Google
+        </Button>
         <Button onClick={() => { setEditTour(null); setSheetOpen(true) }}
           className="text-white rounded font-semibold gap-2 bg-primary">
           <Plus size={16} /> Thêm Tour
         </Button>
+        </div>
       </div>
 
       {selectedIds.size > 0 && (

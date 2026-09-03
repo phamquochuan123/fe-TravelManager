@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import {
   Search, Star, MessageSquare, RefreshCw,
-  X, ChevronLeft, ChevronRight, Image as ImageIcon
+  X, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -150,7 +150,7 @@ function ReplyDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2" className="text-primary">
+            <DialogTitle className="flex items-center gap-2 text-primary">
               <MessageSquare className="w-5 h-5" />
               Phản hồi đánh giá
             </DialogTitle>
@@ -214,8 +214,7 @@ function ReplyDialog({
             <Button
               onClick={handleSave}
               disabled={saving || !reply.trim()}
-              className="bg-primary"
-              className="text-white"
+              className="bg-primary text-white"
             >
               {saving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />}
               Lưu phản hồi
@@ -509,7 +508,7 @@ export default function AdminReviewsPage() {
           ? 'Đánh giá sẽ được hiển thị công khai cho người dùng.'
           : 'Đánh giá sẽ bị ẩn và không hiển thị công khai.'}
         confirmLabel={actionTarget?.type === 'approve' ? 'Duyệt' : 'Từ chối'}
-        variant={actionTarget?.type === 'approve' ? 'default' : 'danger'}
+        variant={actionTarget?.type === 'approve' ? 'warning' : 'danger'}
         loading={approveMutation.isPending || rejectMutation.isPending}
         onConfirm={() => {
           if (!actionTarget) return

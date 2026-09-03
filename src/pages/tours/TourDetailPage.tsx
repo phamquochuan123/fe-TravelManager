@@ -12,7 +12,7 @@ import {
   MdKeyboardArrowLeft, MdKeyboardArrowRight,
 } from 'react-icons/md'
 import { getTourById, getTourReviews, toggleTourFavorite, isTourFavorited } from '../../api/tourApi'
-import { AppContext } from '../../context/AppContext'
+import { AppContext } from '../../context/appContextObject'
 import { Skeleton } from '../../components/ui/skeleton'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'

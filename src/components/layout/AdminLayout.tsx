@@ -16,13 +16,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { ScrollArea } from '../ui/scroll-area'
-import { AppContext } from '../../context/AppContext'
+import { AppContext } from '../../context/appContextObject'
 import { useAuthStore } from '../../stores/authStore'
 import api from '../../api/axiosInstance'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface IAppContext { setIsLoggedIn: (v: boolean) => void }
+interface IAppContext { logout: () => void }
 
 interface OverviewStats {
   tourBookingsByStatus?: Record<string, number>
@@ -142,7 +142,7 @@ const AdminLayout = () => {
 
   const navigate = useNavigate()
   const location = useLocation()
-  const { setIsLoggedIn } = useContext(AppContext) as IAppContext
+  const { logout } = useContext(AppContext) as IAppContext
   const user = useAuthStore(s => s.user)
 
   // Track desktop breakpoint
@@ -186,8 +186,8 @@ const AdminLayout = () => {
 
   const handleLogout = async () => {
     try { await api.post('/logout') } catch {}
-    setIsLoggedIn(false)
-    navigate('/login')
+    logout()
+    window.location.href = '/login'
   }
 
   const initials = user?.name

@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/vi'
@@ -475,8 +475,7 @@ export default function AdminOrdersPage({ defaultServiceType }: { defaultService
                           <div className="flex items-center gap-2.5">
                             <Avatar className="w-8 h-8 shrink-0">
                               <AvatarImage src={o.customerAvatar} />
-                              <AvatarFallback className="text-xs font-bold text-white"
-                                className="bg-primary">{initials}</AvatarFallback>
+                              <AvatarFallback className="text-xs font-bold text-white bg-primary">{initials}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
                               <p className="font-medium text-gray-900 truncate max-w-[120px]">{o.customerName}</p>
@@ -491,7 +490,7 @@ export default function AdminOrdersPage({ defaultServiceType }: { defaultService
                         <td className="px-4 py-3 whitespace-nowrap text-gray-600 text-xs">
                           {dayjs(o.useDate).format('DD/MM/YYYY')}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap font-bold" className="text-accent">
+                        <td className="px-4 py-3 whitespace-nowrap font-bold text-accent">
                           {fmtVND(o.totalAmount)}
                         </td>
                         <td className="px-4 py-3">

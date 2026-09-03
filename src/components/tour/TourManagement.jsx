@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 import {
     getAllTours, createTour, updateTour, deleteTour,
-    getTourById, addTourImage, deleteTourImage, addTourItinerary, updateTourItinerary,
+    getTourById, addTourItinerary, updateTourItinerary,
     deleteTourItinerary, addTourDeparture, deleteTourDeparture
 } from "../../api/tourApi"
 import api from "../../api/axiosInstance"
@@ -37,21 +37,15 @@ const TourManagement = () => {
     const [detailLoading, setDetailLoading] = useState(false)
     const [form, setForm] = useState(EMPTY_FORM)
     const [saving, setSaving] = useState(false)
-    const [deletingId, setDeletingId] = useState(null)
     const [detailTab, setDetailTab] = useState("itineraries")
 
     const [itineraryForm, setItineraryForm] = useState(EMPTY_ITINERARY)
     const [editingItinerary, setEditingItinerary] = useState(null)
     const [departureForm, setDepartureForm] = useState(EMPTY_DEPARTURE)
-    const [imageFile, setImageFile] = useState(null)
     const [subSaving, setSubSaving] = useState(false)
     const [deletingSubId, setDeletingSubId] = useState(null)
     const [staffList, setStaffList] = useState([])
     const [assigningStaff, setAssigningStaff] = useState(null)
-    const [seasonalPrices, setSeasonalPrices] = useState([])
-    const [spForm, setSpForm] = useState({ seasonName: "", startDate: "", endDate: "", priceAdult: "", priceChild: "" })
-    const [spSaving, setSpSaving] = useState(false)
-    const [spDeleting, setSpDeleting] = useState(null)
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => { } })
 
     const fetchTours = () => {
@@ -68,52 +62,7 @@ const TourManagement = () => {
 
     useEffect(() => {
         if (detailTab === "departures") fetchStaff()
-        if (detailTab === "seasonal-prices" && detailTour) fetchSeasonalPrices()
     }, [detailTab])
-
-    const fetchSeasonalPrices = async () => {
-        try {
-            const res = await api.get(`/tours/${detailTour.id}/seasonal-prices`)
-            setSeasonalPrices(res.data || [])
-        } catch { }
-    }
-
-    const handleAddSeasonalPrice = async e => {
-        e.preventDefault()
-        if (!spForm.seasonName || !spForm.startDate || !spForm.endDate || !spForm.priceAdult) {
-            toast.error("Vui lòng điền đầy đủ thông tin bắt buộc"); return
-        }
-        setSpSaving(true)
-        try {
-            await api.post(`/tours/${detailTour.id}/seasonal-prices`, {
-                seasonName: spForm.seasonName,
-                startDate: spForm.startDate,
-                endDate: spForm.endDate,
-                priceAdult: Number(spForm.priceAdult),
-                priceChild: spForm.priceChild ? Number(spForm.priceChild) : null,
-            })
-            toast.success("Thêm giá mùa thành công")
-            setSpForm({ seasonName: "", startDate: "", endDate: "", priceAdult: "", priceChild: "" })
-            fetchSeasonalPrices()
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Không thể thêm giá")
-        } finally {
-            setSpSaving(false)
-        }
-    }
-
-    const handleDeleteSeasonalPrice = async (spId) => {
-        setSpDeleting(spId)
-        try {
-            await api.delete(`/tours/${detailTour.id}/seasonal-prices/${spId}`)
-            toast.success("Đã xoá")
-            fetchSeasonalPrices()
-        } catch {
-            toast.error("Không thể xoá")
-        } finally {
-            setSpDeleting(null)
-        }
-    }
 
     const openAdd = () => { setForm(EMPTY_FORM); setEditingTour(null); setView("add") }
     const openEdit = async (tour) => {
@@ -146,7 +95,6 @@ const TourManagement = () => {
         setDetailTab("itineraries")
         setItineraryForm(EMPTY_ITINERARY)
         setDepartureForm(EMPTY_DEPARTURE)
-        setImageFile(null)
         setEditingItinerary(null)
         fetchDetail(tour.id)
         setView("detail")
@@ -193,15 +141,12 @@ const TourManagement = () => {
             variant: "danger",
             onConfirm: async () => {
                 setConfirmDialog(s => ({ ...s, open: false }))
-                setDeletingId(tour.id)
                 try {
                     await deleteTour(tour.id)
                     toast.success("Đã xoá tour")
                     fetchTours()
                 } catch (e) {
                     toast.error(e.message)
-                } finally {
-                    setDeletingId(null)
                 }
             }
         })
@@ -296,7 +241,7 @@ const TourManagement = () => {
         try {
             const res = await api.get("/admin/users")
             setStaffList((res.data || []).filter(u => u.roleName === "STAFF"))
-        } catch { }
+        } catch { /* bỏ qua lỗi tải danh sách staff, không chặn UI */ }
     }
 
     const handleAssignStaff = async (departureId, staffId) => {
@@ -310,44 +255,6 @@ const TourManagement = () => {
         } finally {
             setAssigningStaff(null)
         }
-    }
-
-    const handleUploadImage = async (e) => {
-        e.preventDefault()
-        if (!imageFile) { toast.error("Chọn ảnh trước"); return }
-        setSubSaving(true)
-        try {
-            await addTourImage(detailTour.id, imageFile)
-            toast.success("Thêm ảnh thành công")
-            setImageFile(null)
-            fetchDetail(detailTour.id)
-        } catch (e) {
-            toast.error(e.message)
-        } finally {
-            setSubSaving(false)
-        }
-    }
-
-    const handleDeleteImage = (imageId) => {
-        setConfirmDialog({
-            open: true,
-            title: "Xoá ảnh này?",
-            description: "Hành động này không thể hoàn tác.",
-            variant: "danger",
-            onConfirm: async () => {
-                setConfirmDialog(s => ({ ...s, open: false }))
-                setDeletingSubId(imageId)
-                try {
-                    await deleteTourImage(detailTour.id, imageId)
-                    toast.success("Đã xoá ảnh")
-                    fetchDetail(detailTour.id)
-                } catch (e) {
-                    toast.error(e.message)
-                } finally {
-                    setDeletingSubId(null)
-                }
-            }
-        })
     }
 
     const filtered = tours.filter(t => {
@@ -483,7 +390,6 @@ const TourManagement = () => {
                                 { key: "itineraries", icon: "bi-signpost-split", label: "Lịch trình", count: detailTour.itineraries?.length },
                                 { key: "departures", icon: "bi-calendar-event", label: "Khởi hành", count: detailTour.departures?.length },
                                 { key: "images", icon: "bi-image", label: "Thư viện ảnh", count: detailTour.images?.length },
-                                { key: "seasonal-prices", icon: "bi-tag", label: "Giá theo mùa" },
                             ].map(t => (
                                 <button key={t.key} onClick={() => setDetailTab(t.key)}
                                     className={`px-6 py-3 text-sm font-bold rounded-full transition-all flex items-center gap-2 whitespace-nowrap

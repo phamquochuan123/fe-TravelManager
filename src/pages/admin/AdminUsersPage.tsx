@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
@@ -219,7 +219,7 @@ function CustomerDetailSheet({
                   <p className="text-xs text-gray-500 mt-1">Đơn đặt</p>
                 </div>
                 <div className="bg-orange-50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold" className="text-accent">
+                  <p className="text-2xl font-bold text-accent">
                     {((customer.totalSpent ?? 0) / 1_000_000).toFixed(1)}M
                   </p>
                   <p className="text-xs text-gray-500 mt-1">Chi tiêu (VNĐ)</p>
@@ -253,8 +253,7 @@ function CustomerDetailSheet({
         <div className="px-6 py-4 border-t flex gap-2">
           {isLocked ? (
             <Button
-              className="flex-1"
-              className="bg-primary"
+              className="flex-1 bg-primary"
               onClick={() => onUnlock(customer)}
             >
               <Shield className="w-4 h-4 mr-2" /> Mở khóa
@@ -356,7 +355,7 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" className="text-primary">Quản lý người dùng</h1>
+          <h1 className="text-2xl font-bold text-primary">Quản lý người dùng</h1>
           <p className="text-sm text-gray-500 mt-0.5">Danh sách khách hàng đã đăng ký</p>
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -450,7 +449,7 @@ export default function AdminUsersPage() {
                     {c.phone && <p className="text-xs text-gray-400">{c.phone}</p>}
                   </td>
                   <td className="px-4 py-3 text-center font-medium">{c.bookingsCount ?? 0}</td>
-                  <td className="px-4 py-3 text-right font-medium" className="text-accent">
+                  <td className="px-4 py-3 text-right font-medium text-accent">
                     {((c.totalSpent ?? 0) / 1_000_000).toFixed(1)}M
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">

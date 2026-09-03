@@ -7,13 +7,12 @@ import RoomPaginator from './RoomPaginator'
 const Room = () => {
     const [data, setData] = useState([])
     const [error, setError] = useState(null)
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(1)
     const [roomsPerPage] = useState(6)
     const [filteredData, setFilteredData] = useState([])
 
     useEffect(() => {
-        setIsLoading(true)
         getAllRooms().then((data) => {
             setData(data)
             setFilteredData(data)

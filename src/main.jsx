@@ -9,6 +9,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AppContextProvider } from "./context/AppContext.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,18 +21,20 @@ const queryClient = new QueryClient({
 });
 
 createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <AppContextProvider>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg"
-        >
-          Bỏ qua điều hướng
-        </a>
-        <App />
-        <Toaster position="top-right" richColors closeButton duration={3500} />
-      </AppContextProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <AppContextProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg"
+          >
+            Bỏ qua điều hướng
+          </a>
+          <App />
+          <Toaster position="top-right" richColors closeButton duration={3500} />
+        </AppContextProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
+  </GoogleOAuthProvider>
 );

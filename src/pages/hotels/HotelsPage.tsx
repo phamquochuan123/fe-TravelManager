@@ -532,7 +532,6 @@ function Pagination({ page, total, onChange }: { page: number; total: number; on
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HotelsPage() {
-  const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [draft,  setDraft]  = useState<Filters>(INIT_FILTERS)
   const [active, setActive] = useState<Filters>(INIT_FILTERS)

@@ -37,8 +37,9 @@ export const bookRestaurant = (restaurantId, data) =>
 export const getMyRestaurantBookings = () =>
     axiosInstance.get("/restaurants/bookings/my").then(r => r.data)
 
-export const getAllRestaurantBookings = () =>
-    axiosInstance.get("/restaurants/bookings/all").then(r => r.data)
+// Backend trả Page<T>: { content, totalElements, totalPages, number, size }
+export const getAllRestaurantBookings = (page = 0, size = 20) =>
+    axiosInstance.get("/restaurants/bookings/all", { params: { page, size } }).then(r => r.data)
 
 export const updateRestaurantBookingStatus = (bookingId, status) =>
     axiosInstance.patch(`/restaurants/bookings/${bookingId}/status?status=${status}`).then(r => r.data)

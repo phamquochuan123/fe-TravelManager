@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs'
 import ConfirmDialog from '../../components/admin/ConfirmDialog'
+import GooglePlacePicker from '../../components/admin/GooglePlacePicker'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,6 +38,9 @@ interface Restaurant {
   id: number
   name: string
   address: string
+  city?: string
+  latitude?: number | null
+  longitude?: number | null
   phone?: string
   cuisineType: string
   openTime: string
@@ -52,9 +56,10 @@ interface Restaurant {
 interface PagedRestaurants { content: Restaurant[]; totalPages: number; totalElements: number }
 
 interface RestaurantForm {
-  name: string; address: string; phone: string; cuisineType: string
+  name: string; address: string; city: string; phone: string; cuisineType: string
   openTime: string; closeTime: string; maxTables: string; description: string
   menuCategories: MenuCategory[]
+  latitude: number | null; longitude: number | null
 }
 
 const CUISINE_TYPES: Array<{ value: string; label: string }> = [
@@ -68,17 +73,15 @@ const CUISINE_TYPES: Array<{ value: string; label: string }> = [
   { value: 'OTHER',      label: 'Khác' },
 ]
 const MENU_CATS = ['Khai vị', 'Món chính', 'Tráng miệng', 'Đồ uống']
-const PLACEHOLDER = 'https://placehold.co/56x56/e2e8f0/94a3b8?text=Res'
 
 const EMPTY_ITEM: MenuItem = { name: '', description: '', price: 0, isBestSeller: false, isNew: false }
 
 const INIT_FORM: RestaurantForm = {
-  name: '', address: '', phone: '', cuisineType: '',
+  name: '', address: '', city: '', phone: '', cuisineType: '',
   openTime: '08:00', closeTime: '22:00', maxTables: '20', description: '',
   menuCategories: MENU_CATS.map(name => ({ name, items: [] })),
+  latitude: null, longitude: null,
 }
-
-const fmtVND = (n: number) => n.toLocaleString('vi-VN') + '₫'
 
 // ─── Multi Image Upload ───────────────────────────────────────────────────────
 
@@ -151,12 +154,14 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
     if (restaurant) {
       setForm({
         name: restaurant.name, address: restaurant.address,
+        city: restaurant.city ?? '',
         phone: restaurant.phone ?? '', cuisineType: restaurant.cuisineType,
         openTime: restaurant.openTime, closeTime: restaurant.closeTime,
         maxTables: String(restaurant.maxTables), description: restaurant.description ?? '',
         menuCategories: restaurant.menuCategories?.length
           ? restaurant.menuCategories
           : MENU_CATS.map(name => ({ name, items: [] })),
+        latitude: restaurant.latitude ?? null, longitude: restaurant.longitude ?? null,
       })
       setImages([]); setPreviews(restaurant.imageUrls ?? [])
     } else {
@@ -191,9 +196,12 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
     try {
       const fd = new FormData()
       fd.append('name', form.name); fd.append('address', form.address)
-      fd.append('phone', form.phone); fd.append('cuisineType', form.cuisineType)
+      fd.append('city', form.city); fd.append('phone', form.phone)
+      fd.append('cuisineType', form.cuisineType)
       fd.append('openTime', form.openTime); fd.append('closeTime', form.closeTime)
       fd.append('maxTables', form.maxTables); fd.append('description', form.description)
+      if (form.latitude != null) fd.append('latitude', String(form.latitude))
+      if (form.longitude != null) fd.append('longitude', String(form.longitude))
       const cats = form.menuCategories.map(c => ({
         ...c, items: c.items.map(it => ({ ...it, imageFile: undefined, imagePreview: undefined }))
       }))
@@ -234,10 +242,31 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
                 <Label className="text-sm font-medium">Tên nhà hàng <span className="text-red-500">*</span></Label>
                 <Input value={form.name} onChange={e => set('name', e.target.value)} placeholder="Tên nhà hàng..." />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Địa chỉ</Label>
-                <Input value={form.address} onChange={e => set('address', e.target.value)} placeholder="Địa chỉ..." />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Địa chỉ</Label>
+                  <Input value={form.address} onChange={e => set('address', e.target.value)} placeholder="Địa chỉ..." />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Thành phố <span className="text-red-500">*</span></Label>
+                  <Input value={form.city} onChange={e => set('city', e.target.value)} placeholder="Hà Nội, Đà Nẵng..." />
+                </div>
               </div>
+              <GooglePlacePicker
+                defaultQuery={form.name}
+                mode="full"
+                onSelect={c => {
+                  set('address', c.formattedAddress ?? form.address)
+                  if (c.city) set('city', c.city)
+                  set('latitude', c.latitude ?? null)
+                  set('longitude', c.longitude ?? null)
+                }}
+                onPhotoSelected={file => {
+                  const url = URL.createObjectURL(file)
+                  setImages(prev => [file, ...prev])
+                  setPreviews(prev => [url, ...prev])
+                }}
+              />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium">Số điện thoại</Label>
@@ -395,16 +424,36 @@ export default function AdminRestaurantsPage() {
     onError: (e: Error) => toast.error(e.message),
   })
 
+  const backfillMutation = useMutation({
+    mutationFn: async () => (await api.post('/admin/places/backfill/restaurants')).data as {
+      total: number; updated: number; skipped: number; notFound: number; failed: number
+    },
+    onSuccess: r => {
+      toast.success(`Đã cập nhật ${r.updated}/${r.total} nhà hàng từ Google Places` +
+        (r.failed > 0 ? ` (${r.failed} lỗi)` : ''))
+      inv()
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
   return (
     <div className="p-6 space-y-5" >
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Quản lý Nhà hàng</h1>
         </div>
-        <Button onClick={() => { setEditRest(null); setSheetOpen(true) }}
-          className="text-white rounded font-semibold gap-2 bg-primary">
-          <Plus size={16} /> Thêm nhà hàng
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => backfillMutation.mutate()}
+            disabled={backfillMutation.isPending}
+            className="rounded font-semibold gap-2">
+            <Loader2 size={16} className={backfillMutation.isPending ? 'animate-spin' : 'hidden'} />
+            Làm giàu dữ liệu từ Google
+          </Button>
+          <Button onClick={() => { setEditRest(null); setSheetOpen(true) }}
+            className="text-white rounded font-semibold gap-2 bg-primary">
+            <Plus size={16} /> Thêm nhà hàng
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">

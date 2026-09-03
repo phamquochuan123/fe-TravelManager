@@ -7,6 +7,7 @@ import {
     deleteDestination, toggleDestinationActive, uploadDestinationPhoto
 } from "../../api/destinationApi"
 import ConfirmDialog from "../admin/ConfirmDialog"
+import GooglePlacePicker from "../admin/GooglePlacePicker"
 
 const TYPE_LABEL = {
     NATURE: "Thiên nhiên", CULTURE: "Văn hóa", FOOD: "Ẩm thực",
@@ -26,7 +27,7 @@ const TYPE_ICON = {
 
 const EMPTY_FORM = {
     name: "", description: "", destinationType: "NATURE",
-    province: "", city: "", isActive: true
+    province: "", city: "", address: "", latitude: null, longitude: null, isActive: true
 }
 
 const DestinationManagement = () => {
@@ -44,6 +45,9 @@ const DestinationManagement = () => {
     const [photoFile, setPhotoFile] = useState(null)
     const [photoPreview, setPhotoPreview] = useState(null)
     const [uploadingPhoto, setUploadingPhoto] = useState(false)
+    // Ảnh chọn từ Google ngay trong form thêm/sửa (khác với photoFile của view "photo" riêng)
+    const [pickedPhotoFile, setPickedPhotoFile] = useState(null)
+    const [pickedPhotoPreview, setPickedPhotoPreview] = useState(null)
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", description: "", variant: "danger", onConfirm: () => {} })
 
     const fetchDestinations = () => {
@@ -53,15 +57,21 @@ const DestinationManagement = () => {
 
     useEffect(() => { fetchDestinations() }, [])
 
-    const openAdd = () => { setForm(EMPTY_FORM); setEditingItem(null); setView("add") }
+    const openAdd = () => {
+        setForm(EMPTY_FORM); setEditingItem(null)
+        setPickedPhotoFile(null); setPickedPhotoPreview(null)
+        setView("add")
+    }
     const openEdit = (item) => {
         setEditingItem(item)
         setForm({
             name: item.name || "", description: item.description || "",
             destinationType: item.destinationType || "NATURE",
             province: item.province || "", city: item.city || "",
+            address: item.address || "", latitude: item.latitude ?? null, longitude: item.longitude ?? null,
             isActive: item.active !== false
         })
+        setPickedPhotoFile(null); setPickedPhotoPreview(null)
         setView("edit")
     }
     const openPhoto = (item) => {
@@ -77,15 +87,32 @@ const DestinationManagement = () => {
         setSaving(true)
         try {
             const payload = { ...form }
+            let savedId = editingItem?.id
             if (view === "add") {
-                await createDestination(payload)
+                const created = await createDestination(payload)
+                savedId = created.id
                 toast.success("Tạo địa điểm thành công!")
             } else {
                 await updateDestination(editingItem.id, payload)
                 toast.success("Cập nhật thành công!")
             }
+
+            // Destination đã lưu xong — luôn refresh list & thoát form, dù bước upload ảnh sau đây có lỗi hay không
             fetchDestinations()
             setView("list")
+
+            if (pickedPhotoFile && savedId) {
+                try {
+                    await uploadDestinationPhoto(savedId, pickedPhotoFile)
+                    fetchDestinations()
+                } catch (photoErr) {
+                    toast.error(
+                        "Đã lưu địa điểm nhưng upload ảnh thất bại: " +
+                        (photoErr.response?.data?.message || photoErr.message) +
+                        ". Vui lòng vào sửa địa điểm để upload lại ảnh."
+                    )
+                }
+            }
         } catch (e) {
             toast.error(e.response?.data?.message || e.message)
         } finally {
@@ -218,6 +245,34 @@ const DestinationManagement = () => {
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Tỉnh / Vùng</label>
                             <input value={form.province} onChange={e => setForm(f => ({ ...f, province: e.target.value }))}
                                 placeholder="Quảng Nam, Lâm Đồng..." className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Địa chỉ cụ thể</label>
+                            <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+                                placeholder="Số nhà, đường..." className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                        </div>
+                        <div className="md:col-span-2">
+                            <GooglePlacePicker
+                                defaultQuery={form.name}
+                                mode="full"
+                                onSelect={c => setForm(f => ({
+                                    ...f,
+                                    address: c.formattedAddress ?? f.address,
+                                    city: c.city ?? f.city,
+                                    latitude: c.latitude ?? null,
+                                    longitude: c.longitude ?? null,
+                                }))}
+                                onPhotoSelected={file => {
+                                    setPickedPhotoFile(file)
+                                    setPickedPhotoPreview(URL.createObjectURL(file))
+                                }}
+                            />
+                            {pickedPhotoPreview && (
+                                <div className="mt-2 flex items-center gap-2">
+                                    <img src={pickedPhotoPreview} alt="" className="w-14 h-14 rounded object-cover border border-gray-200" />
+                                    <span className="text-xs text-gray-500">Ảnh này sẽ được lưu làm ảnh đại diện khi bấm Lưu</span>
+                                </div>
+                            )}
                         </div>
                         <div className="md:col-span-2">
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Mô tả</label>

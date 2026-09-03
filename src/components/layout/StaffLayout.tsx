@@ -13,14 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
-import { AppContext } from '../../context/AppContext'
+import { AppContext } from '../../context/appContextObject'
 import { useAuthStore } from '../../stores/authStore'
 import api from '../../api/axiosInstance'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface IAppContext {
-  setIsLoggedIn: (v: boolean) => void
+  logout: () => void
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -53,13 +53,13 @@ const StaffLayout = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { setIsLoggedIn } = useContext(AppContext) as IAppContext
+  const { logout } = useContext(AppContext) as IAppContext
   const user = useAuthStore(s => s.user)
 
   const handleLogout = async () => {
     try { await api.post('/logout') } catch {}
-    setIsLoggedIn(false)
-    navigate('/login')
+    logout()
+    window.location.href = '/login'
   }
 
   const breadcrumb = BREADCRUMB_LABELS[location.pathname] ?? 'Staff Portal'

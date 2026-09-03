@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { MdFlight, MdPhone } from 'react-icons/md';
 import {
@@ -8,8 +8,11 @@ import {
 } from 'react-icons/hi';
 import { toast } from 'react-toastify';
 import { useAuthStore, selectUser, selectIsAdmin, selectIsStaff } from '../../stores/authStore';
+import { AppContext } from '../../context/appContextObject';
 import api from '../../api/axiosInstance';
 import type { User } from '../../types';
+
+interface IAppContext { logout: () => void }
 
 const NAV_LINKS = [
   { path: '/tours',       label: 'Tour'      },
@@ -47,7 +50,7 @@ const Navbar = () => {
   const user       = useAuthStore(selectUser);
   const isAdmin    = useAuthStore(selectIsAdmin);
   const isStaff    = useAuthStore(selectIsStaff);
-  const { logout } = useAuthStore();
+  const { logout } = useContext(AppContext) as IAppContext;
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen,   setMobileOpen]   = useState(false);
@@ -76,8 +79,9 @@ const Navbar = () => {
   }, [mobileOpen]);
 
   const handleLogout = async () => {
-    try { await api.post('/logout'); logout(); navigate('/login'); }
+    try { await api.post('/logout'); }
     catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Đăng xuất thất bại'); }
+    finally { logout(); window.location.href = '/login'; }
   };
 
   const handleSendOTP = async () => {

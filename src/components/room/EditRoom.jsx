@@ -3,7 +3,7 @@ import { resolveBase64Image } from '../../lib/utils'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getRoomById, updateRoom, getRoomTypes } from '../../api/roomApi'
 import { toast } from 'react-toastify'
-import MenuBar from '../Menubar'
+import MenuBar from '../layout/Navbar'
 
 const EditRoom = () => {
     const { roomId } = useParams()

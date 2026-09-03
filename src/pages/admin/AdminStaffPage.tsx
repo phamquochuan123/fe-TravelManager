@@ -165,8 +165,7 @@ function StaffSheet({
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-white shadow"
-                  className="bg-primary"
+                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-white shadow bg-primary"
                 >
                   <Camera className="w-3.5 h-3.5" />
                 </button>
@@ -272,8 +271,7 @@ function StaffSheet({
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-primary"
-            className="text-white"
+            className="bg-primary text-white"
           >
             {saving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />}
             {isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên'}
@@ -339,13 +337,12 @@ export default function AdminStaffPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" className="text-primary">Quản lý nhân viên</h1>
+          <h1 className="text-2xl font-bold text-primary">Quản lý nhân viên</h1>
           <p className="text-sm text-gray-500 mt-0.5">Danh sách tài khoản nhân viên</p>
         </div>
         <Button
           onClick={() => { setEditTarget(null); setSheetOpen(true) }}
-          className="bg-primary"
-          className="text-white"
+          className="bg-primary text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
           Thêm nhân viên

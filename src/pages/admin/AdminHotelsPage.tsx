@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Plus, Search, Pencil, Trash2, Star, ImagePlus, X, Loader2 } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, ImagePlus, X, Loader2 } from 'lucide-react'
 import api from '../../api/axiosInstance'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs'
 import ConfirmDialog from '../../components/admin/ConfirmDialog'
+import GooglePlacePicker from '../../components/admin/GooglePlacePicker'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,8 @@ interface Hotel {
   id: number
   name: string
   address: string
+  latitude?: number | null
+  longitude?: number | null
   phone?: string
   email?: string
   stars: 1 | 2 | 3 | 4 | 5
@@ -48,17 +51,17 @@ interface HotelForm {
   name: string; address: string; phone: string; email: string
   stars: string; description: string; amenities: string[]
   roomTypes: RoomType[]
+  latitude: number | null; longitude: number | null
 }
 
 const AMENITIES = ['Wifi', 'Bể bơi', 'Gym', 'Spa', 'Bãi đỗ xe', 'Nhà hàng', 'Bar', 'Phòng hội nghị', 'Giặt ủi', 'Lễ tân 24h']
-const PLACEHOLDER = 'https://placehold.co/56x56/e2e8f0/94a3b8?text=Hotel'
 
 const INIT_FORM: HotelForm = {
   name: '', address: '', phone: '', email: '',
   stars: '3', description: '', amenities: [], roomTypes: [],
+  latitude: null, longitude: null,
 }
 
-const fmtVND = (n: number) => n.toLocaleString('vi-VN') + '₫'
 const EMPTY_ROOM: RoomType = { name: '', area: 20, capacity: 2, pricePerNight: 0 }
 
 // ─── Single Image Upload ──────────────────────────────────────────────────────
@@ -159,6 +162,7 @@ function HotelSheet({ open, onOpenChange, hotel, onSuccess }: {
         stars: String(hotel.stars), description: hotel.description ?? '',
         amenities: hotel.amenities ?? [],
         roomTypes: hotel.roomTypes ?? [],
+        latitude: hotel.latitude ?? null, longitude: hotel.longitude ?? null,
       })
       setImages([]); setPreviews(hotel.imageUrls ?? [])
     } else {
@@ -187,6 +191,8 @@ function HotelSheet({ open, onOpenChange, hotel, onSuccess }: {
       fd.append('phone', form.phone); fd.append('email', form.email)
       fd.append('stars', form.stars); fd.append('description', form.description)
       fd.append('amenities', JSON.stringify(form.amenities))
+      if (form.latitude != null) fd.append('latitude', String(form.latitude))
+      if (form.longitude != null) fd.append('longitude', String(form.longitude))
       const roomsData = form.roomTypes.map(r => ({ ...r, imageFile: undefined, imagePreview: undefined }))
       fd.append('roomTypes', JSON.stringify(roomsData))
       form.roomTypes.forEach((r, i) => { if (r.imageFile) fd.append(`roomImage_${i}`, r.imageFile) })
@@ -225,6 +231,20 @@ function HotelSheet({ open, onOpenChange, hotel, onSuccess }: {
                 <Label className="text-sm font-medium">Địa chỉ</Label>
                 <Input value={form.address} onChange={e => set('address', e.target.value)} placeholder="Địa chỉ..." />
               </div>
+              <GooglePlacePicker
+                defaultQuery={form.name}
+                mode="full"
+                onSelect={c => {
+                  set('address', c.formattedAddress ?? form.address)
+                  set('latitude', c.latitude ?? null)
+                  set('longitude', c.longitude ?? null)
+                }}
+                onPhotoSelected={file => {
+                  const url = URL.createObjectURL(file)
+                  setImages(prev => [file, ...prev])
+                  setPreviews(prev => [url, ...prev])
+                }}
+              />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium">Số điện thoại</Label>
@@ -358,7 +378,6 @@ export default function AdminHotelsPage() {
 
   const hotels = paged?.content ?? []
   const totalPages = paged?.totalPages ?? 1
-  const totalElements = paged?.totalElements ?? 0
 
   const inv = () => qc.invalidateQueries({ queryKey: ['admin', 'hotels'] })
 
@@ -368,16 +387,36 @@ export default function AdminHotelsPage() {
     onError: (e: Error) => toast.error(e.message),
   })
 
+  const backfillMutation = useMutation({
+    mutationFn: async () => (await api.post('/admin/places/backfill/hotels')).data as {
+      total: number; updated: number; skipped: number; notFound: number; failed: number
+    },
+    onSuccess: r => {
+      toast.success(`Đã cập nhật ${r.updated}/${r.total} khách sạn từ Google Places` +
+        (r.failed > 0 ? ` (${r.failed} lỗi)` : ''))
+      inv()
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
   return (
     <div className="p-6 space-y-5" >
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Quản lý Khách sạn</h1>
         </div>
-        <Button onClick={() => { setEditHotel(null); setSheetOpen(true) }}
-          className="text-white rounded font-semibold gap-2 bg-primary">
-          <Plus size={16} /> Thêm khách sạn
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => backfillMutation.mutate()}
+            disabled={backfillMutation.isPending}
+            className="rounded font-semibold gap-2">
+            <Loader2 size={16} className={backfillMutation.isPending ? 'animate-spin' : 'hidden'} />
+            Làm giàu dữ liệu từ Google
+          </Button>
+          <Button onClick={() => { setEditHotel(null); setSheetOpen(true) }}
+            className="text-white rounded font-semibold gap-2 bg-primary">
+            <Plus size={16} /> Thêm khách sạn
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">

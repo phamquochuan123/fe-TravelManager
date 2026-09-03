@@ -354,7 +354,7 @@ function ReviewSection({ reviews }: { reviews: Review[] }) {
 const bookingSchema = z.object({
   bookingDate:     z.string().min(1),
   bookingTime:     z.string().min(1, 'Vui lòng chọn khung giờ'),
-  guestCount:      z.coerce.number().int().min(1).max(100),
+  guestCount:      z.number().int().min(1).max(100),
   specialRequests: z.string().optional(),
   contactName:     z.string().min(1, 'Vui lòng nhập họ tên'),
   contactPhone:    z.string().min(9, 'Số điện thoại không hợp lệ'),
@@ -498,7 +498,7 @@ function BookingSidebar({ restaurant }: { restaurant: Restaurant }) {
               <FormControl>
                 <DatePicker
                   selected={pickedDate}
-                  onChange={d => {
+                  onChange={(d: Date | null) => {
                     setPickedDate(d)
                     field.onChange(d ? toDateStr(d) : '')
                     form.setValue('bookingTime', '')

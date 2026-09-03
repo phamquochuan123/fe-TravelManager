@@ -1,8 +1,8 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/axiosInstance";
 import { useAuthStore } from "../stores/authStore";
+import { AppContext } from "./appContextObject";
 
-export const AppContext = createContext();
 export const AppContextProvider = (props) => {
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -11,7 +11,7 @@ export const AppContextProvider = (props) => {
 
     const getUserData = async () => {
         try {
-            const response = await api.get("/profile");
+            const response = await api.get("/profile", { skipAuthRedirect: true });
             setUserData(response.data);
             useAuthStore.getState().login(response.data);
             return response.data;
@@ -45,6 +45,7 @@ export const AppContextProvider = (props) => {
         const handleFocus = () => { if (document.visibilityState === "visible") safeGetAuthState(); };
         document.addEventListener("visibilitychange", handleFocus);
         return () => document.removeEventListener("visibilitychange", handleFocus);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý chỉ chạy 1 lần lúc mount, getAuthState không cần trong deps
     }, []);
 
 
@@ -54,12 +55,20 @@ export const AppContextProvider = (props) => {
         if (data) login(data); else storeLogout();
     };
 
+    // Nguồn logout duy nhất — luôn clear đồng thời AppContext lẫn Zustand authStore,
+    // tránh trường hợp 2 nơi lưu state lệch nhau sau khi đăng xuất.
+    const logout = () => {
+        setIsLoggedIn(false);
+        setUserDataSynced(null);
+    };
+
     const contextValue = {
         isLoggedIn,
         setIsLoggedIn,
         userData,
         setUserData: setUserDataSynced,
         getUserData,
+        logout,
         isLoading
     }
     return (

@@ -1,12 +1,25 @@
 import { useEffect, useState, useContext } from "react"
 import { useParams, useNavigate } from "react-router-dom"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { getRestaurantById, bookRestaurant } from "../../api/restaurantApi"
-import { AppContext } from "../../context/AppContext"
+import { AppContext } from "../../context/appContextObject"
 import axiosInstance from "../../api/axiosInstance"
-import MenuBar from "../../components/Menubar"
+import MenuBar from "../../components/layout/Navbar"
 import { toast } from "react-toastify"
 
 const ALL_TIME_SLOTS = ["10:00", "11:00", "12:00", "13:00", "14:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
+
+const bookingSchema = z.object({
+    bookingDate: z.string().min(1, "Chọn ngày đặt bàn"),
+    bookingTime: z.string().min(1, "Chọn giờ"),
+    guestCount: z.coerce.number().min(1, "Ít nhất 1 khách"),
+    specialRequests: z.string().optional(),
+    contactName: z.string().min(1, "Vui lòng nhập họ tên"),
+    contactPhone: z.string().regex(/^0[35789]\d{8}$/, "Số điện thoại không hợp lệ (10 số, đầu 03/05/07/08/09)"),
+    contactEmail: z.string().min(1, "Vui lòng nhập email").email("Email không hợp lệ"),
+})
 
 const toDateStr = (d) => d.toISOString().split("T")[0]
 
@@ -36,65 +49,47 @@ const BookRestaurant = () => {
     const DEPOSIT_AMOUNT = 100000 // 100,000 ₫ tiền đặt cọc
 
     const today = toDateStr(new Date())
-    const [form, setForm] = useState({
-        bookingDate: today,
-        bookingTime: "19:00",
-        guestCount: 2,
-        specialRequests: "",
-        contactName: "",
-        contactPhone: "",
-        contactEmail: "",
+
+    const { register, handleSubmit: handleFormSubmit, watch, setValue, formState: { errors } } = useForm({
+        resolver: zodResolver(bookingSchema),
+        defaultValues: {
+            bookingDate: today,
+            bookingTime: "19:00",
+            guestCount: 2,
+            specialRequests: "",
+            contactName: "",
+            contactPhone: "",
+            contactEmail: "",
+        },
     })
-    const [errors, setErrors] = useState({})
+    const form = watch()
 
     useEffect(() => {
         getRestaurantById(restaurantId)
             .then(setRestaurant)
             .catch(() => navigate("/restaurants"))
             .finally(() => setLoading(false))
-    }, [restaurantId])
+    }, [restaurantId, navigate])
 
     useEffect(() => {
         if (userData) {
-            setForm(f => ({
-                ...f,
-                contactName: userData.name || f.contactName,
-                contactEmail: userData.email || f.contactEmail,
-            }))
+            if (userData.name) setValue("contactName", userData.name)
+            if (userData.email) setValue("contactEmail", userData.email)
         }
-    }, [userData])
+    }, [userData, setValue])
 
-    const validate = () => {
-        const e = {}
-        if (!form.bookingDate) e.bookingDate = "Chọn ngày đặt bàn"
-        if (!form.bookingTime) e.bookingTime = "Chọn giờ"
-        if (form.guestCount < 1) e.guestCount = "Ít nhất 1 khách"
-        if (!form.contactName.trim()) e.contactName = "Vui lòng nhập họ tên"
-        if (!form.contactPhone.trim()) e.contactPhone = "Vui lòng nhập số điện thoại"
-        if (!form.contactEmail.trim() || !/\S+@\S+\.\S+/.test(form.contactEmail)) e.contactEmail = "Email không hợp lệ"
-        return e
-    }
+    useEffect(() => {
+        const slots = getAvailableSlots(form.bookingDate)
+        if (slots.length > 0 && !slots.includes(form.bookingTime)) {
+            setValue("bookingTime", slots[0])
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý bỏ qua form.bookingTime vì effect này tự set nó, thêm vào sẽ gây chạy lại thừa mỗi khi giờ đặt đổi
+    }, [form.bookingDate, setValue])
 
-    const handleChange = e => {
-        const { name, value } = e.target
-        setForm(f => {
-            const updated = { ...f, [name]: name === "guestCount" ? Number(value) : value }
-            if (name === "bookingDate") {
-                const slots = getAvailableSlots(value)
-                updated.bookingTime = slots.length > 0 ? slots[0] : ""
-            }
-            return updated
-        })
-        setErrors(errs => ({ ...errs, [name]: "" }))
-    }
-
-    const handleSubmit = async e => {
-        e.preventDefault()
-        const errs = validate()
-        if (Object.keys(errs).length) { setErrors(errs); return }
+    const onSubmit = async data => {
         setSubmitting(true)
         try {
-            const result = await bookRestaurant(restaurantId, form)
+            const result = await bookRestaurant(restaurantId, data)
             setBooking(result)
             toast.success("Đặt bàn thành công!")
         } catch (err) {
@@ -207,7 +202,7 @@ const BookRestaurant = () => {
                 <h1 className="text-3xl font-black text-gray-900 mb-8">Đặt bàn</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6">
+                    <form onSubmit={handleFormSubmit(onSubmit)} className="lg:col-span-3 space-y-6">
                         {/* Date & Time */}
                         <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
                             <h2 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
@@ -216,14 +211,14 @@ const BookRestaurant = () => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ngày <span className="text-red-500">*</span></label>
-                                    <input type="date" name="bookingDate" value={form.bookingDate} min={today}
-                                        onChange={handleChange}
+                                    <input type="date" min={today}
+                                        {...register("bookingDate")}
                                         className={`w-full border ${errors.bookingDate ? "border-red-400" : "border-gray-200"} rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all`} />
-                                    {errors.bookingDate && <p className="text-red-500 text-xs mt-1">{errors.bookingDate}</p>}
+                                    {errors.bookingDate && <p className="text-red-500 text-xs mt-1">{errors.bookingDate.message}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Giờ <span className="text-red-500">*</span></label>
-                                    <select name="bookingTime" value={form.bookingTime} onChange={handleChange}
+                                    <select {...register("bookingTime")}
                                         className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all">
                                         {getAvailableSlots(form.bookingDate).map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
@@ -241,11 +236,11 @@ const BookRestaurant = () => {
                             </h2>
                             <div className="flex items-center gap-4">
                                 <button type="button"
-                                    onClick={() => setForm(f => ({ ...f, guestCount: Math.max(1, f.guestCount - 1) }))}
+                                    onClick={() => setValue("guestCount", Math.max(1, form.guestCount - 1))}
                                     className="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-orange-400 hover:bg-orange-50 flex items-center justify-center text-gray-600 font-bold transition-all">−</button>
                                 <span className="text-2xl font-black text-gray-900 w-8 text-center">{form.guestCount}</span>
                                 <button type="button"
-                                    onClick={() => setForm(f => ({ ...f, guestCount: f.guestCount + 1 }))}
+                                    onClick={() => setValue("guestCount", form.guestCount + 1)}
                                     className="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-orange-400 hover:bg-orange-50 flex items-center justify-center text-gray-600 font-bold transition-all">+</button>
                                 <span className="text-sm text-gray-500">người</span>
                             </div>
@@ -264,16 +259,16 @@ const BookRestaurant = () => {
                                 ].map(field => (
                                     <div key={field.name}>
                                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">{field.label} <span className="text-red-500">*</span></label>
-                                        <input name={field.name} type={field.type} value={form[field.name]}
+                                        <input type={field.type}
                                             placeholder={field.placeholder}
-                                            onChange={handleChange}
+                                            {...register(field.name)}
                                             className={`w-full border ${errors[field.name] ? "border-red-400 focus:ring-red-100" : "border-gray-200 focus:ring-orange-100 focus:border-orange-400"} rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all`} />
-                                        {errors[field.name] && <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>}
+                                        {errors[field.name] && <p className="text-red-500 text-xs mt-1">{errors[field.name].message}</p>}
                                     </div>
                                 ))}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Yêu cầu đặc biệt</label>
-                                    <textarea name="specialRequests" value={form.specialRequests} onChange={handleChange}
+                                    <textarea {...register("specialRequests")}
                                         placeholder="Chế độ ăn kiêng, dị ứng thực phẩm, bàn riêng..."
                                         rows={3}
                                         className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 resize-none transition-all" />

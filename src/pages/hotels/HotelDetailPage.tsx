@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import DatePicker from 'react-datepicker'
@@ -744,10 +744,9 @@ export default function HotelDetailPage() {
                 {hotel.description && (
                   <section className="bg-white rounded border border-border p-6">
                     <h2 className="font-semibold text-base mb-3">Giới thiệu</h2>
-                    <div
-                      className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: hotel.description }}
-                    />
+                    <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                      {hotel.description}
+                    </div>
                   </section>
                 )}
 

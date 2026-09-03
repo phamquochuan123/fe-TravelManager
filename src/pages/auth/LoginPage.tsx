@@ -4,11 +4,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
+import { GoogleLogin, type CredentialResponse } from '@react-oauth/google'
 import {
   MdEmail, MdLock, MdVisibility, MdVisibilityOff,
   MdArrowForward, MdErrorOutline,
 } from 'react-icons/md'
-import { AppContext } from '../../context/AppContext'
+import { AppContext } from '../../context/appContextObject'
 import api from '../../api/axiosInstance'
 import AuthLayout from '../../components/layout/AuthLayout'
 import type { User } from '../../types'
@@ -18,7 +19,7 @@ import type { User } from '../../types'
 const schema = z.object({
   email:      z.string().min(1, 'Email là bắt buộc').email('Email không hợp lệ'),
   passWord:   z.string().min(8, 'Mật khẩu ít nhất 8 ký tự'),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean(),
 })
 type FormData = z.infer<typeof schema>
 
@@ -52,20 +53,37 @@ const LoginPage = () => {
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { rememberMe: false } })
 
+  const afterLoginRedirect = async () => {
+    const user: User | null = await getUserData()
+    if (!user) throw new Error('Không lấy được thông tin người dùng')
+    setIsLoggedIn(true)
+
+    toast.success(`Chào mừng trở lại, ${user.name}!`)
+
+    if      (user.roleName === 'ADMIN') navigate('/admin',  { replace: true })
+    else if (user.roleName === 'STAFF') navigate('/staff',  { replace: true })
+    else                                navigate('/',        { replace: true })
+  }
+
   const onSubmit = async (data: FormData) => {
     try {
       await api.post('/login', { email: data.email, passWord: data.passWord })
-      setIsLoggedIn(true)
-      const user: User | null = await getUserData()
-      if (!user) throw new Error('Không lấy được thông tin người dùng')
-
-      toast.success(`Chào mừng trở lại, ${user.name}!`)
-
-      if      (user.roleName === 'ADMIN') navigate('/admin',  { replace: true })
-      else if (user.roleName === 'STAFF') navigate('/staff',  { replace: true })
-      else                                navigate('/',        { replace: true })
+      await afterLoginRedirect()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Đăng nhập thất bại')
+    }
+  }
+
+  const onGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      toast.error('Đăng nhập Google thất bại')
+      return
+    }
+    try {
+      await api.post('/auth/google', { idToken: credentialResponse.credential })
+      await afterLoginRedirect()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Đăng nhập Google thất bại')
     }
   }
 
@@ -180,7 +198,15 @@ const LoginPage = () => {
           <div className="flex-1 h-px bg-gray-100" />
         </div>
 
-        <p className="text-center text-sm text-gray-500">
+        {/* Google Login */}
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={onGoogleSuccess}
+            onError={() => toast.error('Đăng nhập Google thất bại')}
+          />
+        </div>
+
+        <p className="text-center text-sm text-gray-500 mt-6">
           Chưa có tài khoản?{' '}
           <Link to="/register" className="font-black text-primary hover:underline">
             Đăng ký ngay

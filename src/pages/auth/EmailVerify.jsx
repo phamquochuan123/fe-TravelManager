@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { assets } from "../../assets/assets";
 import { useContext, useEffect, useRef, useState } from "react";
-import { AppContext } from "../../context/AppContext";
+import { AppContext } from "../../context/appContextObject";
 import { toast } from "react-toastify";
 import api from "../../api/axiosInstance";
 
@@ -77,7 +77,7 @@ const EmailVerify = () => {
 
     useEffect(() => {
         if (isLoggedIn && userData?.isAccountVerified) navigate("/");
-    }, [isLoggedIn, userData]);
+    }, [isLoggedIn, userData, navigate]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-600 via-blue-700 to-cyan-600 font-['Be_Vietnam_Pro'] relative overflow-hidden">

@@ -180,7 +180,6 @@ const IncidentDetailSheet = ({
 }: { report: IncidentReport | null; open: boolean; onClose: () => void }) => {
   if (!report) return null
   const statusCfg = REPORT_STATUS_CONFIG[report.status] ?? REPORT_STATUS_CONFIG['OPEN']
-  const sevCfg = SEVERITY_CONFIG[(report.severity ?? 'LOW') as Severity]
 
   return (
     <Sheet open={open} onOpenChange={onClose}>

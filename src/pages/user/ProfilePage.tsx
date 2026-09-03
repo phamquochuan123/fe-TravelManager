@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,11 +27,14 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { resolveBase64Image } from '@/lib/utils'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore, type AuthState } from '@/stores/authStore'
+import { AppContext } from '@/context/appContextObject'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Section = 'info' | 'password' | 'orders' | 'payments' | 'favorites' | 'notifications' | 'security'
+
+interface IAppContext { logout: () => void }
 
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
@@ -103,7 +106,7 @@ const inputCls = 'w-full px-3.5 py-2.5 bg-[#f8f5ee] border-2 border-transparent 
 // ─── InfoSection ──────────────────────────────────────────────────────────────
 
 function InfoSection({ user, onUpdate }: {
-  user: ReturnType<typeof useAuthStore>['user']
+  user: AuthState['user']
   onUpdate: (u: any) => void
 }) {
   const nameParts = (user?.name ?? '').trim().split(/\s+/)
@@ -176,7 +179,7 @@ function InfoSection({ user, onUpdate }: {
                 <FormControl>
                   <DatePicker
                     selected={birthPicker}
-                    onChange={d => { setBirthPicker(d); field.onChange(d ? dayjs(d).format('YYYY-MM-DD') : '') }}
+                    onChange={(d: Date | null) => { setBirthPicker(d); field.onChange(d ? dayjs(d).format('YYYY-MM-DD') : '') }}
                     maxDate={new Date()}
                     showYearDropdown
                     dateFormat="dd/MM/yyyy"
@@ -757,7 +760,8 @@ function FavoritesSection() {
 
 export default function ProfilePage() {
   const navigate  = useNavigate()
-  const { user, setUser, logout } = useAuthStore()
+  const { user, setUser } = useAuthStore()
+  const { logout } = useContext(AppContext) as IAppContext
   const [section, setSection] = useState<Section>('info')
 
   const fileRef = useRef<HTMLInputElement>(null)
@@ -799,7 +803,7 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     try { await api.post('/logout') } catch { /* ignore */ }
     logout()
-    navigate('/login')
+    window.location.href = '/login'
   }
 
   const handleNavClick = (item: typeof NAV[number]) => {

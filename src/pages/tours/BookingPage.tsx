@@ -660,9 +660,9 @@ export default function BookingPage() {
                           <div className="relative">
                             <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                             <input className={inputCls} placeholder="Nguyễn Văn A"
+                              {...field}
                               onFocus={e => { e.target.style.borderColor='#0a1628'; e.target.style.background='#fff' }}
-                              onBlur={e => { e.target.style.borderColor='transparent'; e.target.style.background='#f9fafb' }}
-                              {...field} />
+                              onBlur={e => { e.target.style.borderColor='transparent'; e.target.style.background='#f9fafb'; field.onBlur() }} />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -675,9 +675,9 @@ export default function BookingPage() {
                           <div className="relative">
                             <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                             <input type="email" className={inputCls} placeholder="example@email.com"
+                              {...field}
                               onFocus={e => { e.target.style.borderColor='#0a1628'; e.target.style.background='#fff' }}
-                              onBlur={e => { e.target.style.borderColor='transparent'; e.target.style.background='#f9fafb' }}
-                              {...field} />
+                              onBlur={e => { e.target.style.borderColor='transparent'; e.target.style.background='#f9fafb'; field.onBlur() }} />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -690,9 +690,9 @@ export default function BookingPage() {
                           <div className="relative">
                             <Phone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                             <input type="tel" className={inputCls} placeholder="0912 345 678"
+                              {...field}
                               onFocus={e => { e.target.style.borderColor='#0a1628'; e.target.style.background='#fff' }}
-                              onBlur={e => { e.target.style.borderColor='transparent'; e.target.style.background='#f9fafb' }}
-                              {...field} />
+                              onBlur={e => { e.target.style.borderColor='transparent'; e.target.style.background='#f9fafb'; field.onBlur() }} />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -708,9 +708,9 @@ export default function BookingPage() {
                             <MessageSquare size={14} className="absolute left-3.5 top-3.5 text-gray-400 pointer-events-none" />
                             <textarea className={`${inputCls} pl-10 pt-3 min-h-[96px] resize-none`}
                               placeholder="Yêu cầu đặc biệt, lưu ý dị ứng thực phẩm..."
+                              {...field}
                               onFocus={e => { e.target.style.borderColor='#0a1628'; e.target.style.background='#fff' }}
-                              onBlur={e => { e.target.style.borderColor='transparent'; e.target.style.background='#f9fafb' }}
-                              {...field} />
+                              onBlur={e => { e.target.style.borderColor='transparent'; e.target.style.background='#f9fafb'; field.onBlur() }} />
                           </div>
                         </FormControl>
                         <FormMessage />

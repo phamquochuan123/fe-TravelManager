@@ -336,7 +336,6 @@ const StatusUpdatePopover = ({ departure }: { departure: Departure }) => {
 const TourScheduleCard = ({
   departure, onViewPassengers,
 }: { departure: Departure; onViewPassengers: (dep: Departure) => void }) => {
-  const cfg = STATUS_CONFIG[departure.status ?? 'UPCOMING'] ?? STATUS_CONFIG['UPCOMING']
   const filled  = (departure.maxSlots ?? 0) - (departure.availableSlots ?? 0)
   const total   = departure.maxSlots ?? 0
   const pct     = total > 0 ? Math.round((filled / total) * 100) : 0

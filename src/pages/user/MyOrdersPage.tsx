@@ -1,10 +1,9 @@
 import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import {
-  Calendar, Users, MapPin, Star, X, ChevronRight,
-  Building2, Map, UtensilsCrossed, Clock, BadgeCheck,
+  Calendar, Users, MapPin, Star, X,
+  Building2, Map, UtensilsCrossed, BadgeCheck,
   AlertCircle, CheckCircle2, CircleDashed, XCircle, Loader2,
   FileText, RotateCcw, Phone,
 } from 'lucide-react'
@@ -86,7 +85,7 @@ function normalizeHotel(b: any): NormalizedOrder {
     id: b.id,
     type: 'HOTEL',
     serviceName:     b.hotelName ?? 'Khách sạn',
-    serviceImage:    undefined,
+    serviceImage:    b.hotelPhoto,
     serviceLocation: undefined,
     status,
     dateStart: b.checkInDate,
@@ -107,7 +106,7 @@ function normalizeTour(b: any): NormalizedOrder {
     id: b.id,
     type: 'TOUR',
     serviceName:     b.tourName ?? 'Tour',
-    serviceImage:    undefined,
+    serviceImage:    b.tourImage,
     serviceLocation: b.tourDestination,
     status,
     dateStart: b.departureDate ?? b.createdAt,
@@ -128,7 +127,7 @@ function normalizeRestaurant(b: any): NormalizedOrder {
     id: b.id,
     type: 'RESTAURANT',
     serviceName:     b.restaurantName ?? 'Nhà hàng',
-    serviceImage:    undefined,
+    serviceImage:    b.restaurantPhoto,
     serviceLocation: b.restaurantCity,
     status,
     dateStart: b.bookingDate,

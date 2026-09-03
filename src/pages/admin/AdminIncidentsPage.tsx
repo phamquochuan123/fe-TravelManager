@@ -222,8 +222,7 @@ function IncidentSheet({
               <Button
                 onClick={() => updateMutation.mutate()}
                 disabled={updateMutation.isPending}
-                className="w-full text-white"
-                className="bg-primary"
+                className="w-full text-white bg-primary"
               >
                 {updateMutation.isPending ? (
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
@@ -287,7 +286,7 @@ export default function AdminIncidentsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold" className="text-primary">
+          <h1 className="text-2xl font-bold text-primary">
             Báo cáo sự cố
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">{reports.length} báo cáo từ staff</p>

@@ -420,8 +420,6 @@ function Pagination({ page, total, onChange }: { page: number; total: number; on
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function RestaurantsPage() {
-  const navigate = useNavigate()
-
   const [search,   setSearch]   = useState('')
   const [city,     setCity]     = useState('')
   const [cuisine,  setCuisine]  = useState('')
