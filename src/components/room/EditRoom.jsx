@@ -54,14 +54,14 @@ const EditRoom = () => {
     }
 
     if (isLoading) return (
-        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro'] flex items-center justify-center">
+        <div className="min-h-screen bg-[#f8f5ee] flex items-center justify-center">
             <MenuBar />
             <span className="w-10 h-10 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
         </div>
     )
 
     return (
-        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro']">
+        <div className="min-h-screen bg-[#f8f5ee]">
             <MenuBar />
             <div className="pt-24 pb-12 px-6 max-w-xl mx-auto">
                 <button

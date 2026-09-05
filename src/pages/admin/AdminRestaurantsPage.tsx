@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Plus, Search, Pencil, Trash2, ImagePlus, X, Loader2 } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, ImagePlus, X, Loader2, ChevronUp, ChevronDown } from 'lucide-react'
 import api from '../../api/axiosInstance'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
@@ -183,10 +183,36 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
       c.name === catName ? { ...c, items: c.items.filter((_, i) => i !== idx) } : c
     ))
 
+  /**
+   * Đổi chỗ hai món liền kề trong cùng một nhóm.
+   * Backend lấy sortOrder theo đúng vị trí trong mảng gửi lên, nên chỉ cần hoán vị.
+   */
+  const moveItem = (catName: string, idx: number, huong: -1 | 1) =>
+    set('menuCategories', form.menuCategories.map(c => {
+      if (c.name !== catName) return c
+      const dich = idx + huong
+      if (dich < 0 || dich >= c.items.length) return c
+      const items = [...c.items]
+      const tam = items[idx]; items[idx] = items[dich]; items[dich] = tam
+      return { ...c, items }
+    }))
+
   const updItem = <K extends keyof MenuItem>(catName: string, idx: number, k: K, v: MenuItem[K]) =>
     set('menuCategories', form.menuCategories.map(c =>
       c.name === catName
         ? { ...c, items: c.items.map((it, i) => i === idx ? { ...it, [k]: v } : it) }
+        : c
+    ))
+
+  /** Chọn ảnh cho một món. submit() gửi kèm dưới tên part menuImage_<nhóm>_<vị trí>. */
+  const pickItemImage = (catName: string, idx: number, file: File) =>
+    set('menuCategories', form.menuCategories.map(c =>
+      c.name === catName
+        ? {
+            ...c,
+            items: c.items.map((it, i) =>
+              i === idx ? { ...it, imageFile: file, imagePreview: URL.createObjectURL(file) } : it),
+          }
         : c
     ))
 
@@ -318,10 +344,22 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
                         <div key={i} className="border border-gray-200 rounded p-4 space-y-3 bg-[#f8f5ee]/40">
                           <div className="flex justify-between items-center">
                             <span className="text-xs font-semibold text-gray-600">Món {i + 1}</span>
-                            <button type="button" onClick={() => removeItem(catName, i)}
-                              className="p-1 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors">
-                              <Trash2 size={13} />
-                            </button>
+                            <div className="flex items-center gap-0.5">
+                              <button type="button" onClick={() => moveItem(catName, i, -1)}
+                                disabled={i === 0} title="Đưa lên trên"
+                                className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-25 disabled:hover:bg-transparent transition-colors">
+                                <ChevronUp size={14} />
+                              </button>
+                              <button type="button" onClick={() => moveItem(catName, i, 1)}
+                                disabled={i === items.length - 1} title="Đưa xuống dưới"
+                                className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-25 disabled:hover:bg-transparent transition-colors">
+                                <ChevronDown size={14} />
+                              </button>
+                              <button type="button" onClick={() => removeItem(catName, i)} title="Xoá món"
+                                className="p-1 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors">
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1">
@@ -340,6 +378,21 @@ function RestaurantSheet({ open, onOpenChange, restaurant, onSuccess }: {
                             <Textarea value={it.description} onChange={e => updItem(catName, i, 'description', e.target.value)}
                               placeholder="Mô tả..." className="h-14 text-sm resize-none" />
                           </div>
+                          <div className="flex items-center gap-3">
+                            {(it.imagePreview || it.imageUrl) && (
+                              <img src={it.imagePreview || it.imageUrl} alt={it.name || 'Ảnh món'}
+                                className="size-14 rounded object-cover border border-gray-200 shrink-0" />
+                            )}
+                            <div className="space-y-1 flex-1 min-w-0">
+                              <Label className="text-xs font-medium">Ảnh món</Label>
+                              <Input type="file" accept="image/*" className="text-xs h-9"
+                                onChange={e => {
+                                  const f = e.target.files?.[0]
+                                  if (f) pickItemImage(catName, i, f)
+                                }} />
+                            </div>
+                          </div>
+
                           <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
                               <Switch checked={it.isBestSeller}

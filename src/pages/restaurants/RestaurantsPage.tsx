@@ -481,7 +481,7 @@ export default function RestaurantsPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: 'Be Vietnam Pro, sans-serif', background: '#fafaf8' }}>
+    <div className="min-h-screen" style={{ fontFamily: 'var(--font-sans)', background: '#fafaf8' }}>
       <Navbar />
 
       {/* ── Full-viewport hero ── */}

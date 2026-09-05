@@ -33,7 +33,7 @@ export default function PaymentResultPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-[#f8f5ee]"
-        style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+        style={{ fontFamily: 'var(--font-sans)' }}>
         <div className="w-14 h-14 flex items-center justify-center rounded-full"
           style={{ background: 'linear-gradient(135deg, #0a1628, #1a3a5c)' }}>
           <Loader2 size={28} className="text-white animate-spin" />
@@ -46,7 +46,7 @@ export default function PaymentResultPage() {
   if (result?.success) {
     return (
       <div className="min-h-screen bg-[#f8f5ee] flex items-center justify-center p-6"
-        style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+        style={{ fontFamily: 'var(--font-sans)' }}>
         <div className="bg-white rounded-sm max-w-md w-full p-10 text-center"
           style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.12)', border: '1px solid rgba(16,185,129,0.15)' }}>
 
@@ -97,7 +97,7 @@ export default function PaymentResultPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f5ee] flex items-center justify-center p-6"
-      style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+      style={{ fontFamily: 'var(--font-sans)' }}>
       <div className="bg-white rounded-sm max-w-md w-full p-10 text-center"
         style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.12)', border: '1px solid rgba(239,68,68,0.15)' }}>
 

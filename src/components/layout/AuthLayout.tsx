@@ -21,7 +21,7 @@ interface Props {
 }
 
 const AuthLayout = ({ imageSeed, quote, children }: Props) => (
-  <div className="min-h-screen flex" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+  <div className="min-h-screen flex" style={{ fontFamily: 'var(--font-sans)' }}>
 
     {/* Left panel */}
     <div className="hidden lg:flex lg:w-5/12 xl:w-[45%] relative overflow-hidden flex-col">
@@ -49,7 +49,7 @@ const AuthLayout = ({ imageSeed, quote, children }: Props) => (
             style={{ border: '1px solid rgba(201,168,76,0.35)', background: 'rgba(201,168,76,0.08)' }}>
             <MdFlight style={{ color: '#c9a84c' }} size={20} />
           </div>
-          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600, fontSize: '1.4rem', color: '#fff', letterSpacing: '0.18em' }}>
+          <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '1.4rem', color: '#fff', letterSpacing: '0.04em' }}>
             Travel<span style={{ color: '#c9a84c' }}>VN</span>
           </span>
         </Link>
@@ -58,7 +58,7 @@ const AuthLayout = ({ imageSeed, quote, children }: Props) => (
         <div>
           {/* Quote */}
           <div className="mb-10">
-            <div className="mb-4 leading-none" style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '5rem', color: 'rgba(201,168,76,0.25)', lineHeight: 1 }}>"</div>
+            <div className="mb-4 leading-none" style={{ fontFamily: 'var(--font-sans)', fontSize: '5rem', color: 'rgba(201,168,76,0.25)', lineHeight: 1 }}>"</div>
             <blockquote style={{ color: 'rgba(255,255,255,0.55)', fontSize: 15, fontStyle: 'italic', lineHeight: 1.8, maxWidth: 300 }}>
               {quote ?? QUOTES[0]}
             </blockquote>
@@ -98,7 +98,7 @@ const AuthLayout = ({ imageSeed, quote, children }: Props) => (
           <div className="w-8 h-8 flex items-center justify-center" style={{ background: '#0a1628' }}>
             <MdFlight style={{ color: '#c9a84c' }} size={16} />
           </div>
-          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600, fontSize: '1.2rem', color: '#0a1628', letterSpacing: '0.15em' }}>
+          <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '1.2rem', color: '#0a1628', letterSpacing: '0.04em' }}>
             Travel<span style={{ color: '#c9a84c' }}>VN</span>
           </span>
         </Link>

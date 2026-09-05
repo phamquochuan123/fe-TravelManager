@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner'
 import api from '@/api/axiosInstance'
 import { toggleRestaurantFavorite, isRestaurantFavorited } from '@/api/restaurantApi'
+import LocationMap from '@/components/common/LocationMap'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -70,6 +71,8 @@ interface Restaurant {
   menuItems?: MenuItem[]
   active?: boolean
   phone?: string
+  latitude?: number | null
+  longitude?: number | null
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -812,6 +815,14 @@ export default function RestaurantDetailPage() {
                     )}
                   </section>
                 )}
+
+                <LocationMap
+                  name={restaurant.name}
+                  address={restaurant.address}
+                  city={restaurant.city}
+                  latitude={restaurant.latitude}
+                  longitude={restaurant.longitude}
+                />
 
                 {/* Menu sub-tabs */}
                 <div className="bg-white rounded border border-border overflow-hidden">

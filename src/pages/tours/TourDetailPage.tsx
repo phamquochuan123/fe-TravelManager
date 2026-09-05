@@ -20,7 +20,31 @@ import Footer from '../../components/layout/Footer'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface TourImage { id?: number; photo: string }
-interface Departure { id: number; departureDate: string; availableSlots: number }
+interface Departure {
+  id: number; departureDate: string; availableSlots: number
+  // Giá THỰC TẾ của chuyến này — backend đã áp giá mùa nếu ngày khởi hành rơi vào
+  // mùa cao/thấp điểm. Phải ưu tiên giá này hơn tour.priceAdult/priceChild.
+  priceAdult?: number; priceChild?: number
+  status?: DepartureStatus
+}
+type DepartureStatus =
+  | 'SCHEDULED' | 'UPCOMING' | 'CONFIRMED'
+  | 'ONGOING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+/** Chuyến đã huỷ / đang đi / đã về thì không nhận đặt nữa, dù còn chỗ trống. */
+const TRANG_THAI_KHONG_DAT_DUOC: DepartureStatus[] =
+  ['CANCELLED', 'COMPLETED', 'ONGOING', 'IN_PROGRESS']
+
+/**
+ * Chuyến còn đáng hiện cho khách. availableSlots KHÔNG đủ để quyết định: chuyến
+ * đã khởi hành từ lâu vẫn giữ nguyên số chỗ trống, nên phải lọc thêm theo ngày
+ * và theo trạng thái mà TourDepartureScheduler cập nhật.
+ */
+const conNhanDat = (d: Departure) => {
+  if (d.status && TRANG_THAI_KHONG_DAT_DUOC.includes(d.status)) return false
+  const homNay = new Date(); homNay.setHours(0, 0, 0, 0)
+  return new Date(d.departureDate) >= homNay
+}
 interface Itinerary {
   id: number; dayNumber: number; title: string
   description?: string; activities?: string
@@ -537,8 +561,22 @@ const BookingSidebar = ({ tour }: BookingProps) => {
   const [favorite, setFavorite] = useState(false)
   const favLoadingRef = useRef(false)
 
-  const activeDeps = (tour.departures ?? []).filter(d => d.availableSlots > 0)
-  const total      = adults * tour.priceAdult + children * (tour.priceChild ?? 0)
+  // depsHienThi vẫn giữ cả chuyến hết chỗ để khách thấy ngày đó "Hết chỗ" thay vì
+  // ngày biến mất không lý do; activeDeps mới là những chuyến bấm chọn được.
+  const depsHienThi = (tour.departures ?? []).filter(conNhanDat)
+  const activeDeps  = depsHienThi.filter(d => d.availableSlots > 0)
+
+  // Giá hiển thị phải theo ĐÚNG chuyến đang chọn, không phải giá gốc của tour:
+  // nếu ngày khởi hành rơi vào mùa cao điểm thì backend tính tiền theo giá mùa,
+  // hiển thị giá gốc sẽ khiến khách thấy một đằng bị trừ một nẻo.
+  // Chưa chọn chuyến thì hiện giá thấp nhất trong các chuyến còn chỗ ("Giá từ").
+  const depDangChon  = depsHienThi.find(d => d.id === selectedDep)
+  const giaThapNhat  = activeDeps.length > 0
+    ? Math.min(...activeDeps.map(d => d.priceAdult ?? tour.priceAdult))
+    : tour.priceAdult
+  const adultPrice   = depDangChon?.priceAdult ?? giaThapNhat
+  const childPrice   = depDangChon?.priceChild ?? tour.priceChild ?? 0
+  const total        = adults * adultPrice + children * childPrice
 
   useEffect(() => {
     if (!userData || !tour?.id) return
@@ -576,9 +614,11 @@ const BookingSidebar = ({ tour }: BookingProps) => {
         {/* Price row */}
         <div className="flex items-end justify-between mb-5 pb-5 border-b border-gray-100">
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Giá từ</p>
+            <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">
+              {depDangChon ? 'Giá chuyến đã chọn' : 'Giá từ'}
+            </p>
             <p className="font-black leading-none" style={{ fontSize: '2rem', color: '#c9a84c' }}>
-              {fmt(tour.priceAdult)}
+              {fmt(adultPrice)}
             </p>
             <p className="text-xs text-gray-400 mt-1">/ người lớn</p>
           </div>
@@ -595,10 +635,10 @@ const BookingSidebar = ({ tour }: BookingProps) => {
           </button>
         </div>
 
-        {tour.priceChild && (
+        {childPrice > 0 && (
           <p className="text-xs text-gray-400 mb-4 flex items-center gap-1.5">
             <MdChildCare size={14} />
-            Trẻ em: <span className="font-bold text-gray-700">{fmt(tour.priceChild)}</span>
+            Trẻ em: <span className="font-bold text-gray-700">{fmt(childPrice)}</span>
           </p>
         )}
 
@@ -614,7 +654,7 @@ const BookingSidebar = ({ tour }: BookingProps) => {
             </div>
           ) : (
             <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
-              {(tour.departures ?? []).map(dep => {
+              {depsHienThi.map(dep => {
                 const avail = dep.availableSlots > 0
                 const isSelected = selectedDep === dep.id
                 return (
@@ -630,8 +670,17 @@ const BookingSidebar = ({ tour }: BookingProps) => {
                           : 'border-gray-100 text-gray-300 cursor-not-allowed bg-[#f8f5ee]'
                     }`}
                     style={isSelected ? { background: 'linear-gradient(135deg, #0a1628, #1a3a5c)', borderColor: 'transparent' } : {}}>
-                    <span className="font-bold">
+                    <span className="font-bold flex flex-col items-start">
                       {new Date(dep.departureDate).toLocaleDateString('vi-VN')}
+                      {/* Chỉ hiện giá khi chuyến này khác giá gốc (rơi vào mùa cao/thấp điểm),
+                          để khách biết vì sao ngày này đắt/rẻ hơn thay vì thấy số tiền lạ ở bước sau. */}
+                      {dep.priceAdult != null && dep.priceAdult !== tour.priceAdult && (
+                        <span className={`text-[11px] font-semibold mt-0.5 ${
+                          isSelected ? 'text-white/80' : 'text-[#c9a84c]'
+                        }`}>
+                          {fmt(dep.priceAdult)} / người lớn
+                        </span>
+                      )}
                     </span>
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                       isSelected
@@ -737,7 +786,7 @@ const TourDetailPage = () => {
   }, [isLoading, tour, navigate])
 
   if (isLoading) return (
-    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'var(--font-sans)' }}>
       <Navbar />
       {/* Hero skeleton */}
       <div className="pt-24 pb-16 px-6" style={{ background: 'linear-gradient(135deg, #0a1929 0%, #0a1628 60%, #0a1929 100%)' }}>
@@ -786,7 +835,7 @@ const TourDetailPage = () => {
   )
 
   if (isError) return (
-    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'var(--font-sans)' }}>
       <Navbar />
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
         <div className="w-20 h-20 rounded flex items-center justify-center mb-5"
@@ -816,7 +865,7 @@ const TourDetailPage = () => {
   )
 
   return (
-    <div className="min-h-screen bg-[#f8f5ee] animate-fade-in-up" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="min-h-screen bg-[#f8f5ee] animate-fade-in-up" style={{ fontFamily: 'var(--font-sans)' }}>
       <Navbar />
 
       {/* Hero */}

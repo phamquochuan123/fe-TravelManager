@@ -816,17 +816,17 @@ export default function MyOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'var(--font-sans)' }}>
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-4 pt-10 pb-16">
 
         {/* ── Page header ── */}
         <div className="mb-8">
-          <p className="uppercase tracking-widest text-[10px] font-bold mb-2" style={{ color: '#c9a84c', letterSpacing: '0.28em' }}>
+          <p className="uppercase tracking-widest text-[10px] font-bold mb-2" style={{ color: '#c9a84c', letterSpacing: '0.04em' }}>
             Tài Khoản
           </p>
-          <h1 style={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 500, fontSize: '2rem', color: '#0a1628', letterSpacing: '0.02em' }}>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '2rem', color: '#0a1628', letterSpacing: '0.02em' }}>
             Đơn Hàng Của Tôi
           </h1>
           <div className="h-px mt-3 mb-1 w-12" style={{ background: '#c9a84c' }} />

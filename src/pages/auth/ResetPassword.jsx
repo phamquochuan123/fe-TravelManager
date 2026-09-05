@@ -83,7 +83,7 @@ const ResetpassWord = () => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-['Be_Vietnam_Pro'] bg-gradient-to-br from-sky-600 via-blue-700 to-cyan-600 p-6">
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-sky-600 via-blue-700 to-cyan-600 p-6">
 
             {/* Decorative orbs */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />

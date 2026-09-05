@@ -14,6 +14,7 @@ import api from '@/api/axiosInstance'
 import { toggleHotelFavorite, isHotelFavorited } from '@/api/hotelApi'
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from 'sonner'
+import LocationMap from '@/components/common/LocationMap'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -43,6 +44,9 @@ interface HotelDetail {
   reviewCount?: number
   active?: boolean
   phone?: string
+  /** Null khi khách sạn chưa được gán toạ độ — phần Vị trí phải tự xoay xở. */
+  latitude?: number | null
+  longitude?: number | null
 }
 
 interface Room {
@@ -764,18 +768,13 @@ export default function HotelDetailPage() {
                   </section>
                 )}
 
-                {/* Map placeholder */}
-                <section className="bg-white rounded border border-border p-6">
-                  <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
-                    <MapPin size={16} className="text-accent" /> Vị trí
-                  </h2>
-                  <div className="rounded-lg overflow-hidden h-48 bg-muted flex items-center justify-center text-muted-foreground text-sm">
-                    <div className="text-center">
-                      <MapPin size={32} className="mx-auto mb-2 opacity-30" />
-                      <p>{[hotel.address, hotel.city].filter(Boolean).join(', ')}</p>
-                    </div>
-                  </div>
-                </section>
+                <LocationMap
+                  name={hotel.name}
+                  address={hotel.address}
+                  city={hotel.city}
+                  latitude={hotel.latitude}
+                  longitude={hotel.longitude}
+                />
               </TabsContent>
 
               {/* Tab: Loại phòng */}

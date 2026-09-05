@@ -1,15 +1,23 @@
 /* ─── 1. Imports ─────────────────────────────────────────────────────────── */
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Great+Vibes&display=swap');
+/* Traveloka khai báo font stack: Godwit, NotoSans, NotoSansJP, -apple-system, ...
+   Godwit là font riêng của họ, không dùng lại được, nên ta lấy đúng font dự phòng
+   kế tiếp trong stack đó — Noto Sans. Nó miễn phí (SIL OFL) và có subset
+   'vietnamese' phủ U+1EA0–1EF9, Đ/đ, Ă/ă, Ơ/ơ, Ư/ư, nên chữ có dấu không bị rớt
+   sang font khác. */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
 /* ─── 2. Plugins ─────────────────────────────────────────────────────────── */
 @plugin "tailwindcss-animate";
 
 /* ─── 3. Theme mapping ────────────────────────────────────────────────────── */
 @theme inline {
-  --font-sans:    "Montserrat", sans-serif;
-  --font-display: "Cormorant Garamond", serif;
-  --font-script:  "Great Vibes", cursive;
+  /* Traveloka dùng đúng MỘT họ sans cho toàn bộ giao diện — không serif, không
+     script. Giữ nguyên tên 3 biến (thay vì xoá) để ~6 component đang dùng class
+     font-display/font-script vẫn chạy, chỉ đổi mặt chữ. */
+  --font-sans:    "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-script:  "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
   --color-background:              var(--background);
   --color-foreground:              var(--foreground);
@@ -149,14 +157,17 @@
     padding: 0;
     width: 100%;
     overflow-x: hidden;
-    font-family: "Montserrat", sans-serif;
+    font-family: var(--font-sans);
     background-color: #f8f5ee;
   }
 
-  /* Cormorant Garamond for all headings */
+  /* Tiêu đề dùng chung font với phần thân, khác nhau ở độ đậm chứ không ở mặt
+     chữ — đúng cách Traveloka làm. Trước đây là Cormorant Garamond (serif).
+     Bỏ luôn letter-spacing giãn: nó có để bù cho nét serif, giữ lại thì Noto Sans
+     nhìn rời rạc. */
   h1, h2, h3, h4, h5, h6 {
-    font-family: "Cormorant Garamond", serif;
-    letter-spacing: 0.01em;
+    font-family: var(--font-sans);
+    letter-spacing: -0.01em;
   }
 
   * {
@@ -172,10 +183,10 @@
 
   /* Uppercase small labels utility */
   .lux-label {
-    font-family: "Montserrat", sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.25em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 

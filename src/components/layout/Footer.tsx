@@ -37,7 +37,7 @@ const Footer = () => {
   const year = new Date().getFullYear();
 
   return (
-    <footer style={{ fontFamily: 'Montserrat, sans-serif' }}>
+    <footer style={{ fontFamily: 'var(--font-sans)' }}>
 
       {/* ── CTA Banner ── */}
       <div className="relative overflow-hidden py-20 px-6" style={{ background: '#0a1628' }}>
@@ -48,11 +48,11 @@ const Footer = () => {
 
         <div className="relative max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-10 text-center sm:text-left">
           <div>
-            <p className="mb-4 uppercase tracking-widest text-[10px] font-bold" style={{ color: '#c9a84c', letterSpacing: '0.3em' }}>
+            <p className="mb-4 uppercase tracking-widest text-[10px] font-bold" style={{ color: '#c9a84c', letterSpacing: '0.04em' }}>
               Bắt Đầu Hành Trình
             </p>
             <h2 className="text-white leading-tight mb-4"
-              style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(1.9rem, 4vw, 3rem)', fontWeight: 400, letterSpacing: '0.02em' }}>
+              style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(1.9rem, 4vw, 3rem)', fontWeight: 400, letterSpacing: '0.02em' }}>
               Sẵn sàng khám phá<br />
               <em style={{ color: '#c9a84c' }}>Việt Nam cùng chúng tôi?</em>
             </h2>
@@ -87,7 +87,7 @@ const Footer = () => {
                     style={{ border: '1px solid rgba(201,168,76,0.25)', background: 'rgba(201,168,76,0.05)' }}>
                     <MdFlight size={17} style={{ color: '#c9a84c' }} />
                   </div>
-                  <span style={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600, fontSize: '1.2rem', color: '#fff', letterSpacing: '0.15em' }}>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '1.2rem', color: '#fff', letterSpacing: '0.04em' }}>
                     Travel<span style={{ color: '#c9a84c' }}>VN</span>
                   </span>
                 </button>
@@ -109,7 +109,7 @@ const Footer = () => {
 
               {/* Popular tours */}
               <div>
-                <h4 className="mb-6 uppercase tracking-widest font-bold" style={{ color: '#c9a84c', fontSize: 10, letterSpacing: '0.28em' }}>
+                <h4 className="mb-6 uppercase tracking-widest font-bold" style={{ color: '#c9a84c', fontSize: 10, letterSpacing: '0.04em' }}>
                   Tour Phổ Biến
                 </h4>
                 <ul className="space-y-4">
@@ -129,7 +129,7 @@ const Footer = () => {
 
               {/* Services */}
               <div>
-                <h4 className="mb-6 uppercase tracking-widest font-bold" style={{ color: '#c9a84c', fontSize: 10, letterSpacing: '0.28em' }}>
+                <h4 className="mb-6 uppercase tracking-widest font-bold" style={{ color: '#c9a84c', fontSize: 10, letterSpacing: '0.04em' }}>
                   Dịch Vụ
                 </h4>
                 <ul className="space-y-4">
@@ -149,7 +149,7 @@ const Footer = () => {
 
               {/* Contact */}
               <div>
-                <h4 className="mb-6 uppercase tracking-widest font-bold" style={{ color: '#c9a84c', fontSize: 10, letterSpacing: '0.28em' }}>
+                <h4 className="mb-6 uppercase tracking-widest font-bold" style={{ color: '#c9a84c', fontSize: 10, letterSpacing: '0.04em' }}>
                   Liên Hệ
                 </h4>
                 <ul className="space-y-5">
@@ -169,7 +169,7 @@ const Footer = () => {
             <GoldLine />
 
             <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p style={{ color: 'rgba(255,255,255,0.16)', fontSize: 11, letterSpacing: '0.1em' }}>
+              <p style={{ color: 'rgba(255,255,255,0.16)', fontSize: 11, letterSpacing: '0.06em' }}>
                 © {year} TravelVN. All rights reserved.
               </p>
               <div className="flex gap-6">

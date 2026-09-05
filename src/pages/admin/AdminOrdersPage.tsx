@@ -46,8 +46,14 @@ interface Order {
   checkInDate?: string
   checkOutDate?: string
   packageHotelPrice?: number
-  restaurantName?: string
-  restaurantBookingDate?: string
+  // Danh sách vì một đơn tour kèm được nhiều bữa (mỗi ngày tối đa sáng/trưa/tối)
+  restaurants?: {
+    restaurantName?: string
+    bookingDate?: string
+    bookingTime?: string
+    mealSlotLabel?: string
+    guestCount?: number
+  }[]
   packageRestaurantPrice?: number
   packageDiscountPercent?: number
 }
@@ -215,7 +221,7 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
             )}
 
             {/* Tour package — hotel & restaurant info */}
-            {order.serviceType === 'TOUR' && (order.hotelName || order.restaurantName) && (
+            {order.serviceType === 'TOUR' && (order.hotelName || (order.restaurants?.length ?? 0) > 0) && (
               <div className="space-y-3">
                 {order.hotelName && (
                   <div>
@@ -232,16 +238,32 @@ function OrderSheet({ order, open, onOpenChange, onSuccess }: {
                     </div>
                   </div>
                 )}
-                {order.restaurantName && (
+                {(order.restaurants?.length ?? 0) > 0 && (
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">🍽️ Nhà hàng đi kèm</h4>
-                    <div className="bg-orange-50 border border-orange-100 rounded p-3 text-sm space-y-1">
-                      <p className="font-semibold text-gray-900">{order.restaurantName}</p>
-                      {order.restaurantBookingDate && (
-                        <p className="text-gray-500">Ngày đặt bàn: {order.restaurantBookingDate}</p>
-                      )}
+                    <h4 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">
+                      🍽️ Nhà hàng đi kèm ({order.restaurants!.length} bữa)
+                    </h4>
+                    <div className="bg-orange-50 border border-orange-100 rounded p-3 text-sm space-y-2">
+                      {order.restaurants!.map((r, i) => (
+                        <div key={i} className="space-y-0.5">
+                          <p className="font-semibold text-gray-900">
+                            {r.restaurantName}
+                            {r.mealSlotLabel && (
+                              <span className="ml-2 px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 text-xs font-medium">
+                                {r.mealSlotLabel}
+                              </span>
+                            )}
+                          </p>
+                          {r.bookingDate && (
+                            <p className="text-gray-500">
+                              Đặt bàn: {r.bookingDate}{r.bookingTime ? ` lúc ${r.bookingTime}` : ''}
+                              {r.guestCount ? ` · ${r.guestCount} khách` : ''}
+                            </p>
+                          )}
+                        </div>
+                      ))}
                       {order.packageRestaurantPrice != null && order.packageRestaurantPrice > 0 && (
-                        <p className="text-orange-700 font-medium">{fmtVND(order.packageRestaurantPrice)}</p>
+                        <p className="text-orange-700 font-medium pt-1">{fmtVND(order.packageRestaurantPrice)}</p>
                       )}
                     </div>
                   </div>

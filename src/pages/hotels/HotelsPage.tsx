@@ -189,7 +189,7 @@ function DualRangeSlider({
           onChange={e => onChange([lo, Math.max(Number(e.target.value), lo + 200_000)])}
         />
       </div>
-      <div className="flex justify-between text-xs font-bold mt-3" style={{ color: '#1a3a5c', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+      <div className="flex justify-between text-xs font-bold mt-3" style={{ color: '#1a3a5c', fontFamily: 'var(--font-sans)' }}>
         <span>{formatCurrency(lo)}</span>
         <span>{formatCurrency(hi)}</span>
       </div>
@@ -268,12 +268,12 @@ function HotelCard({ hotel }: { hotel: Hotel }) {
         <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
           <h3
             className="text-white leading-tight mb-1 line-clamp-1"
-            style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, fontSize: '1.15rem', letterSpacing: '0.01em' }}
+            style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '1.15rem', letterSpacing: '0.01em' }}
           >
             {hotel.name}
           </h3>
           <p className="flex items-center gap-1.5 text-[11px] tracking-wide uppercase"
-            style={{ color: 'rgba(201,168,76,0.9)', fontFamily: 'Be Vietnam Pro, sans-serif', letterSpacing: '0.1em' }}>
+            style={{ color: 'rgba(201,168,76,0.9)', fontFamily: 'var(--font-sans)', letterSpacing: '0.06em' }}>
             <MapPin size={10} className="shrink-0" />
             {[hotel.address, hotel.city].filter(Boolean).join(', ') || 'Việt Nam'}
           </p>
@@ -288,10 +288,10 @@ function HotelCard({ hotel }: { hotel: Hotel }) {
           <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center gap-1 px-2.5 py-1" style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)' }}>
               <Star size={11} className="fill-amber-500 text-amber-500" />
-              <span className="text-xs font-bold" style={{ color: '#c9a84c', fontFamily: 'Be Vietnam Pro, sans-serif' }}>{hotel.rating?.toFixed(1)}</span>
+              <span className="text-xs font-bold" style={{ color: '#c9a84c', fontFamily: 'var(--font-sans)' }}>{hotel.rating?.toFixed(1)}</span>
             </div>
             {hotel.reviewCount ? (
-              <span className="text-xs text-gray-400" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>{hotel.reviewCount} đánh giá</span>
+              <span className="text-xs text-gray-400" style={{ fontFamily: 'var(--font-sans)' }}>{hotel.reviewCount} đánh giá</span>
             ) : null}
           </div>
         )}
@@ -302,7 +302,7 @@ function HotelCard({ hotel }: { hotel: Hotel }) {
             {amenities.map((a, i) => (
               <span key={i}
                 className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase"
-                style={{ background: 'rgba(26,58,92,0.05)', color: '#1a3a5c', border: '1px solid rgba(26,58,92,0.1)', fontFamily: 'Be Vietnam Pro, sans-serif', letterSpacing: '0.07em' }}>
+                style={{ background: 'rgba(26,58,92,0.05)', color: '#1a3a5c', border: '1px solid rgba(26,58,92,0.1)', fontFamily: 'var(--font-sans)', letterSpacing: '0.07em' }}>
                 {a.icon} {a.label}
               </span>
             ))}
@@ -312,15 +312,15 @@ function HotelCard({ hotel }: { hotel: Hotel }) {
         {/* Price + CTA */}
         <div className="flex items-center justify-between mt-auto pt-4" style={{ borderTop: '1px solid rgba(201,168,76,0.2)' }}>
           <div>
-            <p className="text-[10px] uppercase tracking-widest mb-0.5" style={{ color: '#999', fontFamily: 'Be Vietnam Pro, sans-serif' }}>Từ</p>
-            <p className="font-bold text-xl leading-none" style={{ color: '#c9a84c', fontFamily: '"Playfair Display", serif' }}>
+            <p className="text-[10px] uppercase tracking-widest mb-0.5" style={{ color: '#999', fontFamily: 'var(--font-sans)' }}>Từ</p>
+            <p className="font-bold text-xl leading-none" style={{ color: '#c9a84c', fontFamily: 'var(--font-sans)' }}>
               {price > 0 ? formatCurrency(price) : '—'}
             </p>
-            <p className="text-[10px] mt-1 uppercase tracking-wider" style={{ color: '#aaa', fontFamily: 'Be Vietnam Pro, sans-serif' }}>/đêm</p>
+            <p className="text-[10px] mt-1 uppercase tracking-wider" style={{ color: '#aaa', fontFamily: 'var(--font-sans)' }}>/đêm</p>
           </div>
           <button
             className="text-[11px] font-bold px-6 py-3 text-white transition-all hover:opacity-90 active:scale-95 tracking-widest uppercase"
-            style={{ background: '#0a1628', letterSpacing: '0.12em', fontFamily: 'Be Vietnam Pro, sans-serif' }}
+            style={{ background: '#0a1628', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}
             onClick={e => { e.stopPropagation(); navigate(`/hotels/${hotel.id}`) }}
           >
             Đặt Phòng
@@ -374,11 +374,11 @@ function FilterSidebar({
             <SlidersHorizontal size={14} className="text-white" />
           </div>
           <h2 className="font-bold text-gray-900 tracking-widest uppercase text-sm"
-            style={{ fontFamily: '"Playfair Display", serif', letterSpacing: '0.15em' }}>Bộ Lọc</h2>
+            style={{ fontFamily: 'var(--font-sans)', letterSpacing: '0.04em' }}>Bộ Lọc</h2>
         </div>
         <button onClick={onReset}
           className="text-[10px] font-bold transition-colors hover:text-[#c9a84c] tracking-widest uppercase"
-          style={{ color: '#1a3a5c', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+          style={{ color: '#1a3a5c', fontFamily: 'var(--font-sans)' }}>
           Xóa tất cả
         </button>
       </div>
@@ -396,7 +396,7 @@ function FilterSidebar({
               value={draft.destination}
               onChange={e => setDraft(f => ({ ...f, destination: e.target.value }))}
               className={`${inputCls} pl-10`}
-              style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}
+              style={{ fontFamily: 'var(--font-sans)' }}
             />
           </div>
         )}
@@ -421,7 +421,7 @@ function FilterSidebar({
             />
             {draft.checkIn && draft.checkOut && (
               <p className="text-xs text-gray-400 mt-2 flex items-center gap-1.5"
-                style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                style={{ fontFamily: 'var(--font-sans)' }}>
                 <span className="inline-block w-1.5 h-1.5" style={{ background: '#c9a84c' }} />
                 {dayjs(draft.checkOut).diff(dayjs(draft.checkIn), 'day')} đêm
               </p>
@@ -450,9 +450,9 @@ function FilterSidebar({
                     ))}
                   </div>
                   <span className="text-sm text-gray-500 group-hover:text-gray-900 transition-colors"
-                    style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>{s} sao</span>
+                    style={{ fontFamily: 'var(--font-sans)' }}>{s} sao</span>
                 </div>
-                <span className="text-xs text-gray-400" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                <span className="text-xs text-gray-400" style={{ fontFamily: 'var(--font-sans)' }}>
                   {starCounts[s] !== undefined ? `(${starCounts[s]})` : ''}
                 </span>
               </label>
@@ -477,7 +477,7 @@ function FilterSidebar({
       {/* Apply */}
       <button
         className="w-full py-3.5 text-white text-[11px] font-bold transition-all hover:opacity-90 active:scale-95 tracking-widest uppercase"
-        style={{ background: '#0a1628', fontFamily: 'Be Vietnam Pro, sans-serif', letterSpacing: '0.15em' }}
+        style={{ background: '#0a1628', fontFamily: 'var(--font-sans)', letterSpacing: '0.04em' }}
         onClick={onApply}
       >
         Áp Dụng Bộ Lọc
@@ -574,7 +574,7 @@ export default function HotelsPage() {
   const goPage = (p: number) => { setPage(p) }
 
   return (
-    <div className="min-h-screen" style={{ background: '#f7f5f0', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="min-h-screen" style={{ background: '#f7f5f0', fontFamily: 'var(--font-sans)' }}>
       <Navbar />
 
       {/* ── Hero Section ────────────────────────────────────────────────────── */}
@@ -612,7 +612,7 @@ export default function HotelsPage() {
           {/* Eyebrow label */}
           <p
             className="uppercase tracking-widest text-xs mb-5"
-            style={{ color: 'rgba(201,168,76,0.85)', fontFamily: 'Be Vietnam Pro, sans-serif', letterSpacing: '0.3em' }}
+            style={{ color: 'rgba(201,168,76,0.85)', fontFamily: 'var(--font-sans)', letterSpacing: '0.04em' }}
           >
             Khách Sạn &amp; Resort Cao Cấp
           </p>
@@ -628,7 +628,7 @@ export default function HotelsPage() {
           <h1
             className="text-white leading-none mb-3"
             style={{
-              fontFamily: '"Great Vibes", cursive',
+              fontFamily: 'var(--font-sans)',
               fontSize: 'clamp(3.5rem, 8vw, 7rem)',
               textShadow: '0 4px 30px rgba(0,0,0,0.4)',
               letterSpacing: '0.02em',
@@ -637,14 +637,14 @@ export default function HotelsPage() {
             Khách Sạn Việt Nam
           </h1>
 
-          {/* Sub title — Playfair Display */}
+          {/* Sub title */}
           <h2
             className="text-white/90 mb-4"
             style={{
-              fontFamily: '"Playfair Display", serif',
+              fontFamily: 'var(--font-sans)',
               fontWeight: 400,
               fontSize: 'clamp(1rem, 2vw, 1.35rem)',
-              letterSpacing: '0.25em',
+              letterSpacing: '0.06em',
               textTransform: 'uppercase',
               textShadow: '0 2px 10px rgba(0,0,0,0.3)',
             }}
@@ -653,7 +653,7 @@ export default function HotelsPage() {
           </h2>
 
           <p className="text-white/45 text-sm max-w-md mx-auto mb-10"
-            style={{ fontFamily: 'Be Vietnam Pro, sans-serif', lineHeight: 1.8 }}>
+            style={{ fontFamily: 'var(--font-sans)', lineHeight: 1.8 }}>
             Hơn <span className="text-white/80 font-semibold">{hotels.length}+</span> khách sạn, resort &amp; homestay
             được tuyển chọn kỹ lưỡng trên khắp Việt Nam
           </p>
@@ -669,9 +669,9 @@ export default function HotelsPage() {
                 {i > 0 && <div className="w-px h-10 mx-8" style={{ background: 'rgba(201,168,76,0.35)' }} />}
                 <div className="text-center">
                   <p className="text-2xl font-bold text-white leading-none"
-                    style={{ fontFamily: '"Playfair Display", serif' }}>{s.v}</p>
+                    style={{ fontFamily: 'var(--font-sans)' }}>{s.v}</p>
                   <p className="uppercase tracking-widest mt-1.5"
-                    style={{ color: 'rgba(201,168,76,0.7)', fontSize: '0.6rem', fontFamily: 'Be Vietnam Pro, sans-serif', letterSpacing: '0.2em' }}>{s.l}</p>
+                    style={{ color: 'rgba(201,168,76,0.7)', fontSize: '0.6rem', fontFamily: 'var(--font-sans)', letterSpacing: '0.04em' }}>{s.l}</p>
                 </div>
               </div>
             ))}
@@ -682,11 +682,11 @@ export default function HotelsPage() {
       {/* ── Section heading ──────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-6 pt-14 pb-2 text-center">
         <p className="uppercase tracking-widest text-[10px] mb-3"
-          style={{ color: '#c9a84c', fontFamily: 'Be Vietnam Pro, sans-serif', letterSpacing: '0.3em' }}>
+          style={{ color: '#c9a84c', fontFamily: 'var(--font-sans)', letterSpacing: '0.04em' }}>
           Danh Sách
         </p>
         <h2 className="text-gray-900"
-          style={{ fontFamily: '"Playfair Display", serif', fontSize: 'clamp(1.6rem, 3vw, 2.5rem)', fontWeight: 600, letterSpacing: '0.02em' }}>
+          style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(1.6rem, 3vw, 2.5rem)', fontWeight: 600, letterSpacing: '0.02em' }}>
           Tìm Kiếm Khách Sạn
         </h2>
         <div className="flex items-center justify-center gap-4 mt-4">
@@ -721,7 +721,7 @@ export default function HotelsPage() {
                     background: 'rgba(26,58,92,0.06)',
                     color: '#1a3a5c',
                     border: '1px solid rgba(26,58,92,0.2)',
-                    fontFamily: 'Be Vietnam Pro, sans-serif',
+                    fontFamily: 'var(--font-sans)',
                     letterSpacing: '0.05em',
                   }}>
                   <SlidersHorizontal size={14} /> Bộ lọc
@@ -733,7 +733,7 @@ export default function HotelsPage() {
                     value={sort}
                     onChange={e => { setSort(e.target.value as SortKey); setPage(1) }}
                     className="text-sm font-semibold text-gray-700 focus:outline-none appearance-none bg-transparent cursor-pointer"
-                    style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}
+                    style={{ fontFamily: 'var(--font-sans)' }}
                   >
                     <option value="price_asc">Giá tăng dần</option>
                     <option value="price_desc">Giá giảm dần</option>
@@ -787,15 +787,15 @@ export default function HotelsPage() {
                   style={{ background: 'rgba(26,58,92,0.05)', border: '1px solid rgba(201,168,76,0.2)' }}>
                   <span className="text-4xl">🏨</span>
                 </div>
-                <h3 className="text-xl mb-2" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, color: '#0a1628' }}>
+                <h3 className="text-xl mb-2" style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, color: '#0a1628' }}>
                   Không tìm thấy khách sạn
                 </h3>
-                <p className="text-gray-400 text-sm mb-6" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                <p className="text-gray-400 text-sm mb-6" style={{ fontFamily: 'var(--font-sans)' }}>
                   Hãy thử thay đổi bộ lọc tìm kiếm
                 </p>
                 <button onClick={reset}
                   className="px-8 py-3 text-white text-[11px] font-bold transition-all hover:opacity-90 tracking-widest uppercase"
-                  style={{ background: '#0a1628', fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+                  style={{ background: '#0a1628', fontFamily: 'var(--font-sans)' }}>
                   Xóa Bộ Lọc
                 </button>
               </div>
@@ -821,7 +821,7 @@ export default function HotelsPage() {
             <div className="flex items-center justify-between px-6 py-5 sticky top-0 bg-white z-10"
               style={{ borderBottom: '1px solid rgba(201,168,76,0.25)' }}>
               <span className="font-bold tracking-widest uppercase text-sm"
-                style={{ fontFamily: '"Playfair Display", serif', color: '#0a1628' }}>Bộ Lọc</span>
+                style={{ fontFamily: 'var(--font-sans)', color: '#0a1628' }}>Bộ Lọc</span>
               <button onClick={() => setSidebarOpen(false)}
                 className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
                 <X size={18} />

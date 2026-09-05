@@ -31,6 +31,7 @@ interface TourDetail {
   id: number
   name: string
   priceAdult: number
+  priceChild?: number
   durationDays: number
   durationNights?: number
   destination: string
@@ -38,7 +39,12 @@ interface TourDetail {
   startDate?: string
   images?: Array<{ id: number; photo: string }>
   imageUrl?: string
-  departures?: Array<{ id: number; departureDate: string; availableSlots: number }>
+  // priceAdult/priceChild ở đây là giá THỰC TẾ của chuyến đó (backend đã áp giá mùa nếu có).
+  // Phải dùng giá này, không dùng tour.priceAdult, nếu không hiển thị sẽ lệch số tiền bị tính.
+  departures?: Array<{
+    id: number; departureDate: string; availableSlots: number
+    priceAdult?: number; priceChild?: number
+  }>
   linkedHotels?: number[]
   linkedRestaurants?: number[]
 }
@@ -54,7 +60,7 @@ interface LinkedHotel {
 interface Room {
   id: number; roomType: string; roomPrice: number
   maxGuests: number; numBeds: number; area?: number
-  isBooked: boolean; status: string; photo?: number[]
+  status: string; photo?: number[]
 }
 interface LinkedRestaurant {
   id: number; name: string; cuisineType?: string
@@ -69,6 +75,23 @@ interface SelectedRestaurantAddon {
   bookingDate: string; bookingTime: string; guestCount: number
 }
 
+/**
+ * Khung bữa ăn — BẢN SAO của enum MealSlot bên backend
+ * (travel/src/main/java/.../util/constant/restaurant/MealSlot.java).
+ *
+ * Khách không thể ăn hai nơi trong cùng một bữa của cùng một ngày. Giao diện chặn
+ * trước cho khách thấy ngay, nhưng backend mới là chỗ quyết định — sửa ranh giới ở
+ * một bên mà quên bên kia thì giao diện cho bấm rồi server mới từ chối.
+ */
+const MEAL_SLOTS = [
+  { key: 'SANG', label: 'Sáng', from: '06:00', to: '10:29' },
+  { key: 'TRUA', label: 'Trưa', from: '10:30', to: '15:59' },
+  { key: 'TOI',  label: 'Tối',  from: '16:00', to: '23:59' },
+] as const
+
+/** Khung chứa giờ đã cho, undefined nếu ngoài giờ nhận đặt (00:00–05:59). */
+const slotOf = (time: string) => MEAL_SLOTS.find(s => time >= s.from && time <= s.to)
+
 // ─── Validation ───────────────────────────────────────────────────────────────
 
 const contactSchema = z.object({
@@ -79,7 +102,6 @@ const contactSchema = z.object({
 })
 type ContactFormData = z.infer<typeof contactSchema>
 
-const CHILD_DISCOUNT = 0.7
 const STEPS = [{ id: 1, label: 'Thông tin' }, { id: 2, label: 'Xác nhận' }, { id: 3, label: 'Thanh toán' }]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -143,7 +165,7 @@ function TourSummaryCard({ tour, adults, children, departureDate, adultPrice, ch
   onApplyCoupon: () => void; onRemoveCoupon: () => void
   couponResult: CouponResult | null; couponLoading: boolean
   selectedHotel: SelectedHotelAddon | null
-  selectedRestaurant: SelectedRestaurantAddon | null
+  selectedRestaurant: SelectedRestaurantAddon[]
   packageDiscountAmt: number
 }) {
   const couponDiscountAmt = couponResult?.valid ? (couponResult.discountAmount ?? 0) : 0
@@ -200,12 +222,12 @@ function TourSummaryCard({ tour, adults, children, departureDate, adultPrice, ch
               <span>{formatCurrency(hotelTotal)}</span>
             </div>
           )}
-          {selectedRestaurant && (
-            <div className="flex justify-between text-orange-500 text-sm">
-              <span className="flex items-center gap-1"><Utensils size={12} /> {selectedRestaurant.restaurantName}</span>
-              <span className="text-xs text-gray-400">Thanh toán tại chỗ</span>
+          {selectedRestaurant.map((r, i) => (
+            <div key={`${r.restaurantId}-${r.bookingDate}-${r.bookingTime}`} className="flex justify-between text-orange-500 text-sm">
+              <span className="flex items-center gap-1"><Utensils size={12} /> {r.restaurantName}</span>
+              <span className="text-xs text-gray-400">{i === 0 ? 'Thanh toán tại chỗ' : ''}</span>
             </div>
-          )}
+          ))}
           {packageDiscountAmt > 0 && (
             <div className="flex justify-between text-blue-600 text-sm">
               <span className="flex items-center gap-1"><Tag size={12} /> Giảm giá gói ({tour.packageDiscountPercent}%)</span>
@@ -299,7 +321,8 @@ function HotelAddOnSection({ hotels, allRooms, nights, selected, onSelect }: {
 
       <div className="mt-4 space-y-3">
         {hotels.map((hotel, idx) => {
-          const rooms = (allRooms[idx] ?? []).filter(r => !r.isBooked && r.status !== 'BOOKED')
+          // Backend đã lọc theo khoảng ngày rồi, ở đây chỉ loại phòng đang bảo trì.
+          const rooms = (allRooms[idx] ?? []).filter(r => r.status !== 'MAINTENANCE')
           const isExpanded = expandedHotel === hotel.id
           const isSelected = selected?.hotelId === hotel.id
 
@@ -368,18 +391,33 @@ function HotelAddOnSection({ hotels, allRooms, nights, selected, onSelect }: {
 
 // ─── RestaurantAddOnSection ───────────────────────────────────────────────────
 
-function RestaurantAddOnSection({ restaurants, defaultDate, defaultGuests, selected, onSelect }: {
+function RestaurantAddOnSection({ restaurants, defaultDate, lastDate, defaultGuests, selected, onChange }: {
   restaurants: LinkedRestaurant[]
   defaultDate: string
+  lastDate: string
   defaultGuests: number
-  selected: SelectedRestaurantAddon | null
-  onSelect: (r: SelectedRestaurantAddon | null) => void
+  selected: SelectedRestaurantAddon[]
+  onChange: (r: SelectedRestaurantAddon[]) => void
 }) {
   const [expandedRest, setExpandedRest] = useState<number | null>(null)
   const [localDate, setLocalDate] = useState(defaultDate)
   const [localTime, setLocalTime] = useState('12:00')
 
   if (!restaurants.length) return null
+
+  const slot = slotOf(localTime)
+  // Bữa đã bị chiếm ở đúng ngày+khung đang chọn. Chặn ngay trên giao diện thay vì để
+  // server trả lỗi ở bước cuối, sau khi khách đã điền xong toàn bộ đơn.
+  const trung = slot ? selected.find(s => s.bookingDate === localDate && slotOf(s.bookingTime) === slot) : undefined
+  const ngoaiTour = localDate < defaultDate || localDate > lastDate
+
+  const themBua = (rest: LinkedRestaurant) => {
+    onChange([...selected, {
+      restaurantId: rest.id, restaurantName: rest.name,
+      bookingDate: localDate, bookingTime: localTime, guestCount: defaultGuests,
+    }])
+    setExpandedRest(null)
+  }
 
   return (
     <div className="rounded-sm bg-white border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
@@ -391,26 +429,38 @@ function RestaurantAddOnSection({ restaurants, defaultDate, defaultGuests, selec
           <h3 className="font-bold text-gray-900 text-sm">Nhà hàng đi kèm</h3>
           <p className="text-xs text-gray-400">Tuỳ chọn — đặt bàn trong thời gian tour</p>
         </div>
-        {selected && (
-          <button onClick={() => { onSelect(null); setExpandedRest(null) }}
+        {selected.length > 0 && (
+          <button onClick={() => { onChange([]); setExpandedRest(null) }}
             className="ml-auto text-xs text-red-400 hover:text-red-600 flex items-center gap-0.5">
-            <X size={12} /> Bỏ chọn
+            <X size={12} /> Bỏ hết
           </button>
         )}
       </div>
 
-      {selected && (
-        <div className="mt-3 mb-1 flex items-center gap-2 px-3 py-2 rounded bg-amber-50 border border-amber-200 text-sm">
-          <Check size={13} className="text-amber-600 shrink-0" />
-          <span className="text-amber-700 font-semibold">{selected.restaurantName}</span>
-          <span className="text-amber-500 text-xs">— {selected.bookingDate} lúc {selected.bookingTime} · {selected.guestCount} khách</span>
+      {selected.length > 0 && (
+        <div className="mt-3 mb-1 space-y-1.5">
+          {selected.map((s, i) => (
+            <div key={`${s.restaurantId}-${s.bookingDate}-${s.bookingTime}`}
+              className="flex items-center gap-2 px-3 py-2 rounded bg-amber-50 border border-amber-200 text-sm">
+              <Check size={13} className="text-amber-600 shrink-0" />
+              <span className="text-amber-700 font-semibold">{s.restaurantName}</span>
+              <span className="text-amber-500 text-xs">
+                — {safeFormatDate(s.bookingDate)} · {slotOf(s.bookingTime)?.label ?? ''} {s.bookingTime} · {s.guestCount} khách
+              </span>
+              <button onClick={() => onChange(selected.filter((_, j) => j !== i))}
+                className="ml-auto text-amber-400 hover:text-red-500 shrink-0" title="Bỏ bữa này">
+                <X size={13} />
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
       <div className="mt-4 space-y-3">
         {restaurants.map(rest => {
           const isExpanded = expandedRest === rest.id
-          const isSelected = selected?.restaurantId === rest.id
+          // Cùng một nhà hàng đặt được nhiều bữa, nên đây là "có ít nhất một bữa"
+          const isSelected = selected.some(s => s.restaurantId === rest.id)
 
           return (
             <div key={rest.id} className={`border rounded-lg overflow-hidden transition-all ${isSelected ? 'border-amber-300' : 'border-gray-200'}`}>
@@ -435,7 +485,8 @@ function RestaurantAddOnSection({ restaurants, defaultDate, defaultGuests, selec
                   <div className="grid grid-cols-3 gap-2">
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-gray-600">Ngày</label>
-                      <input type="date" value={localDate} onChange={e => setLocalDate(e.target.value)}
+                      <input type="date" value={localDate} min={defaultDate} max={lastDate}
+                        onChange={e => setLocalDate(e.target.value)}
                         className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded bg-white focus:outline-none focus:border-amber-400" />
                     </div>
                     <div className="space-y-1">
@@ -450,18 +501,35 @@ function RestaurantAddOnSection({ restaurants, defaultDate, defaultGuests, selec
                       </div>
                     </div>
                   </div>
-                  <button type="button"
-                    className={`w-full py-2 rounded text-sm font-bold transition-all ${
-                      isSelected
-                        ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100'
-                        : 'text-white hover:opacity-90'
-                    }`}
-                    style={isSelected ? {} : { background: 'linear-gradient(135deg,#c9a84c,#b8960e)' }}
-                    onClick={() => {
-                      if (isSelected) { onSelect(null); setExpandedRest(null) }
-                      else onSelect({ restaurantId: rest.id, restaurantName: rest.name, bookingDate: localDate, bookingTime: localTime, guestCount: defaultGuests })
-                    }}>
-                    {isSelected ? 'Bỏ đặt bàn' : 'Thêm vào đơn'}
+
+                  {/* Vì sao không thêm được — nói rõ ngay tại chỗ thay vì để nút im lặng mờ đi */}
+                  {!slot && (
+                    <p className="text-xs text-red-500">
+                      Giờ này ngoài khung nhận đặt (06:00–23:59).
+                    </p>
+                  )}
+                  {slot && ngoaiTour && (
+                    <p className="text-xs text-red-500">
+                      Ngày phải nằm trong thời gian tour ({safeFormatDate(defaultDate)} – {safeFormatDate(lastDate)}).
+                    </p>
+                  )}
+                  {slot && !ngoaiTour && trung && (
+                    <p className="text-xs text-red-500">
+                      Bữa {slot.label.toLowerCase()} ngày {safeFormatDate(localDate)} đã đặt ở “{trung.restaurantName}”.
+                      Chọn bữa khác hoặc ngày khác.
+                    </p>
+                  )}
+                  {slot && !ngoaiTour && !trung && (
+                    <p className="text-xs text-gray-500">
+                      Bữa <span className="font-semibold text-amber-700">{slot.label.toLowerCase()}</span> ngày {safeFormatDate(localDate)}.
+                    </p>
+                  )}
+
+                  <button type="button" disabled={!slot || !!trung || ngoaiTour}
+                    className="w-full py-2 rounded text-sm font-bold transition-all text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ background: 'linear-gradient(135deg,#c9a84c,#b8960e)' }}
+                    onClick={() => themBua(rest)}>
+                    Thêm vào đơn
                   </button>
                 </div>
               )}
@@ -488,7 +556,7 @@ export default function BookingPage() {
   const [couponResult, setCouponResult]   = useState<CouponResult | null>(null)
   const [couponLoading, setCouponLoading] = useState(false)
   const [selectedHotel, setSelectedHotel]           = useState<SelectedHotelAddon | null>(null)
-  const [selectedRestaurant, setSelectedRestaurant] = useState<SelectedRestaurantAddon | null>(null)
+  const [selectedRestaurants, setSelectedRestaurants] = useState<SelectedRestaurantAddon[]>([])
 
   const state = location.state as BookingRouteState | null
   const { departureId, adults = 1, children = 0, departureDate } = state ?? {}
@@ -501,6 +569,12 @@ export default function BookingPage() {
   })
 
   // Date calculations
+  // Ngày cuối của tour. durationDays đếm cả ngày khởi hành nên tour 3 ngày đi từ 21
+  // kết thúc ngày 23 — phải trừ 1, khác với checkOutDate của khách sạn (trả phòng
+  // sáng hôm sau nên cộng đủ durationDays). Khớp với TourRestaurantAddonService.
+  const lastTourDate = departureDate
+    ? dayjs(departureDate).add(Math.max((tour?.durationDays ?? 1) - 1, 0), 'day').format('YYYY-MM-DD')
+    : dayjs().format('YYYY-MM-DD')
   const checkOutDate = departureDate && tour?.durationDays
     ? dayjs(departureDate).add(tour.durationDays, 'day').format('YYYY-MM-DD')
     : undefined
@@ -517,8 +591,13 @@ export default function BookingPage() {
   })
   const hotelRoomQueries = useQueries({
     queries: linkedHotels.map(h => ({
-      queryKey: ['booking-hotel-rooms', h.id],
-      queryFn:  () => api.get(`/hotels/${h.id}/rooms`).then(r => r.data as Room[]),
+      // Truyền khoảng ngày để backend chỉ trả phòng CÒN TRỐNG trong đúng khoảng đó.
+      // Trước đây lấy hết rồi lọc bằng cờ room.isBooked ở client — cờ đó luôn false
+      // nên khách vẫn chọn được phòng đã kín, tới lúc bấm đặt mới báo lỗi.
+      queryKey: ['booking-hotel-rooms', h.id, departureDate, checkOutDate],
+      queryFn:  () => api
+        .get(`/hotels/${h.id}/rooms`, { params: { checkIn: departureDate, checkOut: checkOutDate } })
+        .then(r => r.data as Room[]),
       staleTime: 5 * 60_000,
     })),
   })
@@ -531,15 +610,18 @@ export default function BookingPage() {
 
   const linkedHotelRooms = hotelRoomQueries.map(q => q.data ?? []) as Room[][]
 
-  // Pricing
-  const adultPrice       = tour?.priceAdult ?? 0
-  const childPrice       = Math.round(adultPrice * CHILD_DISCOUNT)
+  // Pricing — lấy theo ĐÚNG chuyến khởi hành đang chọn.
+  // Trước đây dùng tour.priceAdult (bỏ qua giá mùa) và tự nhân 0.7 cho trẻ em, trong khi
+  // backend tính theo giá mùa và cột priceChild — khách thấy một giá, bị trừ một giá khác.
+  const selectedDeparture = tour?.departures?.find(d => d.id === departureId)
+  const adultPrice       = selectedDeparture?.priceAdult ?? tour?.priceAdult ?? 0
+  const childPrice       = selectedDeparture?.priceChild ?? tour?.priceChild ?? adultPrice
   const totalPrice       = adultPrice * adults + childPrice * children
   const discountAmount   = couponResult?.valid ? (couponResult.discountAmount ?? 0) : 0
   const hotelAddonTotal  = selectedHotel ? selectedHotel.pricePerNight * selectedHotel.nights : 0
   const rawSubtotal      = totalPrice + hotelAddonTotal
   const packageDiscountAmt = (tour?.packageDiscountPercent && tour.packageDiscountPercent > 0
-    && (selectedHotel !== null || selectedRestaurant !== null))
+    && (selectedHotel !== null || selectedRestaurants.length > 0))
     ? Math.round(rawSubtotal * tour.packageDiscountPercent / 100)
     : 0
   const grandTotal       = rawSubtotal - discountAmount - packageDiscountAmt
@@ -574,8 +656,14 @@ export default function BookingPage() {
         note: contact.note,
         couponCode: couponResult?.valid ? couponResult.code : undefined,
         roomId: selectedHotel?.roomId ?? null,
-        restaurantId: selectedRestaurant?.restaurantId ?? null,
-        restaurantBookingTime: selectedRestaurant?.bookingTime ?? null,
+        // Gửi cả ngày lên: trước đây chỉ gửi giờ, còn ngày thì server ghi đè bằng ngày
+        // khởi hành — khách chọn ngày nào cũng vô nghĩa. Nay nhiều bữa rải nhiều ngày
+        // nên ngày phải đi lên thật.
+        restaurants: selectedRestaurants.map(r => ({
+          restaurantId: r.restaurantId,
+          bookingDate: r.bookingDate,
+          bookingTime: r.bookingTime,
+        })),
       })
       return res.data as BookingResult
     },
@@ -601,7 +689,7 @@ export default function BookingPage() {
 
   if (isLoading || !tour) {
     return (
-      <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+      <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'var(--font-sans)' }}>
         <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-10 h-10 border-4 border-[#0a1628]/20 border-t-[#0a1628] rounded-full animate-spin" />
@@ -612,7 +700,7 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'var(--font-sans)' }}>
       <Navbar />
 
       <div className="relative overflow-hidden pt-24 pb-12 px-6"
@@ -639,7 +727,7 @@ export default function BookingPage() {
                 couponCode={couponCode} onCouponCodeChange={setCouponCode}
                 onApplyCoupon={handleApplyCoupon} onRemoveCoupon={handleRemoveCoupon}
                 couponResult={couponResult} couponLoading={couponLoading}
-                selectedHotel={selectedHotel} selectedRestaurant={selectedRestaurant}
+                selectedHotel={selectedHotel} selectedRestaurant={selectedRestaurants}
                 packageDiscountAmt={packageDiscountAmt} />
             </div>
 
@@ -738,9 +826,10 @@ export default function BookingPage() {
               <RestaurantAddOnSection
                 restaurants={linkedRestaurants}
                 defaultDate={departureDate ?? dayjs().format('YYYY-MM-DD')}
+                lastDate={lastTourDate}
                 defaultGuests={adults + children}
-                selected={selectedRestaurant}
-                onSelect={setSelectedRestaurant}
+                selected={selectedRestaurants}
+                onChange={setSelectedRestaurants}
               />
             </div>
           </div>
@@ -793,19 +882,25 @@ export default function BookingPage() {
               )}
 
               {/* Restaurant add-on confirmation */}
-              {selectedRestaurant && (
+              {selectedRestaurants.length > 0 && (
                 <>
                   <div className="border-t border-gray-100 my-4" />
                   <div className="mb-5">
                     <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-1">
-                      <Utensils size={12} /> Nhà hàng đi kèm
+                      <Utensils size={12} /> Nhà hàng đi kèm ({selectedRestaurants.length} bữa)
                     </p>
-                    <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-                      <dt className="text-gray-400">Nhà hàng</dt><dd className="font-semibold text-gray-900">{selectedRestaurant.restaurantName}</dd>
-                      <dt className="text-gray-400">Ngày đặt</dt><dd className="font-semibold text-gray-900">{safeFormatDate(selectedRestaurant.bookingDate)} lúc {selectedRestaurant.bookingTime}</dd>
-                      <dt className="text-gray-400">Số khách</dt><dd className="font-semibold text-gray-900">{selectedRestaurant.guestCount} người</dd>
-                      <dt className="text-gray-400">Thanh toán</dt><dd className="font-semibold text-amber-600">Tại nhà hàng</dd>
-                    </dl>
+                    <div className="space-y-3">
+                      {selectedRestaurants.map(r => (
+                        <dl key={`${r.restaurantId}-${r.bookingDate}-${r.bookingTime}`}
+                          className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                          <dt className="text-gray-400">Nhà hàng</dt><dd className="font-semibold text-gray-900">{r.restaurantName}</dd>
+                          <dt className="text-gray-400">Bữa</dt><dd className="font-semibold text-gray-900">{slotOf(r.bookingTime)?.label ?? '—'}</dd>
+                          <dt className="text-gray-400">Ngày đặt</dt><dd className="font-semibold text-gray-900">{safeFormatDate(r.bookingDate)} lúc {r.bookingTime}</dd>
+                          <dt className="text-gray-400">Số khách</dt><dd className="font-semibold text-gray-900">{r.guestCount} người</dd>
+                        </dl>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs text-amber-600 font-semibold">Thanh toán tại nhà hàng</p>
                   </div>
                 </>
               )}
@@ -858,12 +953,12 @@ export default function BookingPage() {
                       <span>{formatCurrency(hotelAddonTotal)}</span>
                     </div>
                   )}
-                  {selectedRestaurant && (
-                    <div className="flex justify-between text-amber-600">
-                      <span className="flex items-center gap-1"><Utensils size={12} /> {selectedRestaurant.restaurantName}</span>
-                      <span className="text-xs text-gray-400">Thanh toán tại chỗ</span>
+                  {selectedRestaurants.map((r, i) => (
+                    <div key={`${r.restaurantId}-${r.bookingDate}-${r.bookingTime}`} className="flex justify-between text-amber-600">
+                      <span className="flex items-center gap-1"><Utensils size={12} /> {r.restaurantName}</span>
+                      <span className="text-xs text-gray-400">{i === 0 ? 'Thanh toán tại chỗ' : ''}</span>
                     </div>
-                  )}
+                  ))}
                   {packageDiscountAmt > 0 && (
                     <div className="flex justify-between text-blue-600">
                       <span className="flex items-center gap-1"><Tag size={12} /> Giảm giá gói ({tour.packageDiscountPercent}%)</span>
@@ -905,7 +1000,7 @@ export default function BookingPage() {
               </div>
               <h2 className="font-black text-gray-900 text-2xl mb-2">Đặt tour thành công!</h2>
               <p className="text-gray-400 text-sm mb-7">
-                {selectedHotel || selectedRestaurant
+                {selectedHotel || selectedRestaurants.length > 0
                   ? 'Tour, khách sạn và nhà hàng đã được đặt. Vui lòng hoàn tất thanh toán.'
                   : 'Vui lòng hoàn tất thanh toán để giữ chỗ của bạn'}
               </p>
@@ -926,12 +1021,16 @@ export default function BookingPage() {
                     <span className="font-semibold text-purple-700 text-right">{selectedHotel.hotelName} · {selectedHotel.roomType}</span>
                   </div>
                 )}
-                {selectedRestaurant && (
-                  <div className="flex justify-between gap-3 text-left">
-                    <span className="text-gray-400 shrink-0 flex items-center gap-1"><Utensils size={12} /> Bàn</span>
-                    <span className="font-semibold text-amber-600 text-right">{selectedRestaurant.restaurantName}</span>
+                {selectedRestaurants.map(r => (
+                  <div key={`${r.restaurantId}-${r.bookingDate}-${r.bookingTime}`} className="flex justify-between gap-3 text-left">
+                    <span className="text-gray-400 shrink-0 flex items-center gap-1">
+                      <Utensils size={12} /> {slotOf(r.bookingTime)?.label ?? 'Bàn'}
+                    </span>
+                    <span className="font-semibold text-amber-600 text-right">
+                      {r.restaurantName} · {safeFormatDate(r.bookingDate)}
+                    </span>
                   </div>
-                )}
+                ))}
                 <div className="flex justify-between">
                   <span className="text-gray-400">Khách</span>
                   <span className="font-semibold">{adults} người lớn{children > 0 && ` + ${children} trẻ em`}</span>

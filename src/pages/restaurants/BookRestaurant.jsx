@@ -100,7 +100,7 @@ const BookRestaurant = () => {
     }
 
     if (loading) return (
-        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro']">
+        <div className="min-h-screen bg-[#f8f5ee]">
             <MenuBar />
             <div className="flex items-center justify-center min-h-screen">
                 <span className="w-10 h-10 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
@@ -125,7 +125,7 @@ const BookRestaurant = () => {
     }
 
     if (booking) return (
-        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro']">
+        <div className="min-h-screen bg-[#f8f5ee]">
             <MenuBar />
             <div className="flex items-center justify-center min-h-screen px-6 pt-20 pb-12">
                 <div className="bg-white rounded shadow-sm border border-gray-100 max-w-md w-full overflow-hidden">
@@ -190,7 +190,7 @@ const BookRestaurant = () => {
     )
 
     return (
-        <div className="min-h-screen bg-[#f8f5ee] font-['Be_Vietnam_Pro']">
+        <div className="min-h-screen bg-[#f8f5ee]">
             <MenuBar />
             <div className="pt-24 pb-12 px-6 max-w-5xl mx-auto">
                 <button

@@ -513,7 +513,7 @@ const FeaturedToursSection = () => {
             >
               ✦ Nổi bật
             </span>
-            <h2 className="font-semibold text-gray-900 leading-tight" style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+            <h2 className="font-semibold text-gray-900 leading-tight" style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
               Tour du lịch{' '}
               <span style={{ color: '#0a1628' }}>hấp dẫn nhất</span>
             </h2>
@@ -580,7 +580,7 @@ const PopularDestinationsSection = () => {
           >
             Điểm đến
           </span>
-          <h2 className="font-semibold text-white leading-tight" style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+          <h2 className="font-semibold text-white leading-tight" style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
             Điểm đến phổ biến
           </h2>
           <p className="text-white/40 mt-2 max-w-md mx-auto">
@@ -683,7 +683,7 @@ const WhyUsSection = () => {
             >
               Cam kết
             </span>
-            <h2 className="font-semibold text-gray-900 leading-tight mb-5" style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+            <h2 className="font-semibold text-gray-900 leading-tight mb-5" style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
               Tại sao chọn<br />
               <span style={{ color: '#0a1628' }}>TravelVN?</span>
             </h2>
@@ -741,7 +741,7 @@ const ServicesSection = () => {
           >
             Dịch vụ
           </span>
-          <h2 className="font-semibold text-gray-900 leading-tight" style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+          <h2 className="font-semibold text-gray-900 leading-tight" style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
             Một nơi. <span style={{ color: '#c9a84c' }}>Mọi dịch vụ du lịch.</span>
           </h2>
           <p className="text-gray-500 mt-2 max-w-lg mx-auto">
@@ -795,7 +795,7 @@ const TestimonialsSection = () => {
           >
             Đánh giá
           </span>
-          <h2 className="font-semibold text-white leading-tight" style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+          <h2 className="font-semibold text-white leading-tight" style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
             Khách hàng nói gì<br />
             <span className="text-white/50 font-light">về chúng tôi</span>
           </h2>
@@ -815,7 +815,7 @@ const TestimonialsSection = () => {
               }}
             >
               {/* Giant quote mark */}
-              <div className="text-8xl font-serif leading-none -mb-4" style={{ color: 'rgba(201,168,76,0.2)' }}>"</div>
+              <div className="text-8xl leading-none -mb-4" style={{ color: 'rgba(201,168,76,0.2)' }}>"</div>
 
               <div className="flex items-center justify-between">
                 <Stars n={t.rating} />

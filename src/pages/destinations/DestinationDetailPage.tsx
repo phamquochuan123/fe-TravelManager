@@ -3,6 +3,7 @@ import { resolveBase64Image } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { MdLocationOn, MdArrowBack, MdAccessTime, MdStar, MdMap } from 'react-icons/md'
 import api from '../../api/axiosInstance'
+import LocationMap from '../../components/common/LocationMap'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 
@@ -15,6 +16,8 @@ interface Destination {
   destinationType: string
   photo?: string // base64
   isActive: boolean
+  latitude?: number | null
+  longitude?: number | null
 }
 
 interface Tour {
@@ -169,6 +172,13 @@ export default function DestinationDetailPage() {
             <p className="text-gray-600 leading-relaxed">{dest.description}</p>
           </div>
         )}
+
+        <LocationMap
+          name={dest.name}
+          city={[dest.city, dest.province].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', ')}
+          latitude={dest.latitude}
+          longitude={dest.longitude}
+        />
 
         {/* Tours */}
         <div>

@@ -94,7 +94,7 @@ const Navbar = () => {
       <nav
         className="fixed top-0 left-0 w-full z-50 transition-all duration-300"
         style={{
-          fontFamily: 'Montserrat, sans-serif',
+          fontFamily: 'var(--font-sans)',
           background: scrolled ? 'rgba(248,245,238,0.97)' : 'rgba(248,245,238,0.82)',
           backdropFilter: 'blur(12px)',
           borderBottom: scrolled ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(201,168,76,0.12)',
@@ -118,10 +118,10 @@ const Navbar = () => {
               <MdFlight size={17} style={{ color: '#c9a84c' }} />
             </div>
             <span style={{
-              fontFamily: '"Cormorant Garamond", serif',
+              fontFamily: 'var(--font-sans)',
               fontWeight: 600,
               fontSize: '1.2rem',
-              letterSpacing: '0.18em',
+              letterSpacing: '0.04em',
               color: '#0a1628',
             }}>
               Travel<span style={{ color: '#c9a84c' }}>VN</span>
@@ -207,7 +207,7 @@ const Navbar = () => {
                     style={{ boxShadow: '0 20px 60px rgba(10,22,40,0.18)', border: '1px solid rgba(201,168,76,0.2)' }}>
                     <div className="px-4 py-4" style={{ background: 'linear-gradient(135deg, #0a1628, #1a3a5c)', borderBottom: '1px solid rgba(201,168,76,0.2)' }}>
                       <p className="text-[9px] uppercase font-bold tracking-widest text-white/35 mb-1">Tài khoản</p>
-                      <p className="font-semibold text-white truncate" style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.05rem' }}>{user.name}</p>
+                      <p className="font-semibold text-white truncate" style={{ fontFamily: 'var(--font-sans)', fontSize: '1.05rem' }}>{user.name}</p>
                       <div className="mt-1.5"><RoleBadge role={user.roleName} /></div>
                     </div>
                     <div className="p-1.5">
@@ -277,11 +277,11 @@ const Navbar = () => {
         className={`fixed top-0 right-0 h-full w-[290px] z-50 lg:hidden flex flex-col transition-transform duration-300 ${
           mobileOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{ background: '#f8f5ee', fontFamily: 'Montserrat, sans-serif', boxShadow: '-10px 0 60px rgba(10,22,40,0.25)' }}
+        style={{ background: '#f8f5ee', fontFamily: 'var(--font-sans)', boxShadow: '-10px 0 60px rgba(10,22,40,0.25)' }}
       >
         <div className="flex items-center justify-between px-6 py-5"
           style={{ borderBottom: '1px solid rgba(201,168,76,0.3)' }}>
-          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontWeight: 600, fontSize: '1.2rem', color: '#0a1628', letterSpacing: '0.15em' }}>
+          <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '1.2rem', color: '#0a1628', letterSpacing: '0.04em' }}>
             Travel<span style={{ color: '#c9a84c' }}>VN</span>
           </span>
           <button onClick={() => setMobileOpen(false)} className="p-2 text-gray-400 hover:text-[#0a1628] transition-colors">
@@ -372,7 +372,7 @@ const Navbar = () => {
                   {user.name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-gray-900 truncate" style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem' }}>{user.name}</p>
+                  <p className="font-semibold text-gray-900 truncate" style={{ fontFamily: 'var(--font-sans)', fontSize: '1rem' }}>{user.name}</p>
                   <RoleBadge role={user.roleName} />
                 </div>
               </div>

@@ -816,7 +816,7 @@ export default function ProfilePage() {
   const initials = user.name?.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase() ?? '?'
 
   return (
-    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'var(--font-sans)' }}>
       <Navbar />
 
       {/* Hero banner */}

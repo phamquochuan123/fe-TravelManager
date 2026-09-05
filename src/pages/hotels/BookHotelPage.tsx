@@ -260,7 +260,7 @@ export default function BookHotelPage() {
 
   if (hotelLoading || roomLoading || !hotel || !room) {
     return (
-      <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+      <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'var(--font-sans)' }}>
         <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-10 h-10 border-4 border-[#0a1628]/20 border-t-[#0a1628] rounded-full animate-spin" />
@@ -271,7 +271,7 @@ export default function BookHotelPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'var(--font-sans)' }}>
       <Navbar />
 
       {/* Hero */}

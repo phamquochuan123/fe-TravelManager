@@ -114,7 +114,7 @@ export default function DataTable<T>({
   }
 
   return (
-    <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
       {toolbar && (
         <div className="px-5 py-4 border-b border-gray-100">{toolbar}</div>
       )}

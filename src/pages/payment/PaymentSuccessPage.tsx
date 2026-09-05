@@ -55,7 +55,7 @@ export default function PaymentSuccessPage() {
   ].filter(r => r.value && r.value !== '–')
 
   return (
-    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="min-h-screen bg-[#f8f5ee]" style={{ fontFamily: 'var(--font-sans)' }}>
       <Navbar />
 
       {/* Hero */}

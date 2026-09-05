@@ -71,7 +71,7 @@ const StaffLayout = () => {
   const closeMobile = () => setMobileSidebarOpen(false)
 
   return (
-    <div className="flex h-screen bg-[#f8f5ee] overflow-hidden" style={{ fontFamily: 'Be Vietnam Pro, sans-serif' }}>
+    <div className="flex h-screen bg-[#f8f5ee] overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
 
       {/* ── Mobile backdrop ─────────────────────────────────── */}
       {mobileSidebarOpen && (
